@@ -371,7 +371,7 @@ function ProductModal({ product, onClose, categories }: { product: StoreProduct 
     if (!form.name || !form.price || descGen) return;
     setDescGen(true);
     try {
-      const res = await fetch("/api/ai/description", {
+      const res = await fetch((import.meta.env.VITE_API_URL || "") + "/api/ai/description", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: form.name, specs: form.specs, brand: form.brand, price: parseFloat(form.price) || 0, category: form.category }),
@@ -1361,7 +1361,7 @@ function BlogTab({ posts }: { posts: BlogPost[] }) {
     setAiGenerating(true);
     setAiError("");
     try {
-      const res  = await fetch("/api/ai/blog-post", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: aiTopic.trim() }) });
+      const res  = await fetch((import.meta.env.VITE_API_URL || "") + "/api/ai/blog-post", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: aiTopic.trim() }) });
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error ?? "Eroare server");
       setForm({
@@ -2189,7 +2189,7 @@ function AdminAITab({ leads, products, orders }: { leads: Lead[]; products: Stor
     if (!lead) return;
     setLeadLoading(true); setLeadError(""); setLeadAnalysis(null);
     try {
-      const res = await fetch("/api/ai/lead-analyze", {
+      const res = await fetch((import.meta.env.VITE_API_URL || "") + "/api/ai/lead-analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ lead }),
@@ -2208,7 +2208,7 @@ function AdminAITab({ leads, products, orders }: { leads: Lead[]; products: Stor
     if (!prod) return;
     setDescLoading(true); setDescError(""); setGeneratedDesc("");
     try {
-      const res = await fetch("/api/ai/description", {
+      const res = await fetch((import.meta.env.VITE_API_URL || "") + "/api/ai/description", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: prod.name, specs: prod.specs, brand: prod.brand, price: prod.price, category: prod.category }),
@@ -2226,7 +2226,7 @@ function AdminAITab({ leads, products, orders }: { leads: Lead[]; products: Stor
   const loadInsights = useCallback(async () => {
     setInsightsLoading(true); setInsightsError(""); setInsights(null);
     try {
-      const res = await fetch("/api/ai/business-insights", {
+      const res = await fetch((import.meta.env.VITE_API_URL || "") + "/api/ai/business-insights", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orders, leads, products }),
