@@ -1,0 +1,4 @@
+- [Keyboard dismissal pattern](keyboard-dismissal.md) — never define form-field components inside render function; extract to module scope
+- [Viber link format](viber-link.md) — correct format: `viber://chat?number=%2B{digits}` (phone.replace(/\D/g,""))
+- [Migration-backup port conflict](port-conflict.md) — migration-backup always claims port 24182 first; app still serves correctly via it, main workflow shows failed but HMR works
+- [Warranty text consistency](warranty-text.md) — product pages show 2–3 ani (manufacturer), "why us" section uses 5 ani (service promise); these are intentionally different

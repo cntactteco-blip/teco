@@ -1,0 +1,28 @@
+{
+  "name": "Teco.md — Sisteme de Supraveghere",
+  "short_name": "Teco.md",
+  "description": "Montare și instalare sisteme de supraveghere în Moldova. Camere IP, NVR, kituri complete.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#FF4F00",
+  "orientation": "portrait-primary",
+  "lang": "ro",
+  "categories": ["shopping", "business"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/opengraph.jpg",
+      "type": "image/jpeg",
+      "sizes": "1200x630",
+      "form_factor": "wide"
+    }
+  ]
+}

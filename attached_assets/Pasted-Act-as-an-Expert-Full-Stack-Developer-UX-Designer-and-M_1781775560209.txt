@@ -1,0 +1,79 @@
+Act as an Expert Full-Stack Developer, UX Designer, and Master SEO Engineer specialized in high-conversion e-commerce and local service platforms. 
+
+Our goal is to upgrade, bug-fix, and fully optimize this application into the ultimate Security Systems and Installation platform in Moldova for 2026-2027. It must combine classic e-commerce with a powerful "Guide + Service" hybrid model, focusing heavily on installation (montaj), surveillance sets, repairs, and retail sales.
+
+Execute the following tasks systematically, checking for component re-renders, database synchronization, and clean architecture.
+
+---
+
+### PHASE 1: CRITICAL BUG FIXES & UX RESTORATION
+
+1. **Fix Keyboard Dismissal Bug (Critical):**
+   - **Symptom:** On the checkout page (and potentially elsewhere), the keyboard disappears/dismisses automatically after typing a single letter or digit.
+   - **Root Cause to Check:** This usually happens due to inline-defined components inside main components, or incorrect 'key' props on inputs/forms causing a complete re-render on state change. 
+   - **Task:** Audit the checkout form and all input fields across the site. Ensure input states do not trigger unmounting/re-mounting. Fix this everywhere it occurs.
+
+2. **Fix Image Upload Behavior (Admin & Storefront):**
+   - **Symptom:** Clicking the image upload button currently forces the mobile camera to open instead of the gallery.
+   - **Task:** Change the file input behavior across the entire site (admin panel, blog, products, services). It must open the native device gallery/file picker on both phones (iOS/Android) and desktop. 
+   - **Optimization:** Accept all standard image formats (JPEG, PNG, WEBP). Implement automatic compression/optimization so images load instantly and look crisp without bloating the database/storage.
+
+---
+
+### PHASE 2: DATABASE SYNCHRONIZATION & ADMIN PANEL CRUD
+
+3. **Complete Data Synchronization:**
+   - Ensure a 100% real-time or robust synchronization between the Admin Panel and the Frontend storefront. Currently, a major part of the updated data in the admin panel does not reflect on the live site. Fix the API routes, state management, or caching mechanisms causing this block.
+
+4. **Viber Integration & Configurations:**
+   - **Admin Panel:** Add a dedicated input field to configure and update the business Viber phone number.
+   - **Storefront:** Fix the Viber logo/icon (currently incorrect or broken). It must link properly using the correct format (`viber://chat?number=%2B373...` for mobile or `https://rebrand.ly/` style fallback).
+
+5. **Legal Information Management:**
+   - Implement full CRUD (Create, Read, Update, Delete) capabilities in the Admin Panel for all legal sections (e.g., Termeni și Condiții, Politica de Confidențialitate, Livrare și Returnare). The frontend must fetch and render these dynamically.
+
+---
+
+### PHASE 3: ARCHITECTURE EXPANSION & NEW SECTIONS
+
+6. **Add "Montaj Camere Supraveghere" & "Blog" to Admin:**
+   - Create two new distinct sections in the Admin Panel:
+     - **Montaj Camere Supraveghere:** To manage service descriptions, pricing Tiers, and portfolio images.
+     - **Blog:** To write SEO-optimized articles and technical guides, with full image-upload support from the device gallery.
+
+7. **Activate the "Servicii" Section:**
+   - Currently, the Services section on the storefront opens nothing. Make it fully functional. It should display our core services: Installation (Montaj), Diagnostics, and Repairs.
+
+8. **"Guide + Service" Lead Generation UX:**
+   - Integrate a high-converting action under every single product and via a dedicated floating icon/button: **"Solicită Montaj / Consultanță Rapidă"**. 
+   - When clicked, it must instantly trigger a clean modal or quick-access section where the client can book an installer or request a rapid callback for system setup.
+
+---
+
+### PHASE 4: 2027 UX PSYCHOLOGY & LOCALIZATION
+
+9. **Smart Auto-Scrolling Related Products:**
+   - In the "Produse Similare" (Similar Products) section, implement a smooth, slow, infinite auto-scrolling carousel (Marquee style or gentle interval transition). According to 2027 e-commerce psychology, this catches the user's eye organically. If the user hovers or interacts, the auto-scroll should pause.
+
+10. **Russian Localization Polish:**
+    - Perform a localization pass for the Russian language. Ensure all high-traffic client touchpoints (Checkout, Navigation, Main Buttons, Admin Forms) are professionally translated. Leave non-essential elements if they don't break the user experience.
+
+---
+
+### PHASE 5: FULL COMPREHENSIVE AUDIT & CONTRADICTION CLEANUP
+
+11. **System & Content Audit:**
+    - Scan the entire codebase, text files, and database schemas for logical contradictions and bugs. 
+    - *Example:* Fix instances where warranty information is contradictory (e.g., 2-3 years in one section versus 5 years in another). Ensure global consistency across the platform. Clean up all dead links, unhandled errors, and console warnings.
+
+---
+
+### PHASE 6: ULTIMATE 2026-2027 SEO FOR MOLDOVA (CLOUDFLARE READY)
+
+12. **Aggressive Local SEO Architecture:**
+    - Prepare the site to be deployed behind Cloudflare and immediately take over the **teco.md** domain with zero downtime or SEO ranking loss.
+    - Structure semantic HTML (`<header>`, `<main>`, `<article>`, `<h1>`-`<h6>`).
+    - Inject automated JSON-LD Schema Structured Data for `Product` and `LocalBusiness` (tailored for Chisinau / Moldova).
+    - Hard-code a strategic focus on these core terms in metadata and routing headers: **montare și instalare sisteme de securitate, seturi de supraveghere video complete, reparații registratoare/camere**, prioritizing services and kit setups over single-product retail sales.
+
+Review the existing code files, layout structures, and API routers, and begin implementing these fixes step-by-step. Let me know when you are ready to report on the first block of resolutions.

@@ -1,0 +1,150 @@
+import { useEffect } from "react";
+import { Link, useLocation } from "wouter";
+import { X, Camera, Shield, Server, Package, HelpCircle, FileText, Lock, Award, ChevronRight, Phone, Instagram, Facebook } from "lucide-react";
+
+interface SidebarDrawerProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+const categories = [
+  { href: "/produse?cat=wifi",   icon: Camera, label: "Camere WiFi",             count: 8 },
+  { href: "/produse?cat=poe",    icon: Camera, label: "Camere PoE",              count: 9 },
+  { href: "/produse?cat=4g",     icon: Camera, label: "Camere 4G / Solar",       count: 3 },
+  { href: "/produse?cat=nvr",    icon: Server, label: "Înregistratoare NVR",     count: 4 },
+  { href: "/produse?cat=kituri", icon: Package, label: "Kituri Complete",        count: 2 },
+  { href: "/produse?cat=alarme", icon: Shield, label: "Sisteme Alarmă",          count: 1 },
+];
+
+const pages = [
+  { href: "/verifica-comanda", icon: FileText,   label: "Verifică Comanda" },
+  { href: "/audit",            icon: HelpCircle, label: "Solicită Audit Tehnic" },
+];
+
+const legal = [
+  { href: "/termeni",      label: "Termeni și Condiții" },
+  { href: "/confidential", label: "Politica de Confidențialitate" },
+  { href: "/garantii",     label: "Garanții și Retur" },
+];
+
+export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
+  const [location] = useLocation();
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
+  useEffect(() => { onClose(); }, [location]);
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className={`fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${open ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        onClick={onClose}
+      />
+
+      {/* Drawer */}
+      <div
+        className={`fixed top-0 left-0 z-50 h-full w-[300px] sm:w-[320px] bg-white flex flex-col shadow-2xl transition-transform duration-300 ease-in-out ${open ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-100">
+          <Link href="/" className="font-black text-xl tracking-tighter text-[#09090B]">
+            TECO<span className="text-[#FF4F00]">.</span>MD
+          </Link>
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-zinc-100 transition-colors">
+            <X className="w-5 h-5 text-zinc-500" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto py-2">
+          {/* Catalog */}
+          <div className="px-4 py-3">
+            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-2 mb-2">Catalog Produse</p>
+            {categories.map(({ href, icon: Icon, label, count }) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-zinc-50 transition-colors group"
+              >
+                <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Icon className="w-4 h-4 text-[#FF4F00]" />
+                </div>
+                <span className="flex-1 text-sm font-medium text-zinc-700 group-hover:text-[#09090B]">{label}</span>
+                <span className="text-[10px] text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded-full font-medium">{count}</span>
+              </Link>
+            ))}
+          </div>
+
+          <div className="h-px bg-zinc-100 mx-4 my-1" />
+
+          {/* Utility pages */}
+          <div className="px-4 py-3">
+            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-2 mb-2">Servicii</p>
+            {pages.map(({ href, icon: Icon, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-zinc-50 transition-colors group"
+              >
+                <div className="w-8 h-8 bg-zinc-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Icon className="w-4 h-4 text-zinc-500" />
+                </div>
+                <span className="flex-1 text-sm font-medium text-zinc-700 group-hover:text-[#09090B]">{label}</span>
+                <ChevronRight className="w-4 h-4 text-zinc-300" />
+              </Link>
+            ))}
+          </div>
+
+          <div className="h-px bg-zinc-100 mx-4 my-1" />
+
+          {/* Legal */}
+          <div className="px-4 py-3">
+            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-2 mb-2">Informații Legale</p>
+            {legal.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-zinc-50 transition-colors"
+              >
+                <Lock className="w-3.5 h-3.5 text-zinc-300 ml-1.5" />
+                <span className="text-sm text-zinc-500 hover:text-zinc-700">{label}</span>
+              </Link>
+            ))}
+          </div>
+
+          {/* Contact quick links */}
+          <div className="px-4 py-3 mx-4 bg-zinc-50 rounded-2xl my-2">
+            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">Contact Rapid</p>
+            <a href="tel:+37369123456" className="flex items-center gap-2 text-sm font-semibold text-[#09090B] hover:text-[#FF4F00] transition-colors mb-1">
+              <Phone className="w-4 h-4 text-[#FF4F00]" /> +373 69 123 456
+            </a>
+            <div className="flex gap-3 mt-2">
+              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-[#FF4F00] transition-colors">
+                <Instagram className="w-3.5 h-3.5" /> Instagram
+              </a>
+              <a href="https://facebook.com" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-[#FF4F00] transition-colors">
+                <Facebook className="w-3.5 h-3.5" /> Facebook
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-5 py-4 border-t border-zinc-100">
+          <div className="flex items-center gap-2 mb-1">
+            <Award className="w-3.5 h-3.5 text-[#FF4F00]" />
+            <span className="text-xs font-bold text-zinc-700">Garanție 5 ani · Service certificat</span>
+          </div>
+          <p className="text-[10px] text-zinc-400">© 2025 Teco.md — Toate drepturile rezervate</p>
+        </div>
+      </div>
+    </>
+  );
+}

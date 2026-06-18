@@ -1,0 +1,323 @@
+import { Router } from "express";
+import { GoogleGenAI } from "@google/genai";
+
+const router = Router();
+
+const SYSTEM_PROMPT_BASE = `Ești TecoBot, consultantul AI al Teco.md — magazin de sisteme de supraveghere din Chișinău, Moldova.
+
+CONTACT TECO.MD:
+- Telefon/WhatsApp: +373 67 200 463
+- Program: Luni-Sâmbătă 09:00–19:00
+- Instalare profesională în 24h oriunde în Moldova
+- Garanție 2-3 ani pe produse, garanție pe lucrare
+- 847+ instalări finalizate, rating 4.9/5
+
+CATALOG CURENT (prețuri MDL):
+{CATALOG}
+
+INSTRUCȚIUNI CRITICE:
+1. Răspunde SCURT și concis (max 3-4 propoziții). Clienții sunt pe telefon.
+2. Recomandă MEREU produse specifice din catalog cu prețul exact în MDL.
+3. Ajută clientul să aleagă: întreabă câte camere, interior/exterior, WiFi sau cablat, buget aproximativ.
+4. Dacă clientul vrea să cumpere sau instalare → cere: "Cum vă numiți și ce număr de telefon aveți?"
+5. Când primești NUMELE și TELEFONUL clientului, răspunde normal DAR adaugă pe ultima linie: LEAD_CAPTURED:name=NUME,phone=TELEFON
+6. Răspunde ÎNTOTDEAUNA în aceeași limbă cu clientul (română sau rusă).
+7. NU inventa prețuri, produse sau specificații inexistente. Prezintă NUMAI produsele din catalog.
+8. Instalarea este gratuită la consultanță — prețul depinde de numărul de camere și distanță.`;
+
+const CATEGORY_LABELS: Record<string, string> = {
+  wifi:   "CAMERE WiFi",
+  poe:    "CAMERE PoE (Cablate)",
+  "4g":   "CAMERE 4G/Solar (fără WiFi, fără curent)",
+  nvr:    "NVR-uri (Înregistratoare)",
+  kituri: "Kituri Complete (cameră+NVR+HDD, gata de instalat)",
+  alarme: "Sisteme Alarmă",
+};
+
+interface ProductEntry {
+  id: number;
+  name: string;
+  brand: string;
+  price: number;
+  oldPrice?: number | null;
+  specs: string;
+  category: string;
+  badge?: string | null;
+  inStock?: boolean;
+}
+
+function buildCatalog(products: ProductEntry[]): string {
+  if (!products?.length) return "(catalog indisponibil)";
+  const groups: Record<string, ProductEntry[]> = {};
+  for (const p of products) {
+    (groups[p.category] ??= []).push(p);
+  }
+  const order = ["wifi", "poe", "4g", "nvr", "kituri", "alarme"];
+  const sorted = [...order.filter(k => groups[k]), ...Object.keys(groups).filter(k => !order.includes(k))];
+  return sorted.map(cat => {
+    const label = CATEGORY_LABELS[cat] ?? cat.toUpperCase();
+    const lines = groups[cat].map(p => {
+      const stock = p.inStock === false ? " [LIPSĂ STOC]" : "";
+      const promo = p.oldPrice ? ` (era ${p.oldPrice} MDL)` : "";
+      const badge = p.badge ? ` [${p.badge}]` : "";
+      return `[${p.id}] ${p.brand} ${p.name}${badge}${stock} — ${p.specs} — ${p.price} MDL${promo}`;
+    });
+    return `=== ${label} ===\n${lines.join("\n")}`;
+  }).join("\n\n");
+}
+
+function buildSystemPrompt(products: ProductEntry[], lang?: string): string {
+  const catalog = buildCatalog(products);
+  let prompt = SYSTEM_PROMPT_BASE.replace("{CATALOG}", catalog);
+  if (lang === "ru") prompt += "\n\nNOTĂ: Clientul comunică în rusă. Răspunde în rusă.";
+  return prompt;
+}
+
+function getAI() {
+  const apiKey = process.env.GOOGLE_API_KEY;
+  if (!apiKey) throw new Error("GOOGLE_API_KEY not set");
+  return new GoogleGenAI({ apiKey });
+}
+
+type ChatMessage = { role: "user" | "assistant"; content: string };
+
+router.post("/chat", async (req, res) => {
+  try {
+    const { messages = [], lang = "ro", products = [] } = req.body as {
+      messages: ChatMessage[];
+      lang?: string;
+      products?: ProductEntry[];
+    };
+
+    const ai = getAI();
+
+    const history = messages.map((m: ChatMessage) => ({
+      role: m.role === "assistant" ? "model" as const : "user" as const,
+      parts: [{ text: m.content }],
+    }));
+
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+
+    const systemInstruction = buildSystemPrompt(products, lang);
+
+    const stream = await ai.models.generateContentStream({
+      model: "gemini-2.5-flash",
+      config: {
+        systemInstruction,
+        maxOutputTokens: 8192,
+      },
+      contents: history,
+    });
+
+    for await (const chunk of stream) {
+      const text = chunk.text;
+      if (text) {
+        res.write(`data: ${JSON.stringify({ content: text })}\n\n`);
+      }
+    }
+
+    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+    res.end();
+  } catch (err) {
+    res.write(`data: ${JSON.stringify({ error: String(err) })}\n\n`);
+    res.end();
+  }
+});
+
+router.post("/lead-analyze", async (req, res) => {
+  try {
+    const { lead } = req.body as {
+      lead: { name: string; phone: string; message?: string; source?: string };
+    };
+
+    const ai = getAI();
+    const prompt = `Analizează acest lead pentru magazinul Teco.md (sisteme supraveghere Moldova):
+Nume: ${lead.name}
+Telefon: ${lead.phone}
+Mesaj: ${lead.message || "—"}
+Sursă: ${lead.source || "—"}
+
+Răspunde în română în format JSON strict:
+{
+  "score": 1-10,
+  "potential": "mic|mediu|mare",
+  "estimatedBudget": "estimare în MDL",
+  "recommendation": "ce să îi oferi",
+  "whatsappMessage": "mesaj WhatsApp personalizat gata de trimis în română"
+}`;
+
+    const result = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      config: {
+        responseMimeType: "application/json",
+        maxOutputTokens: 8192,
+      },
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    });
+
+    const text = result.text ?? "{}";
+    res.json(JSON.parse(text));
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+});
+
+router.post("/whatsapp-message", async (req, res) => {
+  try {
+    const { lead, context } = req.body as {
+      lead: { name: string; phone: string; message?: string };
+      context?: string;
+    };
+
+    const ai = getAI();
+    const prompt = `Generează un mesaj WhatsApp profesional și prietenos pentru clientul:
+Nume: ${lead.name}
+Mesaj/Cerere: ${lead.message || "interesat de sisteme supraveghere"}
+Context suplimentar: ${context || "—"}
+
+Magazin: Teco.md — sisteme supraveghere, instalare profesională în Moldova
+Telefon: +373 67 200 463
+
+Mesajul trebuie să fie:
+- Scurt (max 5 rânduri)
+- Personalizat cu numele clientului
+- În română
+- Să includă o ofertă sau să ceară detalii
+- Să se termine cu o întrebare pentru a continua dialogul
+- Fără simboluri speciale excesive
+
+Returnează DOAR mesajul, fără explicații.`;
+
+    const result = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      config: { maxOutputTokens: 8192 },
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    });
+
+    res.json({ message: result.text ?? "" });
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+});
+
+router.post("/description", async (req, res) => {
+  try {
+    const { name, specs, brand, price, category } = req.body as {
+      name: string; specs: string; brand: string; price: number; category: string;
+    };
+
+    const ai = getAI();
+    const prompt = `Generează o descriere SEO optimizată pentru produs de la Teco.md:
+Produs: ${name}
+Brand: ${brand}
+Specificații: ${specs}
+Preț: ${price} MDL
+Categorie: ${category}
+
+Cerințe:
+- 2-3 propoziții
+- Menționează specificațiile cheie
+- Orientat spre client moldovean
+- Include cuvinte cheie SEO pentru Moldova
+- În română
+- Fără bullet points, text continuu
+
+Returnează DOAR descrierea produsului.`;
+
+    const result = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      config: { maxOutputTokens: 8192 },
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    });
+
+    res.json({ description: result.text ?? "" });
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+});
+
+router.post("/business-insights", async (req, res) => {
+  try {
+    const { orders, leads, products } = req.body as {
+      orders: unknown[]; leads: unknown[]; products: unknown[];
+    };
+
+    const ai = getAI();
+    const prompt = `Analizează datele de business ale magazinului Teco.md (sisteme supraveghere, Moldova):
+
+Comenzi recente: ${JSON.stringify(orders?.slice(0, 20) ?? [])}
+Lead-uri recente: ${JSON.stringify(leads?.slice(0, 20) ?? [])}
+Produse (top după stoc): ${JSON.stringify(products?.slice(0, 15) ?? [])}
+
+Oferă 3-5 recomandări acționabile în română în format JSON:
+{
+  "summary": "rezumat scurt al stării business-ului",
+  "insights": [
+    {"title": "...", "description": "...", "action": "ce să faci concret"}
+  ],
+  "topOpportunity": "cea mai mare oportunitate de creștere acum"
+}`;
+
+    const result = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      config: {
+        responseMimeType: "application/json",
+        maxOutputTokens: 8192,
+      },
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    });
+
+    const text = result.text ?? "{}";
+    res.json(JSON.parse(text));
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+});
+
+router.post("/blog-post", async (req, res) => {
+  try {
+    const { topic } = req.body as { topic: string };
+    const ai = getAI();
+    const prompt = `Ești un expert SEO și content writer pentru Teco.md — magazin de sisteme de supraveghere din Moldova (camere, NVR, kituri, alarme Ajax).
+
+Scrie un articol de blog complet și optimizat SEO despre: "${topic}"
+
+Returnează STRICT JSON valid (fără markdown, fără \`\`\`), cu structura exactă:
+{
+  "title": "titlu atractiv în română (max 65 caractere)",
+  "titleRu": "titlu în rusă",
+  "slug": "slug-url-fara-diacritice-cu-liniute",
+  "category": "Ghiduri",
+  "categoryRu": "Руководства",
+  "description": "meta description SEO română (150-160 caractere)",
+  "descriptionRu": "meta description rusă",
+  "metaTitle": "meta title română cu keyword (max 65 caractere)",
+  "metaTitleRu": "meta title rusă",
+  "metaDescription": "meta description română (150-160 caractere)",
+  "metaDescriptionRu": "meta description rusă",
+  "keywords": "cuvinte, cheie, separate, prin, virgula",
+  "keywordsRu": "ключевые, слова, через, запятую",
+  "content": "articol complet în română în format Markdown cu headings H2/H3, liste, minim 600 cuvinte, optimizat SEO, include sfaturi practice pentru Moldova",
+  "contentRu": "articol complet în rusă în format Markdown, minim 600 cuvinte"
+}`;
+
+    const result = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      config: {
+        responseMimeType: "application/json",
+        maxOutputTokens: 16384,
+      },
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    });
+
+    const text = result.text ?? "{}";
+    res.json(JSON.parse(text));
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+});
+
+export default router;
