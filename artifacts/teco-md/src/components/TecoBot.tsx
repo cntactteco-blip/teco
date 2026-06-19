@@ -2,6 +2,10 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Bot, X, Send, Loader2, Sparkles, User, ShoppingCart } from "lucide-react";
 import { useLang } from "@/contexts/LangContext";
 import { storeActions, useStore } from "@/lib/store";
+import { useCart } from "@/hooks/useCart";
+
+// Cart accessor
+function getCartActions() { return (window as any).__tecoCart; }
 
 interface Message {
   role: "user" | "assistant";
@@ -37,6 +41,8 @@ export function TecoBot() {
     badge: p.badge, inStock: p.inStock,
     imageUrl: (p as any).imageUrl || (p as any).image_url || "",
   }));
+  const cartAddItem = useCart((s) => s.addItem);
+  const cartOpen = useCart((s) => s.openCart);
   const adminPhone = useStore((s) => s.settings.general?.adminPhone ?? "");
   const phone = (adminPhone || "37367200463").replace(/\D/g, "");
   const [open, setOpen] = useState(false);
@@ -249,7 +255,7 @@ export function TecoBot() {
                                 {p.oldPrice && <span className="text-zinc-400 text-[10px] line-through">{p.oldPrice}</span>}
                               </div>
                               <button
-                                onClick={() => { storeActions.addToCart({ productId: p.id, quantity: 1 }); }}
+                                onClick={() => { cartAddItem({ id: p.id, name: `${p.brand} ${p.name}`, price: p.price, imageUrl: p.imageUrl }); cartOpen(); }}
                                 className="w-full bg-[#FF4F00] text-white text-[11px] font-bold py-1.5 rounded-lg flex items-center justify-center gap-1 hover:opacity-90 active:scale-95 transition-all"
                               >
                                 <ShoppingCart className="w-3 h-3" />
