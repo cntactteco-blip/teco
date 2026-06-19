@@ -277,7 +277,7 @@ export function TecoBot() {
 
             {messages.length >= 2 && (
               <div className="px-3 py-2 flex-shrink-0 bg-white border-t border-zinc-100">
-                
+                <a
                   href={`https://wa.me/${phone}?text=${encodeURIComponent(lang === "ru" ? "Здравствуйте! Хочу поговорить с менеджером." : "Bună ziua! Vreau să vorbesc cu un consultant.")}`}
                   target="_blank"
                   rel="noopener noreferrer"
