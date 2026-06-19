@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useCart } from "@/hooks/useCart";
 import { X, Shield, Phone, User } from "lucide-react";
 import { storeActions } from "@/lib/store";
 import { trackLead } from "@/lib/analytics";
@@ -11,18 +12,20 @@ export function ExitIntentPopup() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const cartItems = useCart((s) => s.items);
 
   const tryShow = useCallback(() => {
+    if (cartItems.length === 0) return;
     const last = localStorage.getItem(STORAGE_KEY);
     if (last && Date.now() - Number(last) < COOLDOWN_MS) return;
     setVisible(true);
-  }, []);
+  }, [cartItems]);
 
   useEffect(() => {
     const onMouseLeave = (e: MouseEvent) => {
       if (e.clientY <= 5) tryShow();
     };
-    const timer = setTimeout(tryShow, 30000);
+    const timer = setTimeout(tryShow, 45000);
     document.addEventListener("mouseleave", onMouseLeave);
     return () => {
       document.removeEventListener("mouseleave", onMouseLeave);
