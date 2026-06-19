@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Bot, X, Send, Loader2, Sparkles, ChevronDown, User } from "lucide-react";
+import { Bot, X, Send, Loader2, Sparkles, User, ShoppingCart } from "lucide-react";
 import { useLang } from "@/contexts/LangContext";
 import { storeActions, useStore } from "@/lib/store";
 
@@ -7,11 +7,12 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   ts: number;
+  products?: number[];
 }
 
 const GREET: Record<string, string> = {
-  ro: "Salut! Sunt **TecoBot**, consultantul AI Teco.md 👋\n\nTe ajut să alegi sistemul de supraveghere perfect pentru tine. Spune-mi:\n- Câte camere ai nevoie?\n- Interior, exterior sau ambele?\n- Ai WiFi sau preferi cablat?",
-  ru: "Привет! Я **TecoBot**, AI-консультант Teco.md 👋\n\nПомогу выбрать идеальную систему видеонаблюдения. Скажите:\n- Сколько камер вам нужно?\n- Внутри, снаружи или оба?\n- Есть WiFi или предпочитаете проводное?",
+  ro: "Salut! Cu ce te pot ajuta azi?",
+  ru: "Привет! Чем могу помочь?",
 };
 
 function renderMarkdown(text: string) {
@@ -21,16 +22,21 @@ function renderMarkdown(text: string) {
     .replace(/\n/g, "<br/>");
 }
 
+function extractProductIds(text: string): number[] {
+  const matches = text.matchAll(/\[(\d+)\]/g);
+  return [...new Set([...matches].map(m => parseInt(m[1])))];
+}
+
 export function TecoBot() {
   const { lang } = useLang();
-  const products = useStore((s) =>
-    s.products.map((p) => ({
-      id: p.id, name: p.name, brand: p.brand,
-      price: p.price, oldPrice: p.oldPrice,
-      specs: p.specs, category: p.category,
-      badge: p.badge, inStock: p.inStock,
-    }))
-  );
+  const allProducts = useStore((s) => s.products);
+  const products = allProducts.map((p) => ({
+    id: p.id, name: p.name, brand: p.brand,
+    price: p.price, oldPrice: p.oldPrice,
+    specs: p.specs, category: p.category,
+    badge: p.badge, inStock: p.inStock,
+    imageUrl: (p as any).imageUrl || (p as any).image_url || "",
+  }));
   const adminPhone = useStore((s) => s.settings.general?.adminPhone ?? "");
   const phone = (adminPhone || "37367200463").replace(/\D/g, "");
   const [open, setOpen] = useState(false);
@@ -43,9 +49,8 @@ export function TecoBot() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
-
-  // Track visual viewport height + offsetTop so panel sits above keyboard on iOS
   const [vpOffset, setVpOffset] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
@@ -56,19 +61,12 @@ export function TecoBot() {
     };
     vv.addEventListener("resize", update);
     vv.addEventListener("scroll", update);
-    return () => {
-      vv.removeEventListener("resize", update);
-      vv.removeEventListener("scroll", update);
-    };
+    return () => { vv.removeEventListener("resize", update); vv.removeEventListener("scroll", update); };
   }, []);
 
-  // Lock body scroll on mobile when chat is open
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    if (open) { document.body.style.overflow = "hidden"; }
+    else { document.body.style.overflow = ""; }
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
@@ -77,23 +75,16 @@ export function TecoBot() {
       setMessages([{ role: "assistant", content: GREET[lang] ?? GREET.ro, ts: Date.now() }]);
       setUnread(0);
     }
-    if (open) {
-      setTimeout(() => inputRef.current?.focus(), 100);
-      setUnread(0);
-    }
+    if (open) { setTimeout(() => inputRef.current?.focus(), 100); setUnread(0); }
   }, [open]);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
   const extractLead = useCallback((text: string) => {
     const match = text.match(/LEAD_CAPTURED:name=([^,\n]+),phone=([^\n]+)/);
     if (match && !leadCaptured) {
-      const name = match[1].trim();
-      const phone = match[2].trim();
       setLeadCaptured(true);
-      storeActions.addLead({ name, phone, notes: "TecoBot AI Chat", source: "tecobot" });
+      storeActions.addLead({ name: match[1].trim(), phone: match[2].trim(), notes: "TecoBot AI Chat", source: "tecobot" });
     }
     return text.replace(/LEAD_CAPTURED:[^\n]*/g, "").trim();
   }, [leadCaptured]);
@@ -102,59 +93,44 @@ export function TecoBot() {
     const text = input.trim();
     if (!text || streaming) return;
     setInput("");
-
     const userMsg: Message = { role: "user", content: text, ts: Date.now() };
     const allMessages = [...messages, userMsg];
     setMessages(allMessages);
     setStreaming(true);
-
     const botMsg: Message = { role: "assistant", content: "", ts: Date.now() };
     setMessages([...allMessages, botMsg]);
-
     abortRef.current = new AbortController();
-
     try {
       const res = await fetch((import.meta.env.VITE_API_URL || "") + "/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: allMessages.filter((m, i) => !(i === 0 && m.role === "assistant")).map((m) => ({ role: m.role, content: m.content })),
-          lang,
-          products,
+          lang, products,
         }),
         signal: abortRef.current.signal,
       });
-
       if (!res.ok || !res.body) throw new Error("Network error");
-
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let accumulated = "";
-
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split("\n");
-
+        const lines = decoder.decode(value, { stream: true }).split("\n");
         for (const line of lines) {
           if (!line.startsWith("data: ")) continue;
           try {
             const data = JSON.parse(line.slice(6));
             if (data.done) break;
-            if (data.error) {
-              accumulated += lang === "ru"
-                ? "\n\n⚠️ Ошибка. Позвоните нам: +373 67 200 463"
-                : "\n\n⚠️ Eroare. Sunați-ne: +373 67 200 463";
-              break;
-            }
+            if (data.error) { accumulated += lang === "ru" ? "\n\n⚠️ Eroare. Sunați: +373 67 200 463" : "\n\n⚠️ Eroare. Sunați-ne: +373 67 200 463"; break; }
             if (data.content) {
               accumulated += data.content;
               const cleaned = extractLead(accumulated);
+              const pids = extractProductIds(cleaned);
               setMessages((prev) => {
                 const updated = [...prev];
-                updated[updated.length - 1] = { ...botMsg, content: cleaned };
+                updated[updated.length - 1] = { ...botMsg, content: cleaned, products: pids };
                 return updated;
               });
             }
@@ -165,10 +141,7 @@ export function TecoBot() {
       if (err instanceof Error && err.name === "AbortError") return;
       setMessages((prev) => {
         const updated = [...prev];
-        const fallback = lang === "ru"
-          ? "Ошибка соединения. Позвоните нам: **+373 67 200 463**"
-          : "Eroare de conexiune. Sunați-ne: **+373 67 200 463**";
-        updated[updated.length - 1] = { ...botMsg, content: fallback };
+        updated[updated.length - 1] = { ...botMsg, content: lang === "ru" ? "Eroare conexiune. Sunați: **+373 67 200 463**" : "Eroare de conexiune. Sunați-ne: **+373 67 200 463**" };
         return updated;
       });
     } finally {
@@ -181,43 +154,30 @@ export function TecoBot() {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
   };
 
+  const cleanContent = (content: string) => content.replace(/\[\d+\]/g, "").trim();
+
   return (
     <>
-      {/* Floating button */}
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label="TecoBot AI"
         className="fixed bottom-28 left-4 md:bottom-6 md:left-6 z-40 flex items-center gap-2 bg-gradient-to-br from-[#FF4F00] to-orange-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 px-3.5 py-2.5 md:px-4 md:py-3"
       >
-        {open ? (
-          <ChevronDown className="w-5 h-5" />
-        ) : (
-          <>
-            <Bot className="w-5 h-5 flex-shrink-0" />
-            <span className="text-sm font-bold hidden sm:inline">TecoBot AI</span>
-            <span className="text-sm font-bold sm:hidden">AI</span>
-            {unread > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">
-                {unread}
-              </span>
-            )}
-          </>
+        <Bot className="w-5 h-5 flex-shrink-0" />
+        <span className="text-sm font-bold hidden sm:inline">TecoBot AI</span>
+        <span className="text-sm font-bold sm:hidden">AI</span>
+        {unread > 0 && (
+          <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">{unread}</span>
         )}
       </button>
 
-      {/* Chat panel */}
       {open && (
         <div
           className="fixed z-50 flex items-end justify-start pointer-events-none md:inset-0 md:items-end md:justify-start"
-          style={{
-            top: vpOffset.top,
-            left: vpOffset.left,
-            width: window.visualViewport ? `${window.visualViewport.width}px` : "100%",
-            height: `${vpHeight}px`,
-          }}
+          style={{ top: vpOffset.top, left: vpOffset.left, width: window.visualViewport ? `${window.visualViewport.width}px` : "100%", height: `${vpHeight}px` }}
         >
-          <div className="pointer-events-auto w-full md:w-[380px] md:ml-6 md:mb-24 bg-white rounded-t-2xl md:rounded-2xl shadow-2xl border border-[#E4E4E7] flex flex-col overflow-hidden"
-            style={{ height: window.innerWidth >= 768 ? "min(600px, calc(100vh - 80px))" : `${vpHeight}px` }}>
+          <div className="pointer-events-auto w-full md:w-[400px] md:ml-6 md:mb-24 bg-white rounded-t-2xl md:rounded-2xl shadow-2xl border border-[#E4E4E7] flex flex-col overflow-hidden"
+            style={{ height: window.innerWidth >= 768 ? "min(640px, calc(100vh - 80px))" : `${vpHeight}px` }}>
 
             {/* Header */}
             <div className="bg-gradient-to-r from-[#FF4F00] to-orange-500 px-4 py-3 flex items-center gap-3 flex-shrink-0">
@@ -231,13 +191,10 @@ export function TecoBot() {
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                  <span className="text-white/80 text-[11px]">
-                    {lang === "ru" ? "Онлайн • Консультант" : "Online • Consultant"}
-                  </span>
+                  <span className="text-white/80 text-[11px]">{lang === "ru" ? "Онлайн • Консультант" : "Online • Consultant"}</span>
                 </div>
               </div>
-              <button onClick={() => setOpen(false)}
-                className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors flex-shrink-0">
+              <button onClick={() => setOpen(false)} className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors flex-shrink-0">
                 <X className="w-4 h-4 text-white" />
               </button>
             </div>
@@ -245,30 +202,65 @@ export function TecoBot() {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#FAFAFA]">
               {messages.map((msg, i) => (
-                <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                  {msg.role === "assistant" && (
-                    <div className="w-7 h-7 rounded-full bg-[#FF4F00] flex items-center justify-center flex-shrink-0 mr-2 mt-0.5">
-                      <Bot className="w-3.5 h-3.5 text-white" />
+                <div key={i} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
+                  <div className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} w-full`}>
+                    {msg.role === "assistant" && (
+                      <div className="w-7 h-7 rounded-full bg-[#FF4F00] flex items-center justify-center flex-shrink-0 mr-2 mt-0.5">
+                        <Bot className="w-3.5 h-3.5 text-white" />
+                      </div>
+                    )}
+                    <div className={`max-w-[82%] px-3 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                      msg.role === "user"
+                        ? "bg-[#FF4F00] text-white rounded-tr-sm"
+                        : "bg-white border border-[#E4E4E7] text-[#09090B] rounded-tl-sm shadow-sm"
+                    }`}>
+                      {msg.role === "assistant" ? (
+                        <span dangerouslySetInnerHTML={{ __html: renderMarkdown(cleanContent(msg.content)) }} />
+                      ) : msg.content}
+                      {msg.role === "assistant" && streaming && i === messages.length - 1 && msg.content === "" && (
+                        <span className="inline-flex gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: "0ms" }} />
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: "150ms" }} />
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: "300ms" }} />
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Product cards */}
+                  {msg.role === "assistant" && msg.products && msg.products.length > 0 && (
+                    <div className="ml-9 mt-2 flex gap-2 overflow-x-auto pb-1 w-full max-w-full scrollbar-hide">
+                      {msg.products.map(pid => {
+                        const p = products.find(x => x.id === pid);
+                        if (!p) return null;
+                        return (
+                          <div key={pid} className="flex-shrink-0 w-44 bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden">
+                            <div className="h-28 bg-zinc-50 flex items-center justify-center overflow-hidden">
+                              {p.imageUrl ? (
+                                <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <Bot className="w-10 h-10 text-zinc-300" />
+                              )}
+                            </div>
+                            <div className="p-2">
+                              <p className="text-[11px] font-semibold text-zinc-800 line-clamp-2 leading-tight mb-1">{p.brand} {p.name}</p>
+                              <div className="flex items-center gap-1 mb-2">
+                                <span className="text-[#FF4F00] font-black text-sm">{p.price} MDL</span>
+                                {p.oldPrice && <span className="text-zinc-400 text-[10px] line-through">{p.oldPrice}</span>}
+                              </div>
+                              <button
+                                onClick={() => { storeActions.addToCart({ productId: p.id, quantity: 1 }); }}
+                                className="w-full bg-[#FF4F00] text-white text-[11px] font-bold py-1.5 rounded-lg flex items-center justify-center gap-1 hover:opacity-90 active:scale-95 transition-all"
+                              >
+                                <ShoppingCart className="w-3 h-3" />
+                                {lang === "ru" ? "В корзину" : "În coș"}
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
-                  <div className={`max-w-[82%] px-3 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                    msg.role === "user"
-                      ? "bg-[#FF4F00] text-white rounded-tr-sm"
-                      : "bg-white border border-[#E4E4E7] text-[#09090B] rounded-tl-sm shadow-sm"
-                  }`}>
-                    {msg.role === "assistant" ? (
-                      <span dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }} />
-                    ) : (
-                      msg.content
-                    )}
-                    {msg.role === "assistant" && streaming && i === messages.length - 1 && msg.content === "" && (
-                      <span className="inline-flex gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: "0ms" }} />
-                        <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: "150ms" }} />
-                        <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: "300ms" }} />
-                      </span>
-                    )}
-                  </div>
                 </div>
               ))}
               {leadCaptured && (
@@ -285,10 +277,9 @@ export function TecoBot() {
             {/* Human fallback */}
             {messages.length >= 2 && (
               <div className="px-3 py-2 flex-shrink-0 bg-white border-t border-zinc-100">
-                <a
+                
                   href={`https://wa.me/${phone}?text=${encodeURIComponent(lang === "ru" ? "Здравствуйте! Хочу поговорить с менеджером." : "Bună ziua! Vreau să vorbesc cu un consultant.")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  target="_blank" rel="noopener noreferrer"
                   className="w-full flex items-center justify-center gap-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-semibold py-2 rounded-xl text-xs transition-all"
                 >
                   <User className="w-3.5 h-3.5" />
@@ -298,7 +289,7 @@ export function TecoBot() {
             )}
 
             {/* Input */}
-            <div className="border-t border-[#E4E4E7] bg-white flex-shrink-0" style={{ padding: "12px", paddingBottom: "max(12px, env(safe-area-inset-bottom))", paddingRight: "max(12px, env(safe-area-inset-right))" }}>
+            <div className="border-t border-[#E4E4E7] bg-white flex-shrink-0" style={{ padding: "12px", paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
               <div className="flex gap-2 items-center">
                 <input
                   ref={inputRef}
@@ -316,16 +307,10 @@ export function TecoBot() {
                   disabled={!input.trim() || streaming}
                   className="w-10 h-10 rounded-xl bg-[#FF4F00] text-white flex items-center justify-center hover:opacity-90 active:scale-95 transition-all disabled:opacity-40 flex-shrink-0"
                 >
-                  {streaming ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
-                  )}
+                  {streaming ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 </button>
               </div>
-              <p className="text-[10px] text-zinc-400 text-center mt-1.5">
-                {lang === "ru" ? "Powered by Gemini AI · Teco.md" : "Powered by Gemini AI · Teco.md"}
-              </p>
+              <p className="text-[10px] text-zinc-400 text-center mt-1.5">Powered by Groq · Teco.md</p>
             </div>
           </div>
         </div>
