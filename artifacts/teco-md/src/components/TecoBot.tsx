@@ -305,7 +305,7 @@ export function TecoBot() {
                   onFocus={() => setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 100)}
                   placeholder={lang === "ru" ? "Напишите вопрос..." : "Scrie întrebarea ta..."}
                   disabled={streaming}
-                  className="flex-1 bg-[#F4F4F5] rounded-xl px-3.5 py-2.5 text-sm text-[#09090B] placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#FF4F00]/20 focus:bg-white transition-all disabled:opacity-50"
+                  className="flex-1 bg-[#F4F4F5] rounded-xl px-3.5 py-2.5 text-base text-[#09090B] placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#FF4F00]/20 focus:bg-white transition-all disabled:opacity-50"
                 />
                 <button
                   onClick={send}
