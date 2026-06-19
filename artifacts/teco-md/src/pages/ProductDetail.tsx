@@ -575,7 +575,7 @@ export default function ProductDetail() {
           {/* ── IMAGE ────────────────────────────────────────────── */}
           <div className="md:col-span-6 lg:col-span-7">
             {/* Main carousel */}
-            <div className="relative bg-zinc-50 md:bg-zinc-900 md:rounded-2xl overflow-hidden h-56 md:h-auto md:aspect-[4/3] group">
+            <div className="relative bg-zinc-50 md:bg-zinc-900 md:rounded-2xl overflow-hidden h-80 md:h-auto md:aspect-[4/3] group">
               {/* Scrollable strip */}
               <div
                 ref={carouselRef}
