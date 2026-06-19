@@ -131,7 +131,7 @@ router.post("/chat", async (req, res) => {
     ];
 
     const stream = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",
+      model: "llama-3.3-70b-versatile",
       messages: groqMessages,
       max_tokens: 1024,
       stream: true,
@@ -175,7 +175,7 @@ Răspunde în română în format JSON strict (doar JSON, fără alte texte):
 }`;
 
     const result = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",
+      model: "llama-3.3-70b-versatile",
       messages: [{ role: "user", content: prompt }],
       max_tokens: 1024,
     });
@@ -214,7 +214,7 @@ Mesajul trebuie să fie:
 Returnează DOAR mesajul, fără explicații.`;
 
     const result = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",
+      model: "llama-3.3-70b-versatile",
       messages: [{ role: "user", content: prompt }],
       max_tokens: 512,
     });
@@ -250,7 +250,7 @@ Cerințe:
 Returnează DOAR descrierea produsului.`;
 
     const result = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",
+      model: "llama-3.3-70b-versatile",
       messages: [{ role: "user", content: prompt }],
       max_tokens: 512,
     });
@@ -284,7 +284,7 @@ Oferă 3-5 recomandări acționabile în română în format JSON strict (doar J
 }`;
 
     const result = await groq.chat.completions.create({
-      model: "llama-3.1-8b-instant",
+      model: "llama-3.3-70b-versatile",
       messages: [{ role: "user", content: prompt }],
       max_tokens: 2048,
     });
