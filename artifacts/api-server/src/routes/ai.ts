@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { GoogleGenAI } from "@google/genai";
+import Groq from "groq-sdk";
 
 const router = Router();
 
@@ -22,7 +22,7 @@ NOTĂ DESPRE TON (citește cu atenție, e important):
 
 NOTĂ DESPRE LUNGIME (strict, nu negociabil):
 - Răspunsul tău normal are 1-2 propoziții SCURTE. Doar dacă recomanzi un produs concret cu preț poți avea 3.
-- NU explici termeni tehnici în paranteze (PoE, NVR etc.) decât dacă clientul întreabă explicit ce înseamnă. Dacă ai nevoie să alegi între opțiuni tehnice, întrebi simplu, în termeni de zi cu zi ("vrei pe cablu sau pe WiFi?"), nu enumeri avantaje tehnice.
+- NU explici termeni tehnici în paranteze (PoE, NVR etc.) decât dacă clientul întreabă explicit ce înseamnă.
 - Niciun răspuns nu are mai mult de 2 idei. Dacă simți nevoia să explici mult, oprește-te și întreabă mai simplu.
 - Gândește-te că răspunsul tău se citește pe un telefon mic, în mers. Lungimea ucide conversia.
 
@@ -99,9 +99,9 @@ function buildSystemPrompt(products: ProductEntry[], lang?: string): string {
 }
 
 function getAI() {
-  const apiKey = process.env.GOOGLE_API_KEY;
-  if (!apiKey) throw new Error("GOOGLE_API_KEY not set");
-  return new GoogleGenAI({ apiKey });
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) throw new Error("GROQ_API_KEY not set");
+  return new Groq({ apiKey });
 }
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
@@ -114,31 +114,31 @@ router.post("/chat", async (req, res) => {
       products?: ProductEntry[];
     };
 
-    const ai = getAI();
-
-    const history = messages.map((m: ChatMessage) => ({
-      role: m.role === "assistant" ? "model" as const : "user" as const,
-      parts: [{ text: m.content }],
-    }));
+    const groq = getAI();
+    const systemPrompt = buildSystemPrompt(products, lang);
 
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
     res.setHeader("Access-Control-Allow-Origin", "*");
 
-    const systemInstruction = buildSystemPrompt(products, lang);
+    const groqMessages = [
+      { role: "system" as const, content: systemPrompt },
+      ...messages.map((m: ChatMessage) => ({
+        role: m.role as "user" | "assistant",
+        content: m.content,
+      })),
+    ];
 
-    const stream = await ai.models.generateContentStream({
-      model: "gemini-2.5-flash",
-      config: {
-        systemInstruction,
-        maxOutputTokens: 8192,
-      },
-      contents: history,
+    const stream = await groq.chat.completions.create({
+      model: "llama-3.1-8b-instant",
+      messages: groqMessages,
+      max_tokens: 1024,
+      stream: true,
     });
 
     for await (const chunk of stream) {
-      const text = chunk.text;
+      const text = chunk.choices[0]?.delta?.content || "";
       if (text) {
         res.write(`data: ${JSON.stringify({ content: text })}\n\n`);
       }
@@ -158,14 +158,14 @@ router.post("/lead-analyze", async (req, res) => {
       lead: { name: string; phone: string; message?: string; source?: string };
     };
 
-    const ai = getAI();
+    const groq = getAI();
     const prompt = `Analizează acest lead pentru magazinul Teco.md (sisteme supraveghere Moldova):
 Nume: ${lead.name}
 Telefon: ${lead.phone}
 Mesaj: ${lead.message || "—"}
 Sursă: ${lead.source || "—"}
 
-Răspunde în română în format JSON strict:
+Răspunde în română în format JSON strict (doar JSON, fără alte texte):
 {
   "score": 1-10,
   "potential": "mic|mediu|mare",
@@ -174,17 +174,15 @@ Răspunde în română în format JSON strict:
   "whatsappMessage": "mesaj WhatsApp personalizat gata de trimis în română"
 }`;
 
-    const result = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      config: {
-        responseMimeType: "application/json",
-        maxOutputTokens: 8192,
-      },
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    const result = await groq.chat.completions.create({
+      model: "llama-3.1-8b-instant",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 1024,
     });
 
-    const text = result.text ?? "{}";
-    res.json(JSON.parse(text));
+    const text = result.choices[0]?.message?.content ?? "{}";
+    const clean = text.replace(/```json|```/g, "").trim();
+    res.json(JSON.parse(clean));
   } catch (err) {
     res.status(500).json({ error: String(err) });
   }
@@ -197,7 +195,7 @@ router.post("/whatsapp-message", async (req, res) => {
       context?: string;
     };
 
-    const ai = getAI();
+    const groq = getAI();
     const prompt = `Generează un mesaj WhatsApp profesional și prietenos pentru clientul:
 Nume: ${lead.name}
 Mesaj/Cerere: ${lead.message || "interesat de sisteme supraveghere"}
@@ -212,17 +210,16 @@ Mesajul trebuie să fie:
 - În română
 - Să includă o ofertă sau să ceară detalii
 - Să se termine cu o întrebare pentru a continua dialogul
-- Fără simboluri speciale excesive
 
 Returnează DOAR mesajul, fără explicații.`;
 
-    const result = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      config: { maxOutputTokens: 8192 },
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    const result = await groq.chat.completions.create({
+      model: "llama-3.1-8b-instant",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 512,
     });
 
-    res.json({ message: result.text ?? "" });
+    res.json({ message: result.choices[0]?.message?.content ?? "" });
   } catch (err) {
     res.status(500).json({ error: String(err) });
   }
@@ -234,7 +231,7 @@ router.post("/description", async (req, res) => {
       name: string; specs: string; brand: string; price: number; category: string;
     };
 
-    const ai = getAI();
+    const groq = getAI();
     const prompt = `Generează o descriere SEO optimizată pentru produs de la Teco.md:
 Produs: ${name}
 Brand: ${brand}
@@ -252,13 +249,13 @@ Cerințe:
 
 Returnează DOAR descrierea produsului.`;
 
-    const result = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      config: { maxOutputTokens: 8192 },
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    const result = await groq.chat.completions.create({
+      model: "llama-3.1-8b-instant",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 512,
     });
 
-    res.json({ description: result.text ?? "" });
+    res.json({ description: result.choices[0]?.message?.content ?? "" });
   } catch (err) {
     res.status(500).json({ error: String(err) });
   }
@@ -270,14 +267,14 @@ router.post("/business-insights", async (req, res) => {
       orders: unknown[]; leads: unknown[]; products: unknown[];
     };
 
-    const ai = getAI();
+    const groq = getAI();
     const prompt = `Analizează datele de business ale magazinului Teco.md (sisteme supraveghere, Moldova):
 
 Comenzi recente: ${JSON.stringify(orders?.slice(0, 20) ?? [])}
 Lead-uri recente: ${JSON.stringify(leads?.slice(0, 20) ?? [])}
 Produse (top după stoc): ${JSON.stringify(products?.slice(0, 15) ?? [])}
 
-Oferă 3-5 recomandări acționabile în română în format JSON:
+Oferă 3-5 recomandări acționabile în română în format JSON strict (doar JSON):
 {
   "summary": "rezumat scurt al stării business-ului",
   "insights": [
@@ -286,17 +283,15 @@ Oferă 3-5 recomandări acționabile în română în format JSON:
   "topOpportunity": "cea mai mare oportunitate de creștere acum"
 }`;
 
-    const result = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      config: {
-        responseMimeType: "application/json",
-        maxOutputTokens: 8192,
-      },
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    const result = await groq.chat.completions.create({
+      model: "llama-3.1-8b-instant",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 2048,
     });
 
-    const text = result.text ?? "{}";
-    res.json(JSON.parse(text));
+    const text = result.choices[0]?.message?.content ?? "{}";
+    const clean = text.replace(/```json|```/g, "").trim();
+    res.json(JSON.parse(clean));
   } catch (err) {
     res.status(500).json({ error: String(err) });
   }
@@ -305,7 +300,7 @@ Oferă 3-5 recomandări acționabile în română în format JSON:
 router.post("/blog-post", async (req, res) => {
   try {
     const { topic } = req.body as { topic: string };
-    const ai = getAI();
+    const groq = getAI();
     const prompt = `Ești un expert SEO și content writer pentru Teco.md — magazin de sisteme de supraveghere din Moldova (camere, NVR, kituri, alarme Ajax).
 
 Scrie un articol de blog complet și optimizat SEO despre: "${topic}"
@@ -329,17 +324,15 @@ Returnează STRICT JSON valid (fără markdown, fără \`\`\`), cu structura exa
   "contentRu": "articol complet în rusă în format Markdown, minim 600 cuvinte"
 }`;
 
-    const result = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      config: {
-        responseMimeType: "application/json",
-        maxOutputTokens: 16384,
-      },
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
+    const result = await groq.chat.completions.create({
+      model: "llama3-70b-8192",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 8192,
     });
 
-    const text = result.text ?? "{}";
-    res.json(JSON.parse(text));
+    const text = result.choices[0]?.message?.content ?? "{}";
+    const clean = text.replace(/```json|```/g, "").trim();
+    res.json(JSON.parse(clean));
   } catch (err) {
     res.status(500).json({ error: String(err) });
   }
