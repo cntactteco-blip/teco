@@ -325,7 +325,7 @@ Returnează STRICT JSON valid (fără markdown, fără \`\`\`), cu structura exa
 }`;
 
     const result = await groq.chat.completions.create({
-      model: "llama3-70b-8192",
+      model: "llama-3.3-70b-versatile",
       messages: [{ role: "user", content: prompt }],
       max_tokens: 8192,
     });

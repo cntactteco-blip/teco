@@ -44,13 +44,14 @@ export function TecoBot() {
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  // Track visual viewport height so the panel shrinks above the keyboard on mobile
+  // Track visual viewport height + offsetTop so panel sits above keyboard on iOS
+  const [vpOffset, setVpOffset] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
     const update = () => {
       setVpHeight(vv.height);
-      // Scroll last message into view after keyboard open/close
+      setVpOffset({ top: vv.offsetTop, left: vv.offsetLeft });
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
     };
     vv.addEventListener("resize", update);
@@ -207,9 +208,11 @@ export function TecoBot() {
       {/* Chat panel */}
       {open && (
         <div
-          className="fixed left-0 right-0 z-50 flex items-end justify-start pointer-events-none md:inset-0 md:items-end md:justify-start"
+          className="fixed z-50 flex items-end justify-start pointer-events-none md:inset-0 md:items-end md:justify-start"
           style={{
-            top: window.visualViewport ? window.visualViewport.offsetTop : 0,
+            top: vpOffset.top,
+            left: vpOffset.left,
+            width: window.visualViewport ? `${window.visualViewport.width}px` : "100%",
             height: `${vpHeight}px`,
           }}
         >
@@ -295,7 +298,7 @@ export function TecoBot() {
             )}
 
             {/* Input */}
-            <div className="p-3 border-t border-[#E4E4E7] bg-white flex-shrink-0" style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
+            <div className="border-t border-[#E4E4E7] bg-white flex-shrink-0" style={{ padding: "12px", paddingBottom: "max(12px, env(safe-area-inset-bottom))", paddingRight: "max(12px, env(safe-area-inset-right))" }}>
               <div className="flex gap-2 items-center">
                 <input
                   ref={inputRef}
@@ -305,7 +308,8 @@ export function TecoBot() {
                   onFocus={() => setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 100)}
                   placeholder={lang === "ru" ? "Напишите вопрос..." : "Scrie întrebarea ta..."}
                   disabled={streaming}
-                  className="flex-1 bg-[#F4F4F5] rounded-xl px-3.5 py-2.5 text-base text-[#09090B] placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#FF4F00]/20 focus:bg-white transition-all disabled:opacity-50"
+                  style={{ fontSize: "16px" }}
+                  className="flex-1 min-w-0 bg-[#F4F4F5] rounded-xl px-3.5 py-2.5 text-[#09090B] placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#FF4F00]/20 focus:bg-white transition-all disabled:opacity-50"
                 />
                 <button
                   onClick={send}
