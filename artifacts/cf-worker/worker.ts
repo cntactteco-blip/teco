@@ -33,7 +33,7 @@ export default {
       ];
 
       const stream = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
+        model: "openai/gpt-oss-120b",
         messages: groqMessages,
         max_tokens: 1024,
         stream: true,
@@ -77,7 +77,7 @@ export default {
     if (url.pathname === "/api/ai/lead-analyze" && request.method === "POST") {
       const { lead } = await request.json() as any;
       const result = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
+        model: "openai/gpt-oss-120b",
         messages: [{ role: "user", content: buildLeadPrompt(lead) }],
         max_tokens: 1024,
       });
@@ -89,7 +89,7 @@ export default {
     if (url.pathname === "/api/ai/whatsapp-message" && request.method === "POST") {
       const { lead, context } = await request.json() as any;
       const result = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
+        model: "openai/gpt-oss-120b",
         messages: [{ role: "user", content: buildWhatsappPrompt(lead, context) }],
         max_tokens: 512,
       });
@@ -100,7 +100,7 @@ export default {
     if (url.pathname === "/api/ai/description" && request.method === "POST") {
       const body = await request.json() as any;
       const result = await groq.chat.completions.create({
-        model: "llama-3.3-70b-versatile",
+        model: "openai/gpt-oss-120b",
         messages: [{ role: "user", content: buildDescriptionPrompt(body) }],
         max_tokens: 512,
       });
