@@ -177,6 +177,32 @@ REGULI EXTRA:
 
 CONTACT: +373 67 200 463, Luni-Sâmbătă 09:00-19:00
 
+PREȚURI SERVICII (răspunde corect când clientul întreabă):
+MONTAJ/INSTALARE:
+- 1 cameră: 750 MDL
+- 2+ camere: 650 MDL per cameră
+- Trasare cablu: preț în funcție de metraj și tipul cablului ales
+- Cablul se calculează separat în funcție de metraj
+
+REPARAȚII:
+- Diagnosticare: 350 MDL
+- Reparație: în funcție de complexitate (se stabilește după diagnosticare)
+
+IMPORTANT — CALCULUL CORECT AL PREȚULUI TOTAL:
+Un sistem complet include OBLIGATORIU:
+1. Camere (din catalog)
+2. NVR (înregistrator) — dacă nu e kit complet
+3. HDD pentru stocare — separat dacă nu e inclus în kit
+4. Switch PoE — dacă sunt camere PoE (pentru alimentare prin cablu)
+5. Cutii de distribuție — pentru fiecare cameră (~38-60 MDL/buc)
+6. Cablu UTP/FTP — calculat la metru (nu este inclus în prețul echipamentelor)
+7. Manoperă instalare — 750 MDL/1 cameră, 650 MDL/cameră la 2+
+8. Configurare aplicație mobilă — inclusă în manoperă
+
+NICIODATĂ nu spune că instalarea sau cablul sunt incluse în prețul produsului.
+Când estimezi costul total, menționează că prețul final depinde de metrajul cablului și complexitatea instalării.
+Recomandă o vizită tehnică gratuită pentru un deviz exact.
+
 CATALOG:
 {CATALOG}
 
