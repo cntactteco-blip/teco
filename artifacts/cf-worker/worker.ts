@@ -108,6 +108,61 @@ export default {
       return new Response(JSON.stringify({ description: desc }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    if (url.pathname === "/api/ai/business-insights" && request.method === "POST") {
+      try {
+        const { orders, leads, products } = await request.json() as any;
+        const ordersShort = (orders ?? []).slice(0,5).map((o:any) => ({ id: o.id, total: o.total, status: o.status }));
+        const leadsShort = (leads ?? []).slice(0,5).map((l:any) => ({ name: l.name, phone: l.phone, status: l.status }));
+        const productsShort = (products ?? []).slice(0,5).map((p:any) => ({ name: p.name, price: p.price }));
+        const prompt = `Esti consultant Teco.md. Analizeaza datele si raspunde STRICT JSON fara markdown:\nComenzi: ${JSON.stringify(ordersShort)}\nLead-uri: ${JSON.stringify(leadsShort)}\nProduse: ${JSON.stringify(productsShort)}\n{"summary":"...","topProducts":["..."],"recommendations":["..."],"leadInsights":"...","revenue":"..."}`;
+        const result = await groq.chat.completions.create({ model: "openai/gpt-oss-120b", messages: [{ role: "user", content: prompt }], max_tokens: 2048 });
+        const text = result.choices[0]?.message?.content ?? "{}";
+        const clean = text.replace(/```json|```/g, "").trim();
+        return new Response(clean, { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      } catch(e:any) {
+        return new Response(JSON.stringify({error: String(e)}), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+    if (url.pathname === "/api/ai/import-products" && request.method === "POST") {
+      try {
+        const { csvData, usdRate, markup, fileName } = await request.json() as any;
+        const rate = parseFloat(usdRate) || 17.8;
+        const mkp = parseFloat(markup) || 0;
+        const prompt = `Ești expert în import date din price list-uri de camere supraveghere.
+Analizează acest CSV/date și extrage TOATE produsele valide.
+Fișier: ${fileName}
+Curs USD/MDL: ${rate}
+Date:
+${String(csvData).slice(0, 6000)}
+
+REGULI:
+- Identifică automat coloanele (model, SKU, denumire, preț USD, preț MDL, RRP)
+- Dacă prețul e în USD convertește: pret_mdl = pret_usd * ${rate}
+- Prețul de vânzare (price) = RRP dacă există, altfel pret_mdl * (1 + ${mkp}/100)
+- oldPrice = prețul dealer convertit în MDL (prețul de cost)
+- Detectează brandul: IMOU, Dahua, Hikvision, UNV, Uniview, Reolink etc.
+- Categorii: Camere IP, NVR, DVR, PTZ, Dome, Bullet, Kituri, Accesorii, Switch PoE
+- specs: rezoluție + tip + caracteristici cheie (max 80 chars)
+- description: 2 propoziții SEO română pentru piața Moldova
+- Ignoră rândurile fără preț sau denumire
+
+Returnează DOAR array JSON valid, fără markdown:
+[{"name":"...","model":"...","brand":"...","price":999,"oldPrice":799,"category":"Camere IP","specs":"4MP, exterior, IR 30m","description":"...","inStock":true}]`;
+
+        const result = await groq.chat.completions.create({
+          model: "openai/gpt-oss-120b",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 6000,
+        });
+        const text = result.choices[0]?.message?.content ?? "[]";
+        const clean = text.replace(/```json|```/g, "").trim();
+        const match = clean.match(/\[[\s\S]*\]/);
+        const json = match ? match[0] : clean;
+        return new Response(json, { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      } catch(e: any) {
+        return new Response(JSON.stringify({ error: String(e) }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
     if (url.pathname === "/api/ai/blog-image" && request.method === "POST") {
       const { title } = await request.json() as any;
       const prompt = `modern 2024 IP security camera dome or bullet style, installed on contemporary building facade, night city lights bokeh background, photorealistic, sharp focus, professional product photography, 4K quality, no text, no watermark`;
