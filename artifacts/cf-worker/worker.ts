@@ -67,7 +67,7 @@ export default {
       const result = await groq.chat.completions.create({
         model: "openai/gpt-oss-120b",
         messages: [{ role: "user", content: buildBlogPrompt(topic) }],
-        max_tokens: 4096,
+        max_tokens: 6000,
       });
       const text = result.choices[0]?.message?.content ?? "{}";
       const clean = text.replace(/```json|```/g, "").trim();
@@ -108,6 +108,19 @@ export default {
       return new Response(JSON.stringify({ description: desc }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    if (url.pathname === "/api/ai/blog-image" && request.method === "POST") {
+      const { title } = await request.json() as any;
+      const prompt = `modern 2024 IP security camera dome or bullet style, installed on contemporary building facade, night city lights bokeh background, photorealistic, sharp focus, professional product photography, 4K quality, no text, no watermark`;
+      const response = await (env as any).AI.run("@cf/stabilityai/stable-diffusion-xl-base-1.0", { prompt });
+      const buffer = await response.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      let binary = "";
+      for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+      const base64 = btoa(binary);
+      return new Response(JSON.stringify({ imageUrl: "data:image/png;base64," + base64 }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
     return new Response("Not found", { status: 404, headers: corsHeaders });
   },
 };
@@ -130,7 +143,7 @@ function buildCatalog(products: any[]): string {
 }
 
 function buildBlogPrompt(topic: string): string {
-  return `Ești un expert SEO și content writer pentru Teco.md — magazin de sisteme de supraveghere din Moldova.\n\nScrie un articol de blog complet și optimizat SEO despre: "${topic}"\n\nReturnează STRICT JSON valid (fără markdown, fără \`\`\`), cu structura exactă:\n{\n  "title": "titlu atractiv în română (max 65 caractere)",\n  "titleRu": "titlu în rusă",\n  "slug": "slug-url-fara-diacritice-cu-liniute",\n  "category": "Ghiduri",\n  "categoryRu": "Руководства",\n  "description": "meta description SEO română (150-160 caractere)",\n  "descriptionRu": "meta description rusă",\n  "metaTitle": "meta title română",\n  "metaTitleRu": "meta title rusă",\n  "metaDescription": "meta description română",\n  "metaDescriptionRu": "meta description rusă",\n  "keywords": "cuvinte, cheie",\n  "keywordsRu": "ключевые, слова",\n  "content": "articol complet în română în format Markdown, minim 300 cuvinte",\n  "contentRu": "articol complet în rusă în format Markdown, minim 300 cuvinte"\n}`;
+  return `Ești un expert SEO și content writer pentru Teco.md — magazin de sisteme de supraveghere din Moldova.\n\nScrie un articol de blog complet și optimizat SEO despre: "${topic}"\n\nReturnează STRICT JSON valid (fără markdown, fără \`\`\`), cu structura exactă:\n{\n  "title": "titlu atractiv în română (max 65 caractere)",\n  "titleRu": "titlu în rusă",\n  "slug": "slug-url-fara-diacritice-cu-liniute",\n  "category": "Ghiduri",\n  "categoryRu": "Руководства",\n  "description": "meta description SEO română (150-160 caractere)",\n  "descriptionRu": "meta description rusă",\n  "metaTitle": "meta title română",\n  "metaTitleRu": "meta title rusă",\n  "metaDescription": "meta description română",\n  "metaDescriptionRu": "meta description rusă",\n  "keywords": "cuvinte, cheie",\n  "keywordsRu": "ключевые, слова",\n  "content": "articol complet în română în format Markdown, minim 200 cuvinte",\n  "contentRu": "articol complet în rusă în format Markdown, minim 200 cuvinte"\n}`;
 }
 
 function buildLeadPrompt(lead: any): string {

@@ -1368,7 +1368,7 @@ function BlogTab({ posts }: { posts: BlogPost[] }) {
         slug: data.slug ?? "", title: data.title ?? "", titleRu: data.titleRu ?? "",
         description: data.description ?? "", descriptionRu: data.descriptionRu ?? "",
         content: data.content ?? "", contentRu: data.contentRu ?? "",
-        imageUrl: `https://image.pollinations.ai/prompt/${encodeURIComponent((data.title ?? aiTopic) + ", CCTV security camera mounted on wall exterior, real photo, professional, daytime, photorealistic, high quality")}?width=1200&height=630&nologo=true&model=flux`, category: data.category ?? "Ghiduri", categoryRu: data.categoryRu ?? "Руководства",
+        imageUrl: `https://source.unsplash.com/1200x630/?security+camera+surveillance+cctv+modern&sig=${Date.now()}`, category: data.category ?? "Ghiduri", categoryRu: data.categoryRu ?? "Руководства",
         metaTitle: data.metaTitle ?? "", metaTitleRu: data.metaTitleRu ?? "",
         metaDescription: data.metaDescription ?? "", metaDescriptionRu: data.metaDescriptionRu ?? "",
         keywords: data.keywords ?? "", keywordsRu: data.keywordsRu ?? "",
