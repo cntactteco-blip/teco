@@ -2179,9 +2179,9 @@ function ImportTab() {
   const [logs, setLogs] = React.useState<string[]>([]);
   const [progress, setProgress] = React.useState(0);
   const [imported, setImported] = React.useState(0);
-  const API = (import.meta as any).env?.VITE_API_URL || "";
-  const SUPA_URL = (import.meta as any).env?.VITE_SUPABASE_URL || "";
-  const SUPA_KEY = (import.meta as any).env?.VITE_SUPABASE_PUBLISHABLE_KEY || "";
+  const API = import.meta.env.VITE_API_URL || "";
+  const SUPA_URL = import.meta.env.VITE_SUPABASE_URL || "";
+  const SUPA_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
 
   const addLog = (msg: string) => setLogs(prev => [...prev, msg]);
 
