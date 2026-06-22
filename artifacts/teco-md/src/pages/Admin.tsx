@@ -1368,7 +1368,7 @@ function BlogTab({ posts }: { posts: BlogPost[] }) {
         slug: data.slug ?? "", title: data.title ?? "", titleRu: data.titleRu ?? "",
         description: data.description ?? "", descriptionRu: data.descriptionRu ?? "",
         content: data.content ?? "", contentRu: data.contentRu ?? "",
-        imageUrl: "", category: data.category ?? "Ghiduri", categoryRu: data.categoryRu ?? "Руководства",
+        imageUrl: `https://image.pollinations.ai/prompt/${encodeURIComponent((data.title ?? aiTopic) + " security camera surveillance system professional")}?width=1200&height=630&nologo=true`, category: data.category ?? "Ghiduri", categoryRu: data.categoryRu ?? "Руководства",
         metaTitle: data.metaTitle ?? "", metaTitleRu: data.metaTitleRu ?? "",
         metaDescription: data.metaDescription ?? "", metaDescriptionRu: data.metaDescriptionRu ?? "",
         keywords: data.keywords ?? "", keywordsRu: data.keywordsRu ?? "",

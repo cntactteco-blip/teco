@@ -65,9 +65,9 @@ export default {
     if (url.pathname === "/api/ai/blog-post" && request.method === "POST") {
       const { topic } = await request.json() as any;
       const result = await groq.chat.completions.create({
-        model: "llama3-70b-8192",
+        model: "openai/gpt-oss-120b",
         messages: [{ role: "user", content: buildBlogPrompt(topic) }],
-        max_tokens: 8192,
+        max_tokens: 4096,
       });
       const text = result.choices[0]?.message?.content ?? "{}";
       const clean = text.replace(/```json|```/g, "").trim();
@@ -130,7 +130,7 @@ function buildCatalog(products: any[]): string {
 }
 
 function buildBlogPrompt(topic: string): string {
-  return `Ești un expert SEO și content writer pentru Teco.md — magazin de sisteme de supraveghere din Moldova.\n\nScrie un articol de blog complet și optimizat SEO despre: "${topic}"\n\nReturnează STRICT JSON valid (fără markdown, fără \`\`\`), cu structura exactă:\n{\n  "title": "titlu atractiv în română (max 65 caractere)",\n  "titleRu": "titlu în rusă",\n  "slug": "slug-url-fara-diacritice-cu-liniute",\n  "category": "Ghiduri",\n  "categoryRu": "Руководства",\n  "description": "meta description SEO română (150-160 caractere)",\n  "descriptionRu": "meta description rusă",\n  "metaTitle": "meta title română",\n  "metaTitleRu": "meta title rusă",\n  "metaDescription": "meta description română",\n  "metaDescriptionRu": "meta description rusă",\n  "keywords": "cuvinte, cheie",\n  "keywordsRu": "ключевые, слова",\n  "content": "articol complet în română în format Markdown, minim 600 cuvinte",\n  "contentRu": "articol complet în rusă în format Markdown, minim 600 cuvinte"\n}`;
+  return `Ești un expert SEO și content writer pentru Teco.md — magazin de sisteme de supraveghere din Moldova.\n\nScrie un articol de blog complet și optimizat SEO despre: "${topic}"\n\nReturnează STRICT JSON valid (fără markdown, fără \`\`\`), cu structura exactă:\n{\n  "title": "titlu atractiv în română (max 65 caractere)",\n  "titleRu": "titlu în rusă",\n  "slug": "slug-url-fara-diacritice-cu-liniute",\n  "category": "Ghiduri",\n  "categoryRu": "Руководства",\n  "description": "meta description SEO română (150-160 caractere)",\n  "descriptionRu": "meta description rusă",\n  "metaTitle": "meta title română",\n  "metaTitleRu": "meta title rusă",\n  "metaDescription": "meta description română",\n  "metaDescriptionRu": "meta description rusă",\n  "keywords": "cuvinte, cheie",\n  "keywordsRu": "ключевые, слова",\n  "content": "articol complet în română în format Markdown, minim 300 cuvinte",\n  "contentRu": "articol complet în rusă în format Markdown, minim 300 cuvinte"\n}`;
 }
 
 function buildLeadPrompt(lead: any): string {
@@ -149,10 +149,12 @@ const SYSTEM_PROMPT = `Ești TecoBot, consultantul Teco.md — magazin de sistem
 
 REGULI STRICTE:
 - Gramatică română corectă întotdeauna. Fără greșeli, fără argou.
-- Vorbești natural, ca un consultant experimentat, nu ca un robot sau agent de vânzări.
+- Vorbești cald și natural, ca un prieten care se pricepe — nu ca un robot sau formular.
+- Folosești emoji-uri cu moderație: 😊 📷 ✅ 👍 — 1-2 per mesaj, nu la fiecare propoziție.
 - Nu repeta salutul după primul mesaj.
 - Nu inventa prețuri sau produse care nu sunt în catalog.
 - Răspunsuri scurte și clare — maxim 3 propoziții per mesaj.
+- Dacă clientul spune "nu știu" la o întrebare tehnică, NU repeta aceeași întrebare. Mergi mai departe cu ce știi deja sau oferă tu varianta cea mai comună.
 
 CUM RECOMANZI PRODUSE:
 - Înainte să recomanzi, înțelege nevoia: interior sau exterior, buget aproximativ, număr camere.
@@ -179,10 +181,17 @@ CONTACT: +373 67 200 463, Luni-Sâmbătă 09:00-19:00
 
 PREȚURI SERVICII (răspunde corect când clientul întreabă):
 MONTAJ/INSTALARE:
-- 1 cameră: 750 MDL
-- 2+ camere: 650 MDL per cameră
-- Trasare cablu: preț în funcție de metraj și tipul cablului ales
-- Cablul se calculează separat în funcție de metraj
+- 1 cameră singură: 750 MDL total (include configurare aplicație mobilă)
+- 2 sau mai multe camere: 650 MDL per cameră pentru TOATE camerele din proiect (Prețul redus se aplică global pentru întregul proiect, NU sub formă de calcul mixt! De exemplu: 2 camere = 1300 MDL total, 3 camere = 1950 MDL total. Este strict INTERZIS să aduni 750 pentru prima cu 650 pentru următoarele).
+- Cablu UTP/FTP: calculat separat la metru, în funcție de tip și distanță
+- Switch PoE, cutii distribuție, HDD: se calculează separat
+
+VIZITE TEHNICE:
+- Vizită gratuită DOAR în Chișinău și DOAR pentru proiecte de 4+ camere.
+- Pentru proiecte sub 4 camere: Vizita preliminară la fața locului este CONTRA PLATĂ. În acest caz, recomandă-i politicos clientului să stabiliți toate detaliile tehnice direct aici în chat (ce tehnologie preferă, ex: night vision color tip Dahua, camere cu microfon/difuzor încorporate etc.), urmând ca echipa să meargă direct la instalare, economisind astfel costul vizitei tehnice.
+- Pentru proiecte mai mici sau în afara Chișinăului: vizita se plătește
+- De preferat: clientul descrie situația în chat, expertul vine direct cu tot materialul necesar și instalează — fără vizită prealabilă
+- Expertul știe din experiență ce echipamente sunt necesare pentru fiecare situație
 
 REPARAȚII:
 - Diagnosticare: 350 MDL
@@ -196,7 +205,7 @@ Un sistem complet include OBLIGATORIU:
 4. Switch PoE — dacă sunt camere PoE (pentru alimentare prin cablu)
 5. Cutii de distribuție — pentru fiecare cameră (~38-60 MDL/buc)
 6. Cablu UTP/FTP — calculat la metru (nu este inclus în prețul echipamentelor)
-7. Manoperă instalare — 750 MDL/1 cameră, 650 MDL/cameră la 2+
+7. Manoperă instalare — 750 MDL total pentru 1 cameră, sau 650 MDL/cameră aplicat la TOATE camerele din proiect dacă sunt 2 sau mai multe (fără calcule mixte)
 8. Configurare aplicație mobilă — inclusă în manoperă
 
 NICIODATĂ nu spune că instalarea sau cablul sunt incluse în prețul produsului.
