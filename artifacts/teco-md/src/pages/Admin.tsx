@@ -2204,7 +2204,9 @@ function ImportTab() {
               const d = XLSX.utils.sheet_to_csv(wb.Sheets[n], { blankrows: false });
               if (d.trim().length > 50) csv += "\n=== " + n + " ===\n" + d.split("\n").slice(0,150).join("\n");
             });
-            res(csv);
+            // Curatam caracterele problematice si limitam dimensiunea
+        const cleanCsv = csv.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, ' ').slice(0, 4000);
+        res(cleanCsv);
           } catch(e: any) { rej(e); }
         };
         reader.readAsArrayBuffer(file);
