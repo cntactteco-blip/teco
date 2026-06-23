@@ -2219,7 +2219,9 @@ function ImportTab() {
       setProgress(80);
       const text = await r.text();
       const match = text.match(/\[[\s\S]*\]/);
-      const prods = JSON.parse(match ? match[0] : text);
+      let prods = [];
+      try { prods = JSON.parse(match ? match[0] : text); } catch(e) { addLog("Eroare JSON: " + text.slice(0,100)); }
+      if (!Array.isArray(prods)) { addLog("Raspuns invalid: " + JSON.stringify(prods).slice(0,100)); prods = []; }
       addLog("Produse: " + prods.length);
       setProducts(prods);
       setCheckedAll(true);
