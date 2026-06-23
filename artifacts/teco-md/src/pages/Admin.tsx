@@ -2786,6 +2786,7 @@ export default function Admin() {
           {tab === "blog"      && <BlogTab posts={blogPosts} />}
           {tab === "ai"        && <AdminAITab leads={leads} products={products} orders={orders} />}
           {tab === "settings"  && <SettingsTab settings={settings} products={products} />}
+          {tab === "import"    && <ImportTab />}
         </main>
       </div>
     </div>
