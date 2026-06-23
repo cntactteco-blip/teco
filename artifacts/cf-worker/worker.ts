@@ -133,7 +133,7 @@ Analizeaza acest CSV si extrage TOATE produsele valide.
 Fisier: ${fileName}, Curs USD/MDL: ${rate}
 
 DATE CSV:
-${String(csvData).slice(0, 6000)}
+${String(csvData).slice(0, 3000)}
 
 REGULI:
 - Coloane posibile: Model, SKU, Denumire, Denumire Deplina, Dealer USD, Pret MDL, Pret MDL la zi, RRP
@@ -152,7 +152,7 @@ Returneaza DOAR array JSON valid, fara markdown:
         const result = await groq.chat.completions.create({
           model: "openai/gpt-oss-120b",
           messages: [{ role: "user", content: prompt }],
-          max_tokens: 6000,
+          max_tokens: 3000,
         });
         const text = result.choices[0]?.message?.content ?? "[]";
         const clean = text.replace(/```json|```/g, "").trim();
