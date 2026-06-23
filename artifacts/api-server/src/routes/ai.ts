@@ -297,6 +297,70 @@ Oferă 3-5 recomandări acționabile în română în format JSON strict (doar J
   }
 });
 
+router.post("/import-products", async (req, res) => {
+  try {
+    const { csvData, usdRate, markup, fileName } = req.body as {
+      csvData: string;
+      usdRate?: string;
+      markup?: string;
+      fileName?: string;
+    };
+
+    const rate = parseFloat(usdRate ?? "17.8") || 17.8;
+    const markupPct = parseFloat(markup ?? "0") || 0;
+
+    const groq = getAI();
+    const prompt = `Ești un expert în import de produse pentru un magazin online de sisteme de supraveghere din Moldova (Teco.md).
+
+Analizează acest CSV/tabel de produse și extrage fiecare produs ca JSON.
+
+REGULI CRITICE pentru prețuri (foarte important):
+1. Dacă există coloane cu prețuri în MDL (ex: "lei", "MDL"), folosește-le DIRECT — NU converti din USD.
+2. Coloana "la zi" sau "preț curent" sau cel mai mic preț MDL = câmpul "price" (prețul de vânzare).
+3. Coloana "RRP" sau "preț recomandat" sau cel mai mare preț MDL = câmpul "oldPrice" (prețul barat/anterior).
+4. Dacă există DOAR prețuri în USD (și nu există coloane MDL), atunci: price = USD × ${rate.toFixed(2)} × ${(1 + markupPct / 100).toFixed(4)}. Rotunjește la număr întreg.
+5. Nu calcula oldPrice din USD când există deja un preț MDL în coloane — ia-l direct.
+6. Dacă nu există oldPrice separat, lasă câmpul null.
+
+REGULI pentru categorii — alege una din: "wifi", "poe", "4g", "nvr", "kituri", "alarme", "Camere IP"
+
+Fișier: ${fileName ?? "import.xlsx"}
+Rată USD→MDL: ${rate}
+
+Date CSV:
+${csvData}
+
+Returnează STRICT un array JSON valid (fără text înainte/după, fără markdown), cu structura exactă:
+[
+  {
+    "name": "nume complet produs",
+    "model": "cod model",
+    "brand": "brand",
+    "price": 799,
+    "oldPrice": 999,
+    "category": "wifi",
+    "specs": "specificații scurte (rezoluție, tip, culoare etc.)",
+    "description": "descriere 2-3 propoziții SEO în română pentru Moldova",
+    "inStock": true
+  }
+]`;
+
+    const result = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 4096,
+    });
+
+    const text = result.choices[0]?.message?.content ?? "[]";
+    const clean = text.replace(/```json|```/g, "").trim();
+    const match = clean.match(/\[[\s\S]*\]/);
+    const parsed = JSON.parse(match ? match[0] : clean);
+    res.json(parsed);
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+});
+
 router.post("/blog-post", async (req, res) => {
   try {
     const { topic } = req.body as { topic: string };
