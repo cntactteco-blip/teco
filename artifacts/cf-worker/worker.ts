@@ -128,26 +128,26 @@ export default {
         const { csvData, usdRate, markup, fileName } = await request.json() as any;
         const rate = parseFloat(usdRate) || 17.8;
         const mkp = parseFloat(markup) || 0;
-        const prompt = `Ești expert în import date din price list-uri de camere supraveghere.
-Analizează acest CSV/date și extrage TOATE produsele valide.
-Fișier: ${fileName}
-Curs USD/MDL: ${rate}
-Date:
+        const prompt = `Esti expert in import date din price list-uri de camere supraveghere.
+Analizeaza acest CSV si extrage TOATE produsele valide.
+Fisier: ${fileName}, Curs USD/MDL: ${rate}
+
+DATE CSV:
 ${String(csvData).slice(0, 6000)}
 
 REGULI:
-- Identifică automat coloanele (model, SKU, denumire, preț USD, preț MDL, RRP)
-- Dacă prețul e în USD convertește: pret_mdl = pret_usd * ${rate}
-- Prețul de vânzare (price) = RRP dacă există, altfel pret_mdl * (1 + ${mkp}/100)
-- oldPrice = prețul dealer convertit în MDL (prețul de cost)
-- Detectează brandul: IMOU, Dahua, Hikvision, UNV, Uniview, Reolink etc.
+- Coloane posibile: Model, SKU, Denumire, Denumire Deplina, Dealer USD, Pret MDL, Pret MDL la zi, RRP
+- Pretul de vanzare (price) = coloana RRP daca exista si > 0
+- Daca pret e in USD (Dealer USD): pret_mdl = dealer_usd * ${rate}
+- oldPrice = Dealer USD * ${rate}
+- Brand: detecteaza din fisier (IMOU, Dahua, Hikvision, UNV etc.)
 - Categorii: Camere IP, NVR, DVR, PTZ, Dome, Bullet, Kituri, Accesorii, Switch PoE
-- specs: rezoluție + tip + caracteristici cheie (max 80 chars)
-- description: 2 propoziții SEO română pentru piața Moldova
-- Ignoră rândurile fără preț sau denumire
+- specs: rezolutie + tip + caracteristici (max 80 chars)
+- description: 2 propozitii SEO romana pentru Moldova
+- Extrage TOATE produsele cu denumire si pret valid
 
-Returnează DOAR array JSON valid, fără markdown:
-[{"name":"...","model":"...","brand":"...","price":999,"oldPrice":799,"category":"Camere IP","specs":"4MP, exterior, IR 30m","description":"...","inStock":true}]`;
+Returneaza DOAR array JSON valid, fara markdown:
+[{"name":"Denumire scurta","model":"SKU","brand":"IMOU","price":999,"oldPrice":799,"category":"Camere IP","specs":"4MP, dome, IR 30m","description":"...","inStock":true}]`;
 
         const result = await groq.chat.completions.create({
           model: "openai/gpt-oss-120b",
