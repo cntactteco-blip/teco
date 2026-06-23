@@ -33,7 +33,7 @@ export default {
       ];
 
       const stream = await groq.chat.completions.create({
-        model: "openai/gpt-oss-120b",
+        model: "llama-3.3-70b-versatile",
         messages: groqMessages,
         max_tokens: 1024,
         stream: true,
@@ -65,7 +65,7 @@ export default {
     if (url.pathname === "/api/ai/blog-post" && request.method === "POST") {
       const { topic } = await request.json() as any;
       const result = await groq.chat.completions.create({
-        model: "openai/gpt-oss-120b",
+        model: "llama-3.3-70b-versatile",
         messages: [{ role: "user", content: buildBlogPrompt(topic) }],
         max_tokens: 6000,
       });
@@ -77,7 +77,7 @@ export default {
     if (url.pathname === "/api/ai/lead-analyze" && request.method === "POST") {
       const { lead } = await request.json() as any;
       const result = await groq.chat.completions.create({
-        model: "openai/gpt-oss-120b",
+        model: "llama-3.3-70b-versatile",
         messages: [{ role: "user", content: buildLeadPrompt(lead) }],
         max_tokens: 1024,
       });
@@ -89,7 +89,7 @@ export default {
     if (url.pathname === "/api/ai/whatsapp-message" && request.method === "POST") {
       const { lead, context } = await request.json() as any;
       const result = await groq.chat.completions.create({
-        model: "openai/gpt-oss-120b",
+        model: "llama-3.3-70b-versatile",
         messages: [{ role: "user", content: buildWhatsappPrompt(lead, context) }],
         max_tokens: 512,
       });
@@ -100,7 +100,7 @@ export default {
     if (url.pathname === "/api/ai/description" && request.method === "POST") {
       const body = await request.json() as any;
       const result = await groq.chat.completions.create({
-        model: "openai/gpt-oss-120b",
+        model: "llama-3.3-70b-versatile",
         messages: [{ role: "user", content: buildDescriptionPrompt(body) }],
         max_tokens: 512,
       });
@@ -115,7 +115,7 @@ export default {
         const leadsShort = (leads ?? []).slice(0,5).map((l:any) => ({ name: l.name, phone: l.phone, status: l.status }));
         const productsShort = (products ?? []).slice(0,5).map((p:any) => ({ name: p.name, price: p.price }));
         const prompt = `Esti consultant Teco.md. Analizeaza datele si raspunde STRICT JSON fara markdown:\nComenzi: ${JSON.stringify(ordersShort)}\nLead-uri: ${JSON.stringify(leadsShort)}\nProduse: ${JSON.stringify(productsShort)}\n{"summary":"...","topProducts":["..."],"recommendations":["..."],"leadInsights":"...","revenue":"..."}`;
-        const result = await groq.chat.completions.create({ model: "openai/gpt-oss-120b", messages: [{ role: "user", content: prompt }], max_tokens: 2048 });
+        const result = await groq.chat.completions.create({ model: "llama-3.3-70b-versatile", messages: [{ role: "user", content: prompt }], max_tokens: 2048 });
         const text = result.choices[0]?.message?.content ?? "{}";
         const clean = text.replace(/```json|```/g, "").trim();
         return new Response(clean, { headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -138,23 +138,23 @@ ${csvStr}
 
 REGULI STRICTE:
 - Coloane posibile: Model/SKU, Denumire/Denumire Deplina, Dealer USD, Pret MDL / Pret MDL la zi, RRP
-- DACA exista coloana "Pret MDL" sau "Pret MDL la zi" cu valori > 0: foloseste-o DIRECT ca "price" (NU converti!)
-- DACA exista coloana "RRP" cu valori > 0: foloseste-o ca "oldPrice" (e pretul recomandat, mai mare)
+- PARSARE PRETURI: elimina "lei", "$", " " si virgule din numere. Ex: "499 lei" -> 499, "1,129 lei" -> 1129, "$28.00" -> 28
+- DACA exista coloana "Pret MDL" sau "Pret MDL la zi" cu valori > 0: foloseste-o ca "price" (numarul MDL, fara "lei")
+- DACA exista coloana "RRP" cu valori > 0: foloseste-o ca "oldPrice" (numarul MDL, fara "lei")
 - DACA exista doar "Dealer USD": price = round(dealer_usd * ${rate} * (1 + ${mkp}/100))
-- DACA "Dealer USD" si "RRP" (ambele in USD): price = round(dealer_usd * ${rate}), oldPrice = round(rrp * ${rate})
-- Asigura-te ca oldPrice > price (oldPrice e pretul de lista, price e pretul nostru)
+- Asigura-te ca oldPrice > price; daca nu: nu include oldPrice
 - Brand: detecteaza din numele fisierului sau din date (IMOU, Dahua, Hikvision, UNV, Uniarch, Tiandy etc.)
 - Categorii valide: Camere IP, NVR, DVR, PTZ, Dome, Bullet, Kituri, Accesorii, Switch PoE
 - specs: rezolutie + tip + caracteristici cheie (max 80 chars)
 - description: 2 propozitii SEO romana pentru Moldova
-- Ignora randurile cu pret 0, randuri goale, sau randuri care sunt headere/subtitluri
+- Ignora randurile cu pret 0, randuri goale, randuri care sunt headere/subtitluri sau au "0 lei"
 - Extrage TOATE produsele cu denumire si pret valid (chiar si 50+ produse)
 
 Returneaza DOAR array JSON valid, fara markdown, fara explicatii:
 [{"name":"Denumire scurta","model":"SKU","brand":"IMOU","price":999,"oldPrice":1299,"category":"Camere IP","specs":"4MP, dome, IR 30m","description":"Camera IP dome IMOU 4MP ideala pentru interior si exterior in Moldova.","inStock":true}]`;
 
         const result = await groq.chat.completions.create({
-          model: "openai/gpt-oss-120b",
+          model: "llama-3.3-70b-versatile",
           messages: [{ role: "user", content: prompt }],
           max_tokens: 6000,
         });
