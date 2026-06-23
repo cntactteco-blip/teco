@@ -128,31 +128,35 @@ export default {
         const { csvData, usdRate, markup, fileName } = await request.json() as any;
         const rate = parseFloat(usdRate) || 17.8;
         const mkp = parseFloat(markup) || 0;
+        const csvStr = String(csvData).slice(0, 14000);
         const prompt = `Esti expert in import date din price list-uri de camere supraveghere.
 Analizeaza acest CSV si extrage TOATE produsele valide.
-Fisier: ${fileName}, Curs USD/MDL: ${rate}
+Fisier: ${fileName}, Curs USD/MDL: ${rate}, Markup: ${mkp}%
 
 DATE CSV:
-${String(csvData).slice(0, 3000)}
+${csvStr}
 
-REGULI:
-- Coloane posibile: Model, SKU, Denumire, Denumire Deplina, Dealer USD, Pret MDL, Pret MDL la zi, RRP
-- Pretul de vanzare (price) = coloana RRP daca exista si > 0
-- Daca pret e in USD (Dealer USD): pret_mdl = dealer_usd * ${rate}
-- oldPrice = Dealer USD * ${rate}
-- Brand: detecteaza din fisier (IMOU, Dahua, Hikvision, UNV etc.)
-- Categorii: Camere IP, NVR, DVR, PTZ, Dome, Bullet, Kituri, Accesorii, Switch PoE
-- specs: rezolutie + tip + caracteristici (max 80 chars)
+REGULI STRICTE:
+- Coloane posibile: Model/SKU, Denumire/Denumire Deplina, Dealer USD, Pret MDL / Pret MDL la zi, RRP
+- DACA exista coloana "Pret MDL" sau "Pret MDL la zi" cu valori > 0: foloseste-o DIRECT ca "price" (NU converti!)
+- DACA exista coloana "RRP" cu valori > 0: foloseste-o ca "oldPrice" (e pretul recomandat, mai mare)
+- DACA exista doar "Dealer USD": price = round(dealer_usd * ${rate} * (1 + ${mkp}/100))
+- DACA "Dealer USD" si "RRP" (ambele in USD): price = round(dealer_usd * ${rate}), oldPrice = round(rrp * ${rate})
+- Asigura-te ca oldPrice > price (oldPrice e pretul de lista, price e pretul nostru)
+- Brand: detecteaza din numele fisierului sau din date (IMOU, Dahua, Hikvision, UNV, Uniarch, Tiandy etc.)
+- Categorii valide: Camere IP, NVR, DVR, PTZ, Dome, Bullet, Kituri, Accesorii, Switch PoE
+- specs: rezolutie + tip + caracteristici cheie (max 80 chars)
 - description: 2 propozitii SEO romana pentru Moldova
-- Extrage TOATE produsele cu denumire si pret valid
+- Ignora randurile cu pret 0, randuri goale, sau randuri care sunt headere/subtitluri
+- Extrage TOATE produsele cu denumire si pret valid (chiar si 50+ produse)
 
-Returneaza DOAR array JSON valid, fara markdown:
-[{"name":"Denumire scurta","model":"SKU","brand":"IMOU","price":999,"oldPrice":799,"category":"Camere IP","specs":"4MP, dome, IR 30m","description":"...","inStock":true}]`;
+Returneaza DOAR array JSON valid, fara markdown, fara explicatii:
+[{"name":"Denumire scurta","model":"SKU","brand":"IMOU","price":999,"oldPrice":1299,"category":"Camere IP","specs":"4MP, dome, IR 30m","description":"Camera IP dome IMOU 4MP ideala pentru interior si exterior in Moldova.","inStock":true}]`;
 
         const result = await groq.chat.completions.create({
           model: "openai/gpt-oss-120b",
           messages: [{ role: "user", content: prompt }],
-          max_tokens: 3000,
+          max_tokens: 6000,
         });
         const text = result.choices[0]?.message?.content ?? "[]";
         const clean = text.replace(/```json|```/g, "").trim();

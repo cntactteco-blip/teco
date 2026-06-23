@@ -2208,7 +2208,7 @@ function ImportTab() {
         const cleanCsv = csv
           .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, " ")
           .replace(/[\u200B-\u200D\uFEFF]/g, "")
-          .slice(0, 3000);
+          .slice(0, 14000);
         res(cleanCsv);
           } catch(e: any) { rej(e); }
         };

@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { Check, ShoppingCart } from "lucide-react";
+import { Check, ShoppingCart, Heart, BarChart2 } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
+import { useWishlist } from "@/hooks/useWishlist";
+import { useComparator } from "@/hooks/useComparator";
 import type { StoreProduct } from "@/lib/store";
 
 export function ProductCard({ product }: { product: StoreProduct }) {
@@ -10,10 +12,15 @@ export function ProductCard({ product }: { product: StoreProduct }) {
   const openCart = useCart((state) => state.openCart);
   const { toast } = useToast();
   const [added, setAdded] = useState(false);
+  const { toggle: wishlistToggle, has: wishlistHas } = useWishlist();
+  const { toggle: comparatorToggle, has: comparatorHas } = useComparator();
 
   const discount = product.oldPrice
     ? Math.round((1 - product.price / product.oldPrice) * 100)
     : null;
+
+  const isWished = wishlistHas(product.id);
+  const isCompared = comparatorHas(product.id);
 
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -23,6 +30,26 @@ export function ProductCard({ product }: { product: StoreProduct }) {
     toast({ title: "Adăugat în coș!", description: "Produsul a fost rezervat." });
     setTimeout(() => openCart(), 500);
     setTimeout(() => setAdded(false), 2500);
+  };
+
+  const handleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    wishlistToggle(product.id);
+    toast({
+      title: isWished ? "Eliminat din favorite" : "Adăugat la favorite ❤️",
+      description: isWished ? "" : "Găsești produsul în pagina Favorite.",
+    });
+  };
+
+  const handleCompare = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    comparatorToggle(product);
+    toast({
+      title: isCompared ? "Eliminat din comparator" : "Adăugat în comparator",
+      description: isCompared ? "" : "Selectează până la 3 produse pentru comparare.",
+    });
   };
 
   return (
@@ -47,6 +74,18 @@ export function ProductCard({ product }: { product: StoreProduct }) {
             -{discount}%
           </div>
         )}
+        {/* Wishlist button */}
+        <button
+          onClick={handleWishlist}
+          aria-label={isWished ? "Elimină din favorite" : "Adaugă la favorite"}
+          className={`absolute bottom-3 right-3 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all active:scale-90 ${
+            isWished
+              ? "bg-[#FF4F00] text-white"
+              : "bg-white/90 text-zinc-400 hover:text-[#FF4F00] hover:bg-white opacity-0 group-hover:opacity-100"
+          }`}
+        >
+          <Heart className={`w-4 h-4 ${isWished ? "fill-white" : ""}`} />
+        </button>
       </div>
 
       {/* Info */}
@@ -82,6 +121,18 @@ export function ProductCard({ product }: { product: StoreProduct }) {
           {added
             ? <><Check className="w-4 h-4"/> Adăugat în Coș</>
             : <><ShoppingCart className="w-4 h-4"/> Adaugă în Coș</>}
+        </button>
+
+        <button
+          onClick={handleCompare}
+          className={`w-full py-2 rounded-xl text-xs font-semibold transition-all active:scale-95 flex items-center justify-center gap-1.5 ${
+            isCompared
+              ? "bg-blue-100 text-blue-700 border border-blue-200"
+              : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700"
+          }`}
+        >
+          <BarChart2 className="w-3.5 h-3.5" />
+          {isCompared ? "Adăugat în comparator ✓" : "Compară"}
         </button>
       </div>
     </Link>

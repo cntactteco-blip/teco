@@ -2,6 +2,7 @@ import { useState, useEffect, Suspense, lazy } from "react";
 import { Link } from "wouter";
 import { Camera, Shield, Server, Zap, Truck, Phone, Award, Star, CheckCircle2, ChevronDown } from "lucide-react";
 import { ProductCarousel } from "@/components/ProductCarousel";
+import BundleBuilder from "@/components/BundleBuilder";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
 import { useStore } from "@/lib/store";
@@ -484,6 +485,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* 8b. BUNDLE BUILDER */}
+      <BundleBuilder />
 
       {/* 9. LEAD FORM SECTION */}
       <section id="contact" className="py-20 bg-zinc-950 text-white relative overflow-hidden">
