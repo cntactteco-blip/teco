@@ -2210,6 +2210,7 @@ function ImportTab() {
         reader.readAsArrayBuffer(file);
       });
       addLog("Date: " + csvData.length + " chars");
+      addLog("Preview: " + csvData.slice(0, 200));
       setProgress(40);
       const r = await fetch(API + "/api/ai/import-products", {
         method: "POST",
