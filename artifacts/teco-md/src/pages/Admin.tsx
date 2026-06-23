@@ -2170,15 +2170,15 @@ interface BusinessInsights {
 
 
 function ImportTab() {
-  const [file, setFile] = React.useState<File | null>(null);
-  const [step, setStep] = React.useState("upload");
-  const [logs, setLogs] = React.useState<string[]>([]);
-  const [products, setProducts] = React.useState<any[]>([]);
-  const [progress, setProgress] = React.useState(0);
-  const [checkedAll, setCheckedAll] = React.useState(true);
-  const [unchecked, setUnchecked] = React.useState<number[]>([]);
-  const [imported, setImported] = React.useState(0);
-  const [usdRate, setUsdRate] = React.useState("17.8");
+  const [file, setFile] = useState<File | null>(null);
+  const [step, setStep] = useState("upload");
+  const [logs, setLogs] = useState<string[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [progress, setProgress] = useState(0);
+  const [checkedAll, setCheckedAll] = useState(true);
+  const [unchecked, setUnchecked] = useState<number[]>([]);
+  const [imported, setImported] = useState(0);
+  const [usdRate, setUsdRate] = useState("17.8");
 
   const API = import.meta.env.VITE_API_URL || "";
   const SUPA_URL = import.meta.env.VITE_SUPABASE_URL || "";
