@@ -2207,9 +2207,6 @@ function ImportTab() {
             // Curatam caracterele problematice si limitam dimensiunea
         const cleanCsv = csv
           .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, " ")
-          .replace(/"(\d+),(\d+)\s*(lei)?"/gi, "$1$2 $3")
-          .replace(/(\d+),(\d+)\s*lei/gi, "$1$2 lei")
-          .replace(/\$([\d.]+)/g, "$1 USD")
           .replace(/[\u200B-\u200D\uFEFF]/g, "")
           .slice(0, 3000);
         res(cleanCsv);

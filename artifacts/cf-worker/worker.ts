@@ -160,7 +160,9 @@ Returneaza DOAR array JSON valid, fara markdown:
         const json = match ? match[0] : clean;
         return new Response(json, { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       } catch(e: any) {
-        return new Response(JSON.stringify({ error: String(e) }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        const errMsg = e?.message || String(e);
+        const errStatus = e?.status || e?.statusCode || 500;
+        return new Response(JSON.stringify({ error: errMsg, status: errStatus }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
     }
     if (url.pathname === "/api/ai/blog-image" && request.method === "POST") {
