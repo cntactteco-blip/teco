@@ -10,7 +10,7 @@ import {
   Bot, Sparkles, Wand2, Loader2, BrainCircuit,
 } from "lucide-react";
 import {
-  useStore, storeActions,
+  useStore, storeActions, initStore,
   type StoreProduct, type Lead, type Order, type ModuleSettings, type CategoryDef, type GalleryItem, type BlogPost,
   getState, DEFAULT_CATEGORIES,
 } from "@/lib/store";
@@ -2254,6 +2254,7 @@ function ImportTab() {
       await new Promise(r => setTimeout(r, 80));
     }
     setImported(ok); setProgress(100); setStep("done");
+    await initStore();
   };
 
   return (
