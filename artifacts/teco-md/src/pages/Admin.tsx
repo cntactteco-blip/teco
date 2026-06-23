@@ -2205,7 +2205,11 @@ function ImportTab() {
               if (d.trim().length > 50) csv += "\n=== " + n + " ===\n" + d.split("\n").slice(0,150).join("\n");
             });
             // Curatam caracterele problematice si limitam dimensiunea
-        const cleanCsv = csv.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, ' ').slice(0, 4000);
+        const cleanCsv = csv
+          .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, " ")
+          .replace(/"(\d+),(\d+)"/g, "$1$2")
+          .replace(/(\d+),(\d+)\s*lei/g, "$1$2 lei")
+          .slice(0, 5000);
         res(cleanCsv);
           } catch(e: any) { rej(e); }
         };
