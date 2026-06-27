@@ -54,9 +54,22 @@ export default function Home() {
 
   const heroProducts = (() => {
     const all = storeProducts.filter(p => p.inStock !== false);
-    if (loaded && heroProductIds.length > 0) {
-      return heroProductIds.map(id => all.find(p => p.id === id)).filter(Boolean) as typeof all;
+    if (all.length === 0) return [];
+    const ids = loaded && heroProductIds.length > 0 ? heroProductIds : null;
+    if (ids) {
+      const result = ids.map(id => all.find(p => p.id === id)).filter(Boolean) as typeof all;
+      if (result.length > 0) {
+        try { localStorage.setItem("teco_hero_ids", JSON.stringify(ids)); } catch {}
+        return result;
+      }
     }
+    try {
+      const cached = JSON.parse(localStorage.getItem("teco_hero_ids") || "[]");
+      if (cached.length > 0) {
+        const result = cached.map((id: number) => all.find(p => p.id === id)).filter(Boolean) as typeof all;
+        if (result.length > 0) return result;
+      }
+    } catch {}
     const startIdx = all.findIndex(p => p.id === heroProductId);
     const start = startIdx >= 0 ? startIdx : 0;
     const rotated = [...all.slice(start), ...all.slice(0, start)];
