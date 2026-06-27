@@ -54,6 +54,9 @@ export default function Home() {
 
   const heroProducts = (() => {
     const all = storeProducts.filter(p => p.inStock !== false);
+    if (heroProductIds.length > 0) {
+      return heroProductIds.map(id => all.find(p => p.id === id)).filter(Boolean) as typeof all;
+    }
     const startIdx = all.findIndex(p => p.id === heroProductId);
     const start = startIdx >= 0 ? startIdx : 0;
     const rotated = [...all.slice(start), ...all.slice(0, start)];
