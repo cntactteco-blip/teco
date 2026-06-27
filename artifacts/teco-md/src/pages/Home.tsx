@@ -47,7 +47,18 @@ export default function Home() {
   const openCart = useCart((state) => state.openCart);
   const { toast } = useToast();
   const heroProductId = useStore((s) => s.settings.hero?.productId ?? 3);
-  const heroProductIds = useStore((s) => s.settings.hero?.heroProducts ?? []);
+  const heroProductIdsStore = useStore((s) => s.settings.hero?.heroProducts ?? []);
+  const heroProductIds = (() => {
+    if (heroProductIdsStore.length > 0) {
+      try { localStorage.setItem("teco_hero_ids", JSON.stringify(heroProductIdsStore)); } catch {}
+      return heroProductIdsStore;
+    }
+    try {
+      const cached = JSON.parse(localStorage.getItem("teco_hero_ids") || "[]");
+      if (Array.isArray(cached) && cached.length > 0) return cached as number[];
+    } catch {}
+    return [116];
+  })();
   const storeProducts = useStore((s) => s.products);
   const loaded = useStore((s) => s.loaded);
   const [heroIndex, setHeroIndex] = useState(0);
