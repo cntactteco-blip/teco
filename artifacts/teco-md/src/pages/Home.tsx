@@ -75,7 +75,8 @@ export default function Home() {
     const rotated = [...all.slice(start), ...all.slice(0, start)];
     return rotated.slice(0, 6);
   })();
-  const heroProduct = heroProducts[heroIndex] ?? storeProducts[heroIndex] ?? storeProducts[0];
+  const FALLBACK_HERO = { id: 116, name: "Set camere de supraveghere 8buc 4MP", brand: "TIANDY", price: 18699, imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=85", category: "kituri", inStock: true, specs: "", badge: null, oldPrice: null };
+  const heroProduct = heroProducts[heroIndex] ?? storeProducts.find(p => p.id === 116) ?? FALLBACK_HERO as any;
   const featuredProduct = heroProduct;
 
   useEffect(() => {
