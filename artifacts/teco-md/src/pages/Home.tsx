@@ -53,9 +53,8 @@ export default function Home() {
   const [heroIndex, setHeroIndex] = useState(0);
 
   const heroProducts = (() => {
-    if (!loaded) return [];
     const all = storeProducts.filter(p => p.inStock !== false);
-    if (heroProductIds.length > 0) {
+    if (loaded && heroProductIds.length > 0) {
       return heroProductIds.map(id => all.find(p => p.id === id)).filter(Boolean) as typeof all;
     }
     const startIdx = all.findIndex(p => p.id === heroProductId);
@@ -63,7 +62,7 @@ export default function Home() {
     const rotated = [...all.slice(start), ...all.slice(0, start)];
     return rotated.slice(0, 6);
   })();
-  const heroProduct = loaded ? (heroProducts[heroIndex] ?? storeProducts[0]) : null;
+  const heroProduct = heroProducts[heroIndex] ?? storeProducts[heroIndex] ?? storeProducts[0];
   const featuredProduct = heroProduct;
 
   useEffect(() => {
