@@ -47,6 +47,7 @@ export default function Home() {
   const openCart = useCart((state) => state.openCart);
   const { toast } = useToast();
   const heroProductId = useStore((s) => s.settings.hero?.productId ?? 3);
+  const heroProductIds = useStore((s) => s.settings.hero?.heroProducts ?? []);
   const storeProducts = useStore((s) => s.products);
   const loaded = useStore((s) => s.loaded);
   const [heroIndex, setHeroIndex] = useState(0);

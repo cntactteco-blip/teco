@@ -1957,26 +1957,35 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
             acceptVideo={true}
           />
         </div>
-        <label className={labelCls}>Produs promovat în Hero</label>
-        <select value={settings.hero?.productId ?? ""}
-          onChange={(e) => storeActions.updateHero(e.target.value ? Number(e.target.value) : null)}
-          className={inputCls}>
-          <option value="">— Niciun produs (implicit) —</option>
-          {products.map((p) => <option key={p.id} value={p.id}>{p.brand} — {p.name} ({fmt(p.price)} MDL)</option>)}
-        </select>
-        {settings.hero?.productId && (() => {
-          const hp = products.find(p => p.id === settings.hero.productId);
-          return hp ? (
-            <div className="mt-3 flex items-center gap-3 bg-zinc-800 rounded-xl p-3">
-              <img src={hp.imageUrl} alt={hp.name} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
-              <div>
-                <p className="text-white font-semibold text-sm">{hp.name}</p>
-                <p className="text-[#FF4F00] font-mono text-xs">{fmt(hp.price)} MDL</p>
+        <label className={labelCls}>Produse în Hero Slider (selectează mai multe)</label>
+        <p className="text-zinc-500 text-xs mb-2">Produsele selectate vor apărea în slider pe homepage. Dacă nu selectezi nimic, se folosește produsul implicit.</p>
+        <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+          {products.map((p) => {
+            const selected = (settings.hero?.heroProducts ?? []).includes(p.id);
+            return (
+              <div key={p.id}
+                onClick={() => {
+                  const current = settings.hero?.heroProducts ?? [];
+                  const updated = selected ? current.filter(id => id !== p.id) : [...current, p.id];
+                  storeActions.updateHero({ heroProducts: updated });
+                }}
+                className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${selected ? "bg-[#FF4F00]/20 border border-[#FF4F00]" : "bg-zinc-800 border border-zinc-700 hover:border-zinc-500"}`}>
+                <img src={p.imageUrl} alt={p.name} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-semibold text-sm truncate">{p.brand} — {p.name}</p>
+                  <p className="text-[#FF4F00] font-mono text-xs">{fmt(p.price)} MDL</p>
+                </div>
+                {selected && <CheckCircle2 className="w-5 h-5 text-[#FF4F00] flex-shrink-0" />}
               </div>
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 ml-auto" />
-            </div>
-          ) : null;
-        })()}
+            );
+          })}
+        </div>
+        {(settings.hero?.heroProducts ?? []).length > 0 && (
+          <button onClick={() => storeActions.updateHero({ heroProducts: [] })}
+            className="mt-2 text-xs text-zinc-500 hover:text-red-400 transition-colors">
+            Resetează selecția
+          </button>
+        )}
       </SettingsSection>
 
       {/* ── 8. Module A ── */}

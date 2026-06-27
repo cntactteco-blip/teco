@@ -1,0 +1,173 @@
+diff --git a/artifacts/teco-md/src/lib/store.ts b/artifacts/teco-md/src/lib/store.ts
+index 7181d80..2985f17 100644
+--- a/artifacts/teco-md/src/lib/store.ts
++++ b/artifacts/teco-md/src/lib/store.ts
+@@ -88,6 +88,7 @@ export interface ModuleSettings {
+   };
+   hero: {
+     productId: number | null;
++    productIds?: number[];
+     bannerMedia?: string;
+     bannerMediaType?: "image" | "video";
+   };
+@@ -175,7 +176,7 @@ export const DEFAULT_CATEGORIES: CategoryDef[] = [
+ 
+ const DEFAULT_SETTINGS: ModuleSettings = {
+   general: { adminPhone: "37367200463", announcementText: "", adminPin: "" },
+-  hero: { productId: 3 },
++  hero: { productId: 3, productIds: [3] },
+   moduleA: { productId: 25 },
+   moduleB: {
+     productId: 16,
+@@ -552,10 +553,13 @@ function dbOrderToStore(row: any): Order {
+ 
+ // ─── Seed produse în Supabase (prima rulare) ─────────────────────────
+ async function seedProductsIfEmpty() {
+-  const { count } = await supabase
++  const { count, error } = await supabase
+     .from("products")
+     .select("*", { count: "exact", head: true });
+ 
++  // Dacă citirea a picat (rețea/RLS/etc.), NU reseeda — altfel riști să
++  // dubleze/reseteze produsele la o eroare trecătoare.
++  if (error) { console.error("seedProductsIfEmpty: count check failed, skip seeding", error); return; }
+   if ((count ?? 0) > 0) return;
+ 
+   const rows = seedProducts.map((p) => ({
+@@ -759,6 +763,22 @@ export const storeActions = {
+     setState((s) => ({ ...s, products: s.products.filter((p) => !ids.includes(p.id)) }));
+   },
+ 
++  // Folosit de importul XLS din Admin — un singur insert în Supabase,
++  // id-uri secvențiale corecte, și verificare reală a erorii (nu fetch() crud).
++  async bulkAddProducts(items: Omit<StoreProduct, "id">[]): Promise<{ success: number; failed: number; error?: string }> {
++    if (items.length === 0) return { success: 0, failed: 0 };
++    let nextId = Math.max(0, ...state.products.map((x) => x.id)) + 1;
++    const newProducts: StoreProduct[] = items.map((p) => ({ ...p, id: nextId++ } as StoreProduct));
++    const rows = newProducts.map(storeProductToDb);
++    const { error } = await supabase.from("products").insert(rows);
++    if (error) {
++      console.error("bulkAddProducts error:", error);
++      return { success: 0, failed: items.length, error: error.message ?? String(error) };
++    }
++    setState((s) => ({ ...s, products: [...s.products, ...newProducts] }));
++    return { success: newProducts.length, failed: 0 };
++  },
++
+   // Leads
+  async addLead(lead: Omit<Lead, "id" | "timestamp" | "status">) {
+     const newLead: Lead = {
+diff --git a/artifacts/teco-md/src/pages/Admin.tsx b/artifacts/teco-md/src/pages/Admin.tsx
+index d3913f7..66749b8 100644
+--- a/artifacts/teco-md/src/pages/Admin.tsx
++++ b/artifacts/teco-md/src/pages/Admin.tsx
+@@ -10,7 +10,7 @@ import {
+   Bot, Sparkles, Wand2, Loader2, BrainCircuit,
+} from "lucide-react"; import {
+-  useStore, storeActions, initStore,
++  useStore, storeActions,
+   type StoreProduct, type Lead, type Order, type ModuleSettings, type CategoryDef, type GalleryItem, type BlogPost,
+   getState, DEFAULT_CATEGORIES,
+} from "@/lib/store";
+@@ -1709,6 +1709,7 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
+   const [catNewLabel, setCatNewLabel] = useState("");
+   const [catNewSlug, setCatNewSlug] = useState("");
+   const [showAddCat, setShowAddCat] = useState(false);
++  const [heroSearch, setHeroSearch] = useState("");
+
+ 
+   const moveCat = (idx: number, dir: -1 | 1) => {
+     const arr = [...categories];
+@@ -1761,10 +1762,40 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
+   const inputCls = "w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#FF4F00] transition-colors";
+   const labelCls = "block text-[11px] font-semibold text-zinc-400 mb-1 uppercase tracking-wider";
+
++  // --- Hero carousel: listă de produse alese manual, îtn ordine ---
++  const heroIds: number[] = (settings.hero?.productIds && settings.hero.productIds.length > 0)
++    ? settings.hero.productIds
++    : (settings.hero?.productId ? [settings.hero.productId] : []);
++  const heroSelected = heroIds.map((id) => products.find((p) => p.id === id)).filter((p): p is StoreProduct => !!p);
++  const heroSearchResults = heroSearch.trim()
++    ? products.filter((p) =>
++        !heroIds.includes(p.id) &&
++        (p.name.toLowerCase().includes(heroSearch.toLowerCase()) ||
++         p.model.toLowerCase().includes(heroSearch.toLowerCase()) ||
++         p.brand.toLowerCase().includes(heroSearch.toLowerCase()))
++      ).slice(0, 8)
++    : [];
++  const heroAdd = (id: number) => {
++    storeActions.updateHero({ productIds: [...heroIds, id], productId: heroIds[0] ?? id });
++    setHeroSearch("");
++  };
++  const heroRemove = (id: number) => {
++    const next = heroIds.filter((x) => x !== id);
++    storeActions.updateHero({ productIds: next, productId: next[0] ?? null });
++  };
++  const heroMove = (index: number, dir: -1 | 1) => {
++    const next = [...heroIds];
++    const j = index + dir;
++    if (j < 0 || j >= next.length) return;
++    [next[index], next[j]] = [next[j], next[index]];
++    storeActions.updateHero({ productIds: next, productId: next[0] ?? null });
++  };
++
+   return (
+     <div className="space-y-6 max-w2xl">
+       <h2 className="font-black text-xl">Setări</h2>
+
++
+       {/* ── 1. Magazin info ── */}
+       <SettingsSection icon={Building2} title="Informaȍii Magazin"
+         description="Date de contact și prezentare afișate pe site.">
+@@ -1947,8 +1978,8 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
+       </SettingsSection>
+
+       {/* ── 7. Hero ── */}
+-      <SettingsSection icon={Star} title="Hero — Media & Produs Promovat"
+-        description="Imagine sau video scurt afișat în secțiunea principală a homepage-ului.">
++      <SettingsSection icon={Star} title="Hero — Media & Produse Promovate"
++        description="Imagine/video + produsele care rulează automat în caruselul din secțiunea principală a homepage-ului.">
+         <div className="mb-4">
+           <MediaUploadSlot
+             label="Media Hero (imagine sau video scurt)"
+@@ -1957,26 +1988,64 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
+             acceptVideo={true}
+           />
+         </div>
+-        <label className={labelCls}>Produs promovat în Hero</label>
+-        <select value={settings.hero?.productId ?? ""}
+-          onChange={(e) => storeActions.updateHero(e.target.value ? Number(e.target.value) : null)}
+-          className={inputCls}>
+-          <option value="">— Niciun produs (implicit) —</option>
+-          {products.map((p) => <option key={p.id} value={p.id}>{p.brand} — {p.name} ({fmt(p.price)} MDL)</option>)}
+-        </select>
+-        {settings.hero?.productId && (() => {
+-          const hp = products.find(p => p.id === settings.hero.productId);
+-          return hp ? (
+-            <div className="mt-3 flex items-center gap-3 bg-zinc-800 rounded-xl p-3">
++
++        <label className={labelCls}>Produse promovate în Hero (rotație automată, în ordinea de mai jos)</label>
++
++        {heroSelected.length === 0 && (
++          <p className="text-zinc-500 text-xs mb-2">Niciun produs ales — se va folosi rotația automată implicită.</p>
++        )}
++
++        <div className="space-y-2 mb-3">
++          {heroSelected.map((hp, i) => (
++            <div key={hp.id} className="flex items-center gap-3 bg-zinc-800 rounded-xl p-3">
++              <span className="text-zinc-500 text-xs font-mono w-4 text-center flex-shrink-0">{i + 1}</span>
+               <img src={hp.imageUrl} alt={hp.name} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+-              <div>
+-                <p className="text-white font-semibold text-sm">{hp.name}</p>
++              <div className="min-w-0 flex-1">
++                <p className="text-white font-semibold text-sm truncate">{hp.name}</p>
+                 <p className="text-[#FF4F00] font-mono text-xs">{fmt(hp.price)} MDL</p>
+               </div>
+-              <CheckCircle2 className="w-4 h-4 text-emerald-400 ml-auto" />
++              <div className="flex items-center gap-1 flex-shrink-0">
++                <button onClick={() => heroMove(i, -1)} disabled={i === 0}
++                  className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-700 disabled:opacity-30 disabled:hover:bg-transparent transition-colors">
++                  <ArrowUp className="w-4 h-4" />
++                </button>
++                <button onClick={() => heroMove(i, 1)} disabled={i === heroSelected.length - 1}
++                  className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-700 disabled:opacity-30 disabled:hover:bg-

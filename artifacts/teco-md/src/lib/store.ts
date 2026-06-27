@@ -88,6 +88,7 @@ export interface ModuleSettings {
   };
   hero: {
     productId: number | null;
+    heroProducts?: number[];
     bannerMedia?: string;
     bannerMediaType?: "image" | "video";
   };
