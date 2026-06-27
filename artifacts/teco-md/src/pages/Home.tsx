@@ -55,7 +55,7 @@ export default function Home() {
   const heroProducts = (() => {
     const all = storeProducts.filter(p => p.inStock !== false);
     if (all.length === 0) return [];
-    const ids = loaded && heroProductIds.length > 0 ? heroProductIds : null;
+    const ids = heroProductIds.length > 0 ? heroProductIds : null;
     if (ids) {
       const result = ids.map(id => all.find(p => p.id === id)).filter(Boolean) as typeof all;
       if (result.length > 0) {
