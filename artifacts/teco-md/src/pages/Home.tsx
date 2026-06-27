@@ -87,7 +87,17 @@ export default function Home() {
     return rotated.slice(0, 6);
   })();
   const FALLBACK_HERO = { id: 116, name: "Set camere de supraveghere 8buc 4MP", brand: "TIANDY", price: 18699, imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=85", category: "kituri", inStock: true, specs: "", badge: null, oldPrice: null };
-  const heroProduct = heroProducts[heroIndex] ?? storeProducts.find(p => p.id === 116) ?? FALLBACK_HERO as any;
+  // Salvam produsele hero in localStorage pentru next visit
+  if (loaded && heroProducts.length > 0) {
+    try { localStorage.setItem("teco_hero_products", JSON.stringify(heroProducts)); } catch {}
+  }
+  const cachedHeroProducts = (() => {
+    try {
+      const c = JSON.parse(localStorage.getItem("teco_hero_products") || "[]");
+      return Array.isArray(c) && c.length > 0 ? c : null;
+    } catch { return null; }
+  })();
+  const heroProduct = heroProducts[heroIndex] ?? (cachedHeroProducts?.[heroIndex]) ?? storeProducts.find(p => p.id === 116) ?? FALLBACK_HERO as any;
   const featuredProduct = heroProduct;
 
   useEffect(() => {
