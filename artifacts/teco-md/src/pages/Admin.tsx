@@ -1957,33 +1957,69 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
             acceptVideo={true}
           />
         </div>
-        <label className={labelCls}>Produse în Hero Slider (selectează mai multe)</label>
-        <p className="text-zinc-500 text-xs mb-2">Produsele selectate vor apărea în slider pe homepage. Dacă nu selectezi nimic, se folosește produsul implicit.</p>
-        <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-          {products.map((p) => {
-            const selected = (settings.hero?.heroProducts ?? []).includes(p.id);
-            return (
-              <div key={p.id}
-                onClick={() => {
-                  const current = settings.hero?.heroProducts ?? [];
-                  const updated = selected ? current.filter(id => id !== p.id) : [...current, p.id];
-                  storeActions.updateHero({ heroProducts: updated });
-                }}
-                className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all ${selected ? "bg-[#FF4F00]/20 border border-[#FF4F00]" : "bg-zinc-800 border border-zinc-700 hover:border-zinc-500"}`}>
-                <img src={p.imageUrl} alt={p.name} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-white font-semibold text-sm truncate">{p.brand} — {p.name}</p>
-                  <p className="text-[#FF4F00] font-mono text-xs">{fmt(p.price)} MDL</p>
+        <label className={labelCls}>Produse în Hero Slider</label>
+        <p className="text-zinc-500 text-xs mb-2">Produsele selectate apar în slider în ordinea de mai jos. Apasă săgețile pentru a schimba ordinea.</p>
+        
+        {/* Produse selectate - cu ordine */}
+        {(settings.hero?.heroProducts ?? []).length > 0 && (
+          <div className="mb-3 space-y-1">
+            <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wide mb-2">Ordinea în slider:</p>
+            {(settings.hero?.heroProducts ?? []).map((id, idx) => {
+              const p = products.find(x => x.id === id);
+              if (!p) return null;
+              const heroProds = settings.hero?.heroProducts ?? [];
+              return (
+                <div key={id} className="flex items-center gap-2 bg-[#FF4F00]/20 border border-[#FF4F00] rounded-xl p-2">
+                  <span className="text-[#FF4F00] font-black text-sm w-5 text-center">{idx + 1}</span>
+                  <img src={p.imageUrl} alt={p.name} className="w-8 h-8 rounded-lg object-cover flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-semibold text-xs truncate">{p.brand} — {p.name}</p>
+                    <p className="text-[#FF4F00] font-mono text-[10px]">{fmt(p.price)} MDL</p>
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <button disabled={idx === 0} onClick={() => {
+                      const arr = [...heroProds];
+                      [arr[idx-1], arr[idx]] = [arr[idx], arr[idx-1]];
+                      storeActions.updateHero({ heroProducts: arr });
+                    }} className="text-zinc-400 hover:text-white disabled:opacity-20 text-xs leading-none">▲</button>
+                    <button disabled={idx === heroProds.length - 1} onClick={() => {
+                      const arr = [...heroProds];
+                      [arr[idx+1], arr[idx]] = [arr[idx], arr[idx+1]];
+                      storeActions.updateHero({ heroProducts: arr });
+                    }} className="text-zinc-400 hover:text-white disabled:opacity-20 text-xs leading-none">▼</button>
+                  </div>
+                  <button onClick={() => {
+                    storeActions.updateHero({ heroProducts: heroProds.filter(x => x !== id) });
+                  }} className="text-zinc-500 hover:text-red-400 text-xs ml-1">✕</button>
                 </div>
-                {selected && <CheckCircle2 className="w-5 h-5 text-[#FF4F00] flex-shrink-0" />}
+              );
+            })}
+          </div>
+        )}
+
+        {/* Toate produsele - pentru adaugare */}
+        <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wide mb-2">Adaugă produse:</p>
+        <div className="space-y-1 max-h-56 overflow-y-auto pr-1">
+          {products.filter(p => !(settings.hero?.heroProducts ?? []).includes(p.id)).map((p) => (
+            <div key={p.id}
+              onClick={() => {
+                const current = settings.hero?.heroProducts ?? [];
+                storeActions.updateHero({ heroProducts: [...current, p.id] });
+              }}
+              className="flex items-center gap-3 p-2 rounded-xl cursor-pointer bg-zinc-800 border border-zinc-700 hover:border-[#FF4F00] transition-all">
+              <img src={p.imageUrl} alt={p.name} className="w-8 h-8 rounded-lg object-cover flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-white text-xs truncate">{p.brand} — {p.name}</p>
+                <p className="text-[#FF4F00] font-mono text-[10px]">{fmt(p.price)} MDL</p>
               </div>
-            );
-          })}
+              <span className="text-zinc-500 text-xs">+ Adaugă</span>
+            </div>
+          ))}
         </div>
         {(settings.hero?.heroProducts ?? []).length > 0 && (
           <button onClick={() => storeActions.updateHero({ heroProducts: [] })}
             className="mt-2 text-xs text-zinc-500 hover:text-red-400 transition-colors">
-            Resetează selecția
+            Resetează tot
           </button>
         )}
       </SettingsSection>
