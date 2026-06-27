@@ -63,7 +63,7 @@ export default function Home() {
     const rotated = [...all.slice(start), ...all.slice(0, start)];
     return rotated.slice(0, 6);
   })();
-  const heroProduct = heroProducts[heroIndex] ?? storeProducts[0];
+  const heroProduct = loaded ? (heroProducts[heroIndex] ?? storeProducts[0]) : null;
   const featuredProduct = heroProduct;
 
   useEffect(() => {
