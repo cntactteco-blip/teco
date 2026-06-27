@@ -53,6 +53,7 @@ export default function Home() {
   const [heroIndex, setHeroIndex] = useState(0);
 
   const heroProducts = (() => {
+    if (!loaded) return [];
     const all = storeProducts.filter(p => p.inStock !== false);
     if (heroProductIds.length > 0) {
       return heroProductIds.map(id => all.find(p => p.id === id)).filter(Boolean) as typeof all;
