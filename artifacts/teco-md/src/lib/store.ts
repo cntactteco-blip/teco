@@ -176,7 +176,7 @@ export const DEFAULT_CATEGORIES: CategoryDef[] = [
 
 const DEFAULT_SETTINGS: ModuleSettings = {
   general: { adminPhone: "37367200463", announcementText: "", adminPin: "" },
-  hero: { productId: 3 },
+  hero: { productId: 116, heroProducts: [116] },
   moduleA: { productId: 25 },
   moduleB: {
     productId: 16,
