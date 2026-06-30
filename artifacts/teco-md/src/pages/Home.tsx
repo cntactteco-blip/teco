@@ -97,7 +97,7 @@ export default function Home() {
       return Array.isArray(c) && c.length > 0 ? c : null;
     } catch { return null; }
   })();
-  const heroProduct = heroProducts[heroIndex] ?? (cachedHeroProducts?.[heroIndex]) ?? storeProducts.find(p => p.id === 116) ?? FALLBACK_HERO as any;
+  const heroProduct = !loaded ? (FALLBACK_HERO as any) : (heroProducts[heroIndex] ?? (cachedHeroProducts?.[heroIndex]) ?? storeProducts.find(p => p.id === 116) ?? (FALLBACK_HERO as any));
   const featuredProduct = heroProduct;
 
   useEffect(() => {
