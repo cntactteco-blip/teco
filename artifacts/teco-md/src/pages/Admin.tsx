@@ -9,6 +9,7 @@ import {
   Facebook, ArrowUpDown, CheckSquare, Square, Upload, Video,
   Bot, Sparkles, Wand2, Loader2, BrainCircuit, FileText,
 } from "lucide-react";
+import translations from "@/lib/translations";
 import {
   useStore, storeActions, initStore,
   type StoreProduct, type Lead, type Order, type ModuleSettings, type CategoryDef, type GalleryItem, type BlogPost,
@@ -2209,7 +2210,7 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
                   <input
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     value={(settings.homeText?.[lng] as Record<string,string> | undefined)?.[key] ?? ""}
-                    placeholder={key}
+                    placeholder={(translations[lng] as Record<string,string>)?.[key] ?? (translations.ro as Record<string,string>)?.[key] ?? key}
                     onChange={e => {
                       const prev = settings.homeText?.[lng] ?? {};
                       storeActions.updateSettings({
