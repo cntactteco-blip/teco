@@ -86,6 +86,10 @@ export interface ModuleSettings {
     announcementText: string;
     adminPin?: string;
   };
+  homeText?: {
+    ro: Record<string, string>;
+    ru: Record<string, string>;
+  };
   hero: {
     productId: number | null;
     heroProducts?: number[];

@@ -7,7 +7,7 @@ import {
   AlertCircle, Circle, SlidersHorizontal, Star, Copy, Download,
   Globe, Truck, Lock, Building2, ArrowUp, ArrowDown, Instagram,
   Facebook, ArrowUpDown, CheckSquare, Square, Upload, Video,
-  Bot, Sparkles, Wand2, Loader2, BrainCircuit,
+  Bot, Sparkles, Wand2, Loader2, BrainCircuit, FileText,
 } from "lucide-react";
 import {
   useStore, storeActions, initStore,
@@ -2183,7 +2183,52 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
         </div>
       </SettingsSection>
 
-      {/* ── 12. Danger zone ── */}
+      {/* ── 12. Texte Homepage ── */}
+      <SettingsSection icon={FileText} title="Texte Homepage" description="Modifică textele afișate pe pagina principală (RO și RU).">
+        {(["ro","ru"] as const).map(lng => (
+          <div key={lng} className="mb-6">
+            <h4 className="font-semibold text-zinc-300 mb-3 uppercase text-xs tracking-widest">{lng.toUpperCase()}</h4>
+            <div className="grid grid-cols-1 gap-3">
+              {[
+                { key: "hero.badge", label: "Badge (ex: Moldova #1)" },
+                { key: "hero.title1", label: "Titlu linia 1" },
+                { key: "hero.title2", label: "Titlu linia 2 (portocaliu)" },
+                { key: "hero.subtitle", label: "Subtitlu" },
+                { key: "hero.stat_installs", label: "Stat: Instalări" },
+                { key: "hero.stat_rating", label: "Stat: Rating" },
+                { key: "hero.stat_delivery", label: "Stat: Livrare" },
+                { key: "hero.cta_buy", label: "Buton Cumpără" },
+                { key: "hero.cta_consult", label: "Buton Consultanță" },
+                { key: "hero.trust1", label: "Trust 1" },
+                { key: "hero.trust2", label: "Trust 2" },
+                { key: "hero.trust3", label: "Trust 3" },
+                { key: "hero.ticker", label: "Ticker tape (bandă rulantă)" },
+              ].map(({ key, label }) => (
+                <div key={key}>
+                  <label className="block text-[11px] font-semibold text-zinc-400 mb-1 uppercase tracking-wider">{label}</label>
+                  <input
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    value={(settings.homeText?.[lng] as Record<string,string> | undefined)?.[key] ?? ""}
+                    placeholder={key}
+                    onChange={e => {
+                      const prev = settings.homeText?.[lng] ?? {};
+                      storeActions.updateSettings({
+                        homeText: {
+                          ro: settings.homeText?.ro ?? {},
+                          ru: settings.homeText?.ru ?? {},
+                          [lng]: { ...prev, [key]: e.target.value },
+                        }
+                      });
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </SettingsSection>
+
+      {/* ── 13. Danger zone ── */}
       <div className="bg-red-950/20 border border-red-900/40 rounded-2xl p-6">
         <h3 className="font-bold text-red-400 mb-1 flex items-center gap-2"><AlertCircle className="w-4 h-4" /> Zonă Periculoasă</h3>
         <p className="text-zinc-500 text-xs mb-4">Resetează catalogul de produse la valorile implicite. Lead-urile și comenzile NU se șterg.</p>

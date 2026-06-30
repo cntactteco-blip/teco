@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 import t, { type Lang, type TranslationKey } from "@/lib/translations";
+import { useStore } from "@/lib/store";
 
 interface LangContextType {
   lang: Lang;
@@ -27,8 +28,12 @@ export function LangProvider({ children }: { children: ReactNode }) {
     try { localStorage.setItem("teco_lang", l); } catch {}
   };
 
+  const homeText = useStore((s) => s.settings.homeText);
   const translate = (key: TranslationKey, vars?: Record<string, string | number>): string => {
-    const str: string = (t[lang] as Record<string, string>)[key]
+    const override = (homeText?.[lang] as Record<string, string> | undefined)?.[key]
+      ?? (homeText?.ro as Record<string, string> | undefined)?.[key];
+    const str: string = override
+      ?? (t[lang] as Record<string, string>)[key]
       ?? (t.ro as Record<string, string>)[key]
       ?? key;
     if (!vars) return str;
