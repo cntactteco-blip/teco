@@ -1,0 +1,19 @@
+{
+  "name": "Teco.md Admin",
+  "short_name": "Teco Admin",
+  "description": "Panou de administrare Teco.md",
+  "start_url": "/admin",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#FF4F00",
+  "orientation": "portrait-primary",
+  "lang": "ro",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ]
+}

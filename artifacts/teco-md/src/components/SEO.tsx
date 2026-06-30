@@ -118,7 +118,7 @@ export function SEO({
       <meta name="twitter:data2" content="În Stoc" />
 
       {/* PWA / App */}
-      <link rel="manifest" href="/manifest.json" />
+      <link rel="manifest" href={typeof window !== "undefined" && window.location.pathname.startsWith("/admin") ? "/manifest-admin.json" : "/manifest.json"} />
       <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
       <link rel="shortcut icon" href="/favicon.svg" />
       <link rel="mask-icon" href="/favicon.svg" color="#FF4F00" />
