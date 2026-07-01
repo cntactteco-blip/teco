@@ -2209,7 +2209,7 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
                   <label className="block text-[11px] font-semibold text-zinc-400 mb-1 uppercase tracking-wider">{label}</label>
                   <input
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    value={(settings.homeText?.[lng] as Record<string,string> | undefined)?.[key] ?? ""}
+                    value={(settings.homeText?.[lng] as Record<string,string> | undefined)?.[key] ?? (translations[lng] as Record<string,string>)?.[key] ?? (translations.ro as Record<string,string>)?.[key] ?? ""}
                     placeholder={(translations[lng] as Record<string,string>)?.[key] ?? (translations.ro as Record<string,string>)?.[key] ?? key}
                     onChange={e => {
                       const prev = settings.homeText?.[lng] ?? {};
