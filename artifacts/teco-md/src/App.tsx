@@ -24,6 +24,9 @@ import BlogPost from "@/pages/BlogPost";
 import Checkout from "@/pages/Checkout";
 import NotFound from "@/pages/not-found";
 import { ComparatorDrawer } from "@/components/ComparatorDrawer";
+import Termeni from "@/pages/Termeni";
+import Confidentialitate from "@/pages/Confidentialitate";
+import Garantii from "@/pages/Garantii";
 const Admin = lazy(() => import("@/pages/Admin"));
 const Wishlist = lazy(() => import("@/pages/Wishlist"));
 const B2B = lazy(() => import("@/pages/B2B"));
@@ -60,6 +63,9 @@ function ShopRoutes() {
         <Route path="/favorit" component={Wishlist} />
         <Route path="/blog" component={Blog} />
         <Route path="/blog/:slug" component={BlogPost} />
+        <Route path="/termeni" component={Termeni} />
+        <Route path="/confidentialitate" component={Confidentialitate} />
+        <Route path="/garantii" component={Garantii} />
         <Route path="/checkout" component={Checkout} />
         <Route component={NotFound} />
       </Switch>

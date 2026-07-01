@@ -86,6 +86,7 @@ export interface ModuleSettings {
     announcementText: string;
     adminPin?: string;
   };
+  staticPages?: Record<string, string>;
   homeText?: {
     ro: Record<string, string>;
     ru: Record<string, string>;

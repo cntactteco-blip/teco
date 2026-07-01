@@ -2229,7 +2229,29 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
         ))}
       </SettingsSection>
 
-      {/* ── 13. Danger zone ── */}
+      {/* ── 13. Pagini statice ── */}
+      <SettingsSection icon={FileText} title="Pagini Statice" description="Editează conținutul paginilor Termeni, Confidențialitate și Garanții.">
+        {[
+          { key: "termeni", label: "Termeni și Condiții" },
+          { key: "confidentialitate", label: "Politica de Confidențialitate" },
+          { key: "garantii", label: "Garanții și Retur" },
+        ].map(({ key, label }) => (
+          <div key={key} className="mb-6">
+            <label className="block text-[11px] font-semibold text-zinc-400 mb-1 uppercase tracking-wider">{label}</label>
+            <textarea
+              rows={8}
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-y"
+              value={(settings.staticPages as Record<string,string> | undefined)?.[key] ?? ""}
+              placeholder={"Scrie conținutul pentru " + label + "..."}
+              onChange={e => storeActions.updateSettings({
+                staticPages: { ...(settings.staticPages ?? {}), [key]: e.target.value }
+              })}
+            />
+          </div>
+        ))}
+      </SettingsSection>
+
+      {/* ── 14. Danger zone ── */}
       <div className="bg-red-950/20 border border-red-900/40 rounded-2xl p-6">
         <h3 className="font-bold text-red-400 mb-1 flex items-center gap-2"><AlertCircle className="w-4 h-4" /> Zonă Periculoasă</h3>
         <p className="text-zinc-500 text-xs mb-4">Resetează catalogul de produse la valorile implicite. Lead-urile și comenzile NU se șterg.</p>
