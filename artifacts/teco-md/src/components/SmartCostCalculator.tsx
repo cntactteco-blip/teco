@@ -76,27 +76,6 @@ export default function SmartCostCalculator() {
       selections,
     });
 
-    // WhatsApp notification
-    const adminPhone = getState().settings.general?.adminPhone;
-    if (adminPhone) {
-      const { equipmentCost, installCost, totalCost } = getCalculations();
-      const msg = [
-        "🔔 *Lead Nou — Calculator TECO.MD*",
-        "",
-        `👤 Nume: ${formData.name || "—"}`,
-        `📞 Telefon: ${formData.phone}`,
-        "📋 Selectii:",
-        `  • Obiectiv: ${selections.objective || "—"}`,
-        `  • Camere: ${selections.cameras || "—"}`,
-        `  • Stocare: ${selections.storage || "—"}`,
-        `  • Instalare: ${selections.installation || "—"}`,
-        "",
-        `💰 Estimat: ~${totalCost.toLocaleString("ro-MD")} MDL`,
-        `   (Echipamente: ~${equipmentCost.toLocaleString("ro-MD")} + Instalare: ~${installCost.toLocaleString("ro-MD")})`,
-      ].join("\n");
-      window.open(`https://wa.me/${adminPhone}?text=${encodeURIComponent(msg)}`, "_blank");
-    }
-
     setStep(7);
   };
 
