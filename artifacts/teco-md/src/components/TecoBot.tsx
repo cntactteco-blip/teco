@@ -98,6 +98,13 @@ export function TecoBot() {
     setInput("");
     const userMsg: Message = { role: "user", content: text, ts: Date.now() };
     const allMessages = [...messages, userMsg];
+    if (allMessages.length === 1) {
+      fetch((import.meta.env.VITE_API_URL || "") + "/api/chat-notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, page: window.location.pathname }),
+      }).catch(() => {});
+    }
     setMessages(allMessages);
     setStreaming(true);
     const botMsg: Message = { role: "assistant", content: "", ts: Date.now() };
