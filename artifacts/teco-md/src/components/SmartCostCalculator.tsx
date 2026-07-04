@@ -80,19 +80,41 @@ export default function SmartCostCalculator() {
   };
 
   const getCalculations = () => {
-    let base = 3200;
-    if (selections.cameras === "4 Camere") base = 5800;
-    if (selections.cameras === "8 Camere") base = 9400;
-    if (selections.cameras === "16+ Camere") base = 15200;
-    let storageMult = 1;
-    if (selections.storage === "30 de zile") storageMult = 1.2;
-    if (selections.storage === "60 de zile") storageMult = 1.4;
-    if (selections.storage === "90+ zile") storageMult = 1.6;
-    let installCost = 1200;
-    if (selections.installation.includes("Standard")) installCost = 1500;
-    if (selections.installation.includes("Premium")) installCost = 2800;
-    if (selections.installation.includes("Wireless")) installCost = 800;
-    return { equipmentCost: Math.round(base * storageMult), installCost, totalCost: Math.round(base * storageMult) + installCost };
+    const cameraCount = parseInt(selections.cameras) || 2;
+
+    const extractCount = (p: { name: string; specs: string }) => {
+      const text = `${p.name} ${p.specs}`.toLowerCase();
+      let m = text.match(/(\d+)\s*(?:x|×)?\s*camer/);
+      if (m) return parseInt(m[1]);
+      m = text.match(/(\d+)\s*buc/);
+      if (m) return parseInt(m[1]);
+      m = text.match(/set of\s*(\d+)/);
+      if (m) return parseInt(m[1]);
+      return null;
+    };
+
+    const seturi = allProducts
+      .filter((p) => p.category === "kituri")
+      .map((p) => ({ product: p, count: extractCount(p) }))
+      .filter((s): s is { product: typeof allProducts[number]; count: number } => s.count !== null);
+
+    let equipmentCost: number;
+    const potrivite = seturi
+      .filter((s) => s.count >= cameraCount)
+      .sort((a, b) => a.count - b.count || a.product.price - b.product.price);
+
+    if (potrivite.length > 0) {
+      equipmentCost = potrivite[0].product.price;
+    } else if (seturi.length > 0) {
+      const celMaiMare = [...seturi].sort((a, b) => b.count - a.count)[0];
+      equipmentCost = Math.round((celMaiMare.product.price / celMaiMare.count) * cameraCount);
+    } else {
+      equipmentCost = 1600 * cameraCount;
+    }
+
+    const installCost = cameraCount === 1 ? 750 : 650 * cameraCount;
+
+    return { equipmentCost, installCost, totalCost: equipmentCost + installCost };
   };
 
   const bannerImage = settings.moduleA?.bannerImage;
