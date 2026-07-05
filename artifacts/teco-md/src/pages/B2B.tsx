@@ -1,7 +1,7 @@
 import { Building2, ShieldCheck, Users, Zap, CheckCircle, Phone, ArrowRight, Factory, ShoppingBag, Car, Building } from "lucide-react";
 import { Link } from "wouter";
 import { useLang } from "@/contexts/LangContext";
-import { useStore } from "@/lib/store";
+import { useStore, storeActions } from "@/lib/store";
 import { SEO, schemas } from "@/components/SEO";
 import { useState } from "react";
 
@@ -50,6 +50,7 @@ export default function B2B() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    storeActions.addLead({ name: formName, phone: formPhone, source: "B2B", notes: `Sector: ${formSector}` });
     const msg = ro
       ? `Bună ziua! Solicit deviz comercial B2B.\nCompanie/Nume: ${formName}\nTelefon: ${formPhone}\nSector: ${formSector}`
       : `Здравствуйте! Запрашиваю коммерческое предложение B2B.\nКомпания/Имя: ${formName}\nТелефон: ${formPhone}\nСектор: ${formSector}`;

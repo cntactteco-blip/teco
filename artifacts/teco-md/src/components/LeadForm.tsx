@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { storeActions } from "@/lib/store";
 
 export function LeadForm() {
   const [submitted, setSubmitted] = useState(false);
@@ -8,6 +9,7 @@ export function LeadForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !phone) return;
+    storeActions.addLead({ name, phone, source: "LeadForm Banner" });
     setSubmitted(true);
   };
 

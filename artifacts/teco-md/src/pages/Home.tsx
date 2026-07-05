@@ -5,7 +5,7 @@ import { ProductCarousel } from "@/components/ProductCarousel";
 import BundleBuilder from "@/components/BundleBuilder";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
-import { useStore } from "@/lib/store";
+import { useStore, storeActions } from "@/lib/store";
 import { useLang } from "@/contexts/LangContext";
 import { SEO, schemas } from "@/components/SEO";
 
@@ -146,11 +146,19 @@ export default function Home() {
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const data = new FormData(form);
+    const name = String(data.get("name") || "");
+    const phone = String(data.get("phone") || "");
+    const interest = String(data.get("interest") || "");
+    if (phone.trim()) {
+      storeActions.addLead({ name, phone, source: "Homepage Contact", notes: interest ? `Interes: ${interest}` : undefined });
+    }
     toast({
       title: t("home.contact.toast_title"),
       description: t("home.contact.toast_desc"),
     });
-    (e.target as HTMLFormElement).reset();
+    form.reset();
   };
 
   const tickerItems = t("hero.ticker").split(" • ");
@@ -538,17 +546,19 @@ export default function Home() {
           <form onSubmit={handleFormSubmit} className="max-w-4xl mx-auto bg-zinc-900/50 backdrop-blur-md border border-zinc-800 p-6 md:p-8 rounded-2xl flex flex-col md:flex-row gap-4">
             <input
               type="text"
+              name="name"
               placeholder={t("home.contact.name")}
               required
               className="w-full md:flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3.5 text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#FF4F00] focus:ring-1 focus:ring-[#FF4F00] transition-all"
             />
             <input
               type="tel"
+              name="phone"
               placeholder={t("home.contact.phone")}
               required
               className="w-full md:flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3.5 text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#FF4F00] focus:ring-1 focus:ring-[#FF4F00] transition-all"
             />
-            <select className="w-full md:flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3.5 text-zinc-400 focus:outline-none focus:border-[#FF4F00] focus:ring-1 focus:ring-[#FF4F00] transition-all appearance-none cursor-pointer">
+            <select name="interest" className="w-full md:flex-1 bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-3.5 text-zinc-400 focus:outline-none focus:border-[#FF4F00] focus:ring-1 focus:ring-[#FF4F00] transition-all appearance-none cursor-pointer">
               <option value="" disabled>{t("home.contact.interest")}</option>
               <option value="casa">{t("home.contact.home")}</option>
               <option value="afacere">{t("home.contact.business")}</option>
