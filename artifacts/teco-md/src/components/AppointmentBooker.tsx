@@ -50,7 +50,7 @@ export function AppointmentBooker() {
     const msg = ro
       ? `Bună ziua! Vreau să programez: ${service}\nData: ${label}\nInterval: ${time}\nVă rog confirmați programarea.`
       : `Здравствуйте! Хочу записаться: ${service}\nДата: ${label}\nВремя: ${time}\nПожалуйста, подтвердите запись.`;
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank");
+    window.location.href = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
     setStep("done");
   };
 

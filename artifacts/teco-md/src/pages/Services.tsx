@@ -98,7 +98,7 @@ export default function Services() {
     const msg = ro
       ? `Bună ziua! Sunt interesat de serviciul: ${service}. Puteți oferi detalii?`
       : `Здравствуйте! Меня интересует услуга: ${service}. Можете предоставить подробности?`;
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank");
+    window.location.href = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
   };
 
   const FAQ_RO = [

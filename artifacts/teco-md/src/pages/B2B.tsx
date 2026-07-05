@@ -54,7 +54,7 @@ export default function B2B() {
     const msg = ro
       ? `Bună ziua! Solicit deviz comercial B2B.\nCompanie/Nume: ${formName}\nTelefon: ${formPhone}\nSector: ${formSector}`
       : `Здравствуйте! Запрашиваю коммерческое предложение B2B.\nКомпания/Имя: ${formName}\nТелефон: ${formPhone}\nСектор: ${formSector}`;
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank");
+    window.location.href = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
   };
 
   const jsonLd = [

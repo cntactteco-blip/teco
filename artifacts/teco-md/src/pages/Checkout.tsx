@@ -96,7 +96,7 @@ export default function Checkout() {
         `🚚 Livrare: ${shippingLine}`,
         `💰 TOTAL: ${total.toLocaleString("ro-MD")} MDL`,
       ].filter(Boolean).join("\n");
-      window.open(`https://wa.me/${adminPhone.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`, "_blank");
+      window.location.href = `https://wa.me/${adminPhone.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`;
     }
   };
 

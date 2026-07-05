@@ -486,7 +486,7 @@ export default function ProductDetail() {
     const msg = encodeURIComponent(
       `${t("pd.wa_msg")}\n*${product.name}*\nModel: ${product.model}\nMDL: ${product.price.toLocaleString()}\n${t("pd.wa_qty")}: ${qty}`
     );
-    window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
+    window.location.href = `https://wa.me/${phone}?text=${msg}`;
   };
 
   const handleInstallWhatsApp = () => {
@@ -494,7 +494,7 @@ export default function ProductDetail() {
     const msg = encodeURIComponent(
       `${t("pd.install_wa_msg")}\n*${product.name}*\n${t("pd.install_wa_detail")}`
     );
-    window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
+    window.location.href = `https://wa.me/${phone}?text=${msg}`;
   };
 
   const savings = product.oldPrice ? product.oldPrice - product.price : 0;
