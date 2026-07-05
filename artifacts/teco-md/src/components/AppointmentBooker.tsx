@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Calendar, Clock, Wrench, CheckCircle, Phone } from "lucide-react";
 import { useLang } from "@/contexts/LangContext";
-import { useStore } from "@/lib/store";
+import { useStore, storeActions } from "@/lib/store";
 
 const SERVICES_RO = ["Montaj camere (casă)", "Montaj camere (afacere)", "Diagnosticare sistem", "Reparații echipament", "Configurare aplicație", "Audit securitate"];
 const SERVICES_RU = ["Монтаж камер (дом)", "Монтаж камер (бизнес)", "Диагностика системы", "Ремонт оборудования", "Настройка приложения", "Аудит безопасности"];
@@ -36,21 +36,25 @@ export function AppointmentBooker() {
   const adminPhone = useStore((s) => s.settings.general?.adminPhone ?? "");
   const phone = (adminPhone || "37367200463").replace(/\D/g, "");
 
-  const [step, setStep] = useState<"service" | "date" | "time" | "done">("service");
+  const [step, setStep] = useState<"service" | "date" | "time" | "contact" | "done">("service");
   const [service, setService] = useState<string | null>(null);
   const [day, setDay] = useState<(typeof days)[0] | null>(null);
   const [time, setTime] = useState<string | null>(null);
+  const [contactName, setContactName] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
 
   const days = getNextDays(7);
   const services = ro ? SERVICES_RO : SERVICES_RU;
 
   const handleBook = () => {
-    if (!service || !day || !time) return;
+    if (!service || !day || !time || !contactName.trim() || !contactPhone.trim()) return;
     const label = ro ? day.labelRo : day.labelRu;
-    const msg = ro
-      ? `Bună ziua! Vreau să programez: ${service}\nData: ${label}\nInterval: ${time}\nVă rog confirmați programarea.`
-      : `Здравствуйте! Хочу записаться: ${service}\nДата: ${label}\nВремя: ${time}\nПожалуйста, подтвердите запись.`;
-    window.location.href = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+    storeActions.addLead({
+      name: contactName.trim(),
+      phone: contactPhone.trim(),
+      source: "AppointmentBooker",
+      notes: `Serviciu: ${service} | Data: ${label} | Interval: ${time}`,
+    });
     setStep("done");
   };
 
@@ -123,7 +127,7 @@ export function AppointmentBooker() {
               ))}
             </div>
           </>
-        ) : (
+        ) : step === "time" ? (
           <>
             <button onClick={() => setStep("date")} className="text-xs text-zinc-400 mb-3 hover:text-zinc-600 transition-colors flex items-center gap-1">← {ro ? "Înapoi" : "Назад"}</button>
             <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">{ro ? "3. Alege intervalul orar" : "3. Выберите временной интервал"}</p>
@@ -140,13 +144,28 @@ export function AppointmentBooker() {
               ))}
             </div>
             <button
-              onClick={handleBook}
+              onClick={() => setStep("contact")}
               disabled={!time}
               className="w-full bg-[#FF4F00] text-white font-black py-4 rounded-2xl hover:opacity-90 active:scale-95 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
             >
               <Phone className="w-4 h-4" />
-              {ro ? "Confirmă pe WhatsApp" : "Подтвердить в WhatsApp"}
+              {ro ? "Continuă" : "Продолжить"}
             </button>
+          </>
+        ) : (
+          <>
+            <button onClick={() => setStep("time")} className="text-xs text-zinc-400 mb-3 hover:text-zinc-600 transition-colors flex items-center gap-1">← {ro ? "Înapoi" : "Назад"}</button>
+            <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">{ro ? "4. Datele tale" : "4. Ваши данные"}</p>
+            <form onSubmit={(e) => { e.preventDefault(); handleBook(); }} className="flex flex-col gap-3">
+              <input type="text" placeholder={ro ? "Nume complet" : "Полное имя"} required value={contactName} onChange={(e) => setContactName(e.target.value)}
+                className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-[#FF4F00]" />
+              <input type="tel" placeholder="+373 ..." required value={contactPhone} onChange={(e) => setContactPhone(e.target.value)}
+                className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-[#FF4F00]" />
+              <button type="submit" className="w-full bg-[#FF4F00] text-white font-black py-4 rounded-2xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2">
+                <Phone className="w-4 h-4" />
+                {ro ? "Trimite Cererea" : "Отправить Заявку"}
+              </button>
+            </form>
           </>
         )}
       </div>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { Wrench, Search, ShieldCheck, Phone, CheckCircle, Clock, Star, ArrowRight, ChevronDown, MapPin, Shield, Zap, Wifi } from "lucide-react";
-import { useStore } from "@/lib/store";
+import { Wrench, Search, ShieldCheck, Phone, CheckCircle, CheckCircle2, X, Clock, Star, ArrowRight, ChevronDown, MapPin, Shield, Zap, Wifi } from "lucide-react";
+import { useStore, storeActions } from "@/lib/store";
 import { useLang } from "@/contexts/LangContext";
 import { SEO, schemas } from "@/components/SEO";
 import { AppointmentBooker } from "@/components/AppointmentBooker";
@@ -94,11 +94,24 @@ export default function Services() {
   const adminPhone = useStore((s) => s.settings.general?.adminPhone ?? "");
   const phone = (adminPhone || "37367200463").replace(/\D/g, "");
 
+  const [modalService, setModalService] = useState<string | null>(null);
+  const [modalName, setModalName] = useState("");
+  const [modalPhone, setModalPhone] = useState("");
+  const [modalSubmitted, setModalSubmitted] = useState(false);
   const openWA = (service: string) => {
-    const msg = ro
-      ? `Bună ziua! Sunt interesat de serviciul: ${service}. Puteți oferi detalii?`
-      : `Здравствуйте! Меня интересует услуга: ${service}. Можете предоставить подробности?`;
-    window.location.href = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+    setModalService(service);
+  };
+  const handleServiceLeadSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!modalName.trim() || !modalPhone.trim()) return;
+    storeActions.addLead({
+      name: modalName.trim(),
+      phone: modalPhone.trim(),
+      source: "Services Page",
+      notes: `Serviciu: ${modalService}`,
+    });
+    setModalSubmitted(true);
+    setTimeout(() => { setModalService(null); setModalSubmitted(false); setModalName(""); setModalPhone(""); }, 2500);
   };
 
   const FAQ_RO = [
@@ -276,6 +289,35 @@ export default function Services() {
         </div>
       </section>
 
+      {modalService && (
+        <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setModalService(null)} />
+          <div className="relative bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden p-6">
+            <button onClick={() => setModalService(null)} className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-700">
+              <X className="w-5 h-5" />
+            </button>
+            {modalSubmitted ? (
+              <div className="text-center py-6">
+                <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
+                <p className="font-bold text-zinc-900">{ro ? "Cererea a fost inregistrata!" : "Zayavka zaregistrirovana!"}</p>
+                <p className="text-sm text-zinc-500 mt-1">{ro ? "Te contactam in cel mult 15 minute." : "Svyazhemsya s vami v techenie 15 minut."}</p>
+              </div>
+            ) : (
+              <form onSubmit={handleServiceLeadSubmit} className="flex flex-col gap-3">
+                <h3 className="font-bold text-lg text-zinc-900 mb-1">{modalService}</h3>
+                <p className="text-sm text-zinc-500 mb-2">{ro ? "Lasa-ne numele si telefonul, te sunam noi." : "Ostav'te imya i telefon, my vam pozvonim."}</p>
+                <input type="text" placeholder={ro ? "Nume complet" : "Polnoe imya"} required value={modalName} onChange={(e) => setModalName(e.target.value)}
+                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-[#FF4F00]" />
+                <input type="tel" placeholder="+373 ..." required value={modalPhone} onChange={(e) => setModalPhone(e.target.value)}
+                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-[#FF4F00]" />
+                <button type="submit" className="w-full bg-[#FF4F00] text-white font-bold py-3.5 rounded-xl hover:opacity-90 active:scale-95 transition-all mt-1">
+                  {ro ? "Trimite cererea" : "Otpravit' zayavku"}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
       {/* ── How it works ── */}
       <section className="bg-white border-y border-zinc-100 py-12">
         <div className="max-w-5xl mx-auto px-4 md:px-6">

@@ -75,29 +75,6 @@ export default function Checkout() {
     clearCart?.();
     setSubmitted(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
-
-    const adminPhone = getState().settings.general?.adminPhone;
-    if (adminPhone) {
-      const shippingLine = total >= 5000 ? "Gratuită" : "200 MDL";
-      const productLines = items.map((i) => `  • ${i.qty}× ${i.name} — ${(i.price * i.qty).toLocaleString("ro-MD")} MDL`).join("\n");
-      const msg = [
-        "🛒 *Comandă Nouă — TECO.MD*",
-        `📋 Ref: #${shortId}`,
-        "",
-        `👤 ${form.name}`,
-        `📞 ${form.phone}`,
-        form.email ? `📧 ${form.email}` : null,
-        `📍 ${form.address} (${form.delivery})`,
-        form.notes ? `📝 ${form.notes}` : null,
-        "",
-        "🛍 Produse:",
-        productLines,
-        "",
-        `🚚 Livrare: ${shippingLine}`,
-        `💰 TOTAL: ${total.toLocaleString("ro-MD")} MDL`,
-      ].filter(Boolean).join("\n");
-      window.location.href = `https://wa.me/${adminPhone.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`;
-    }
   };
 
   if (submitted) {
