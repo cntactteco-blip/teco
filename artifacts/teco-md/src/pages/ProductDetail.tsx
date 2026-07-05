@@ -489,12 +489,24 @@ export default function ProductDetail() {
     window.location.href = `https://wa.me/${phone}?text=${msg}`;
   };
 
+  const [showInstallModal, setShowInstallModal] = useState(false);
+  const [installName, setInstallName] = useState("");
+  const [installPhone, setInstallPhone] = useState("");
+  const [installSubmitted, setInstallSubmitted] = useState(false);
   const handleInstallWhatsApp = () => {
-    const phone = adminPhone?.replace(/\D/g, "") || "37367200463";
-    const msg = encodeURIComponent(
-      `${t("pd.install_wa_msg")}\n*${product.name}*\n${t("pd.install_wa_detail")}`
-    );
-    window.location.href = `https://wa.me/${phone}?text=${msg}`;
+    setShowInstallModal(true);
+  };
+  const handleInstallSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!installName.trim() || !installPhone.trim()) return;
+    storeActions.addLead({
+      name: installName.trim(),
+      phone: installPhone.trim(),
+      source: "ProductDetail Install Request",
+      notes: `Produs: ${product.name}`,
+    });
+    setInstallSubmitted(true);
+    setTimeout(() => { setShowInstallModal(false); setInstallSubmitted(false); setInstallName(""); setInstallPhone(""); }, 2500);
   };
 
   const savings = product.oldPrice ? product.oldPrice - product.price : 0;
@@ -1019,6 +1031,35 @@ export default function ProductDetail() {
               className="flex-shrink-0 bg-[#FF4F00] text-white font-bold px-6 py-3.5 rounded-xl hover:opacity-90 active:scale-95 transition-all flex items-center gap-2 text-sm whitespace-nowrap">
               <MessageCircle className="w-4 h-4" /> {t("pd.service_cta")}
             </button>
+            {showInstallModal && (
+              <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-4">
+                <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowInstallModal(false)} />
+                <div className="relative bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden p-6">
+                  <button onClick={() => setShowInstallModal(false)} className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-700">
+                    <X className="w-5 h-5" />
+                  </button>
+                  {installSubmitted ? (
+                    <div className="text-center py-6">
+                      <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
+                      <p className="font-bold text-zinc-900">Cererea a fost înregistrată!</p>
+                      <p className="text-sm text-zinc-500 mt-1">Te contactăm în cel mult 15 minute.</p>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleInstallSubmit} className="flex flex-col gap-3">
+                      <h3 className="font-bold text-lg text-zinc-900 mb-1">Cere ofertă instalare</h3>
+                      <p className="text-sm text-zinc-500 mb-2">Lasă-ne numele și telefonul, te sunăm noi.</p>
+                      <input type="text" placeholder="Nume complet" required value={installName} onChange={(e) => setInstallName(e.target.value)}
+                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-[#FF4F00]" />
+                      <input type="tel" placeholder="+373 ..." required value={installPhone} onChange={(e) => setInstallPhone(e.target.value)}
+                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-[#FF4F00]" />
+                      <button type="submit" className="w-full bg-[#FF4F00] text-white font-bold py-3.5 rounded-xl hover:opacity-90 active:scale-95 transition-all mt-1">
+                        Trimite cererea
+                      </button>
+                    </form>
+                  )}
+                </div>
+              </div>
+            )}
           </section>
 
           {/* Similar products — auto-scroll marquee */}
