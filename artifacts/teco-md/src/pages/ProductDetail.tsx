@@ -319,6 +319,10 @@ export default function ProductDetail() {
   const [lbDragging, setLbDragging] = useState(false);
   const [lbDragStart, setLbDragStart] = useState({ x: 0, y: 0, px: 0, py: 0 });
   const [lbPinchDist, setLbPinchDist] = useState<number | null>(null);
+  const [showInstallModal, setShowInstallModal] = useState(false);
+  const [installName, setInstallName] = useState("");
+  const [installPhone, setInstallPhone] = useState("");
+  const [installSubmitted, setInstallSubmitted] = useState(false);
 
   useScrollReveal();
 
@@ -489,10 +493,6 @@ export default function ProductDetail() {
     window.location.href = `https://wa.me/${phone}?text=${msg}`;
   };
 
-  const [showInstallModal, setShowInstallModal] = useState(false);
-  const [installName, setInstallName] = useState("");
-  const [installPhone, setInstallPhone] = useState("");
-  const [installSubmitted, setInstallSubmitted] = useState(false);
   const handleInstallWhatsApp = () => {
     setShowInstallModal(true);
   };
