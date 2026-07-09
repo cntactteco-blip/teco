@@ -294,6 +294,7 @@ export default function ProductDetail() {
   const addItem = useCart(s => s.addItem);
   const openCart = useCart(s => s.openCart);
   const { toast } = useToast();
+  const userReviews = useStore((s) => (product ? s.userReviews[product.id] : undefined) ?? []);
 
   const [added, setAdded] = useState(false);
   const [qty, setQty] = useState(1);
@@ -515,7 +516,6 @@ export default function ProductDetail() {
   const badgeClass = product.badge ? (BADGE_COLORS[product.badge] ?? "bg-zinc-900 text-white") : "";
   const brandClass = BRAND_COLORS[product.brand] ?? "text-zinc-600 bg-zinc-100 border-zinc-200";
   const specChips = product.specs.split(" | ");
-  const userReviews = useStore((s) => s.userReviews[product.id] ?? []);
   const { r: rating, n: reviewCount } = ratingFor(product.id);
   const seedReviews = reviewsFor(product.id);
   const reviews = seedReviews;
