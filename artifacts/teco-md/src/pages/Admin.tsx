@@ -1706,9 +1706,11 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
   // --- Category manager state ---
   const [catEditId, setCatEditId] = useState<string | null>(null);
   const [catEditLabel, setCatEditLabel] = useState("");
+  const [catEditLabelRu, setCatEditLabelRu] = useState("");
   const [catEditSlug, setCatEditSlug] = useState("");
   const [catEditImage, setCatEditImage] = useState("");
   const [catNewLabel, setCatNewLabel] = useState("");
+  const [catNewLabelRu, setCatNewLabelRu] = useState("");
   const [catNewSlug, setCatNewSlug] = useState("");
   const [catNewImage, setCatNewImage] = useState("");
   const [showAddCat, setShowAddCat] = useState(false);
@@ -1729,7 +1731,7 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
 
   const saveEditCat = (id: string) => {
     storeActions.updateCategories(categories.map((c) =>
-      c.id === id ? { ...c, label: catEditLabel, slug: catEditSlug || c.slug, image: catEditImage || c.image } : c
+      c.id === id ? { ...c, label: catEditLabel, labelRu: catEditLabelRu || c.labelRu, slug: catEditSlug || c.slug, image: catEditImage || c.image } : c
     ));
     setCatEditId(null);
   };
@@ -1738,8 +1740,8 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
     if (!catNewLabel.trim()) return;
     const slug = catNewSlug.trim() || catNewLabel.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
     const id = slug + "-" + Date.now().toString(36);
-    storeActions.updateCategories([...categories, { id, slug, label: catNewLabel.trim(), image: catNewImage || undefined }]);
-    setCatNewLabel(""); setCatNewSlug(""); setCatNewImage(""); setShowAddCat(false);
+    storeActions.updateCategories([...categories, { id, slug, label: catNewLabel.trim(), labelRu: catNewLabelRu.trim() || undefined, image: catNewImage || undefined }]);
+    setCatNewLabel(""); setCatNewLabelRu(""); setCatNewSlug(""); setCatNewImage(""); setShowAddCat(false);
   };
 
   // --- PIN change state ---
@@ -1935,12 +1937,22 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
             <div key={cat.id} className="bg-zinc-800 rounded-xl p-3">
               {catEditId === cat.id ? (
                 <div className="space-y-2">
-                  <div className="flex gap-2 items-center flex-wrap">
-                    <input value={catEditLabel} onChange={(e) => setCatEditLabel(e.target.value)} placeholder="Etichetă"
-                      className="flex-1 min-w-[120px] bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-[#FF4F00]" />
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Denumire RO</p>
+                      <input value={catEditLabel} onChange={(e) => setCatEditLabel(e.target.value)} placeholder="ex: Camere WiFi"
+                        className="w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-[#FF4F00]" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Denumire RU</p>
+                      <input value={catEditLabelRu} onChange={(e) => setCatEditLabelRu(e.target.value)} placeholder="ex: WiFi Камеры"
+                        className="w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-[#FF4F00]" />
+                    </div>
+                  </div>
+                  <div className="flex gap-2 items-center">
                     <input value={catEditSlug} onChange={(e) => setCatEditSlug(e.target.value)} placeholder="slug (url)"
-                      className="w-28 bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-1.5 text-sm text-zinc-400 font-mono focus:outline-none focus:border-[#FF4F00]" />
-                    <button onClick={() => saveEditCat(cat.id)} className="bg-[#FF4F00] text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:opacity-90">Salvează</button>
+                      className="flex-1 bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-1.5 text-sm text-zinc-400 font-mono focus:outline-none focus:border-[#FF4F00]" />
+                    <button onClick={() => saveEditCat(cat.id)} className="bg-[#FF4F00] text-white px-4 py-1.5 rounded-lg text-xs font-bold hover:opacity-90 whitespace-nowrap">Salvează</button>
                     <button onClick={() => setCatEditId(null)} className="bg-zinc-700 text-zinc-400 px-2 py-1.5 rounded-lg text-xs hover:bg-zinc-600">✕</button>
                   </div>
                   <MediaUploadSlot
@@ -1970,7 +1982,7 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
                   <span className="text-[10px] text-zinc-600 bg-zinc-700 px-1.5 py-0.5 rounded">
                     {products.filter((p) => p.category === cat.slug).length} prod.
                   </span>
-                  <button onClick={() => { setCatEditId(cat.id); setCatEditLabel(cat.label); setCatEditSlug(cat.slug); setCatEditImage(cat.image ?? ""); }}
+                  <button onClick={() => { setCatEditId(cat.id); setCatEditLabel(cat.label); setCatEditLabelRu(cat.labelRu ?? ""); setCatEditSlug(cat.slug); setCatEditImage(cat.image ?? ""); }}
                     className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-500 hover:text-white transition-colors">
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
@@ -1986,14 +1998,24 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
 
         {showAddCat ? (
           <div className="bg-zinc-800 rounded-xl p-3 space-y-2">
-            <div className="flex gap-2 items-center flex-wrap">
-              <input autoFocus value={catNewLabel} onChange={(e) => setCatNewLabel(e.target.value)} placeholder="Etichetă (ex: Drone)"
-                className="flex-1 min-w-[140px] bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-[#FF4F00]"
-                onKeyDown={(e) => { if (e.key === "Enter") addCat(); if (e.key === "Escape") setShowAddCat(false); }} />
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Denumire RO *</p>
+                <input autoFocus value={catNewLabel} onChange={(e) => setCatNewLabel(e.target.value)} placeholder="ex: Drone"
+                  className="w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-[#FF4F00]"
+                  onKeyDown={(e) => { if (e.key === "Enter") addCat(); if (e.key === "Escape") setShowAddCat(false); }} />
+              </div>
+              <div>
+                <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">Denumire RU</p>
+                <input value={catNewLabelRu} onChange={(e) => setCatNewLabelRu(e.target.value)} placeholder="ex: Дроны"
+                  className="w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-[#FF4F00]" />
+              </div>
+            </div>
+            <div className="flex gap-2 items-center">
               <input value={catNewSlug} onChange={(e) => setCatNewSlug(e.target.value)} placeholder="slug (opțional)"
-                className="w-28 bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-1.5 text-sm text-zinc-400 font-mono focus:outline-none focus:border-[#FF4F00]" />
-              <button onClick={addCat} className="bg-[#FF4F00] text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:opacity-90">Adaugă</button>
-              <button onClick={() => { setShowAddCat(false); setCatNewLabel(""); setCatNewSlug(""); setCatNewImage(""); }}
+                className="flex-1 bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-1.5 text-sm text-zinc-400 font-mono focus:outline-none focus:border-[#FF4F00]" />
+              <button onClick={addCat} className="bg-[#FF4F00] text-white px-4 py-1.5 rounded-lg text-xs font-bold hover:opacity-90 whitespace-nowrap">Adaugă</button>
+              <button onClick={() => { setShowAddCat(false); setCatNewLabel(""); setCatNewLabelRu(""); setCatNewSlug(""); setCatNewImage(""); }}
                 className="bg-zinc-700 text-zinc-400 px-2 py-1.5 rounded-lg text-xs hover:bg-zinc-600">✕</button>
             </div>
             <MediaUploadSlot

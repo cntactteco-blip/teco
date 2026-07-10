@@ -416,7 +416,7 @@ export default function Home() {
                   <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-zinc-900/40 to-transparent" />
                   <div className="absolute inset-0 bg-[#FF4F00]/0 group-hover:bg-[#FF4F00]/8 transition-all duration-300" />
                   <div className="absolute bottom-0 left-0 right-0 p-4">
-                    <h3 className="text-white font-black text-lg leading-tight">{cat.label}</h3>
+                    <h3 className="text-white font-black text-lg leading-tight">{lang === "ro" ? cat.label : (cat.labelRu || cat.label)}</h3>
                     <p className="text-white/60 text-xs mt-0.5 group-hover:text-[#FF4F00] transition-colors">{count} {t("home.cat.products")} →</p>
                   </div>
                 </Link>
