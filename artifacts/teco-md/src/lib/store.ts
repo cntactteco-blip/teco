@@ -87,6 +87,11 @@ export interface ModuleSettings {
     adminPin?: string;
   };
   staticPages?: Record<string, string>;
+  servicePrices?: {
+    montaj: string;
+    diagnosticare: string;
+    reparatii: string;
+  };
   homeText?: {
     ro: Record<string, string>;
     ru: Record<string, string>;

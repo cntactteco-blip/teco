@@ -28,20 +28,21 @@ const CITY_DATA: Record<string, {
 };
 
 const SERVICES_RO = [
-  { title: "Montaj Camere de Supraveghere", desc: "Instalare profesională camere IP WiFi și PoE la casă sau afacere.", price: "de la 300 MDL/cameră" },
-  { title: "Diagnosticare & Depanare Sistem", desc: "Identificăm și rezolvăm orice problemă a sistemului tău de supraveghere.", price: "de la 200 MDL/vizită" },
+  { title: "Montaj Camere de Supraveghere", desc: "Instalare profesională camere IP WiFi și PoE la casă sau afacere.", price: sp?.montaj ?? "de la 300 MDL/cameră" },
+  { title: "Diagnosticare & Depanare Sistem", desc: "Identificăm și rezolvăm orice problemă a sistemului tău de supraveghere.", price: sp?.diagnosticare ?? "de la 200 MDL/vizită" },
   { title: "Reparații Camere & NVR", desc: "Reparăm camere IP, NVR-uri, DVR-uri și sisteme de alarmă.", price: "prețuri la evaluare" },
   { title: "Configurare Acces Remote", desc: "Setăm accesul de pe telefon la camerele tale.", price: "de la 150 MDL" },
 ];
 const SERVICES_RU = [
-  { title: "Монтаж Камер Видеонаблюдения", desc: "Профессиональная установка IP WiFi и PoE камер дома или в офисе.", price: "от 300 MDL/камера" },
-  { title: "Диагностика и Устранение Неисправностей", desc: "Найдём и устраним любую проблему вашей системы видеонаблюдения.", price: "от 200 MDL/визит" },
+  { title: "Монтаж Камер Видеонаблюдения", desc: "Профессиональная установка IP WiFi и PoE камер дома или в офисе.", price: sp?.montaj ?? "от 300 MDL/камера" },
+  { title: "Диагностика и Устранение Неисправностей", desc: "Найдём и устраним любую проблему вашей системы видеонаблюдения.", price: sp?.diagnosticare ?? "от 200 MDL/визит" },
   { title: "Ремонт Камер и NVR", desc: "Ремонтируем IP-камеры, NVR, DVR и охранные системы.", price: "по результатам оценки" },
   { title: "Настройка Удалённого Доступа", desc: "Настроим доступ с телефона к вашим камерам.", price: "от 150 MDL" },
 ];
 
 export default function ServiceCity() {
-  const { city: citySlug } = useParams<{ city: string }>();
+  const sp = useStore((s) => s.settings.servicePrices);
+const { city: citySlug } = useParams<{ city: string }>();
   const { lang } = useLang();
   const ro = lang === "ro";
   const adminPhone = useStore((s) => s.settings.general?.adminPhone ?? "");
