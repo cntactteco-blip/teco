@@ -458,6 +458,14 @@ Acoperim toată Moldova: Chișinău, Bălți, Orhei, Cahul, Soroca, Ungheni, Str
   },
 ];
 
+const _cachedSettings = (() => {
+  try {
+    const raw = localStorage.getItem("teco_settings_cache");
+    if (!raw) return null;
+    return JSON.parse(raw) as ModuleSettings;
+  } catch { return null; }
+})();
+
 let state: StoreState = {
   products: seedProducts.map((p) => ({
     ...p,
@@ -468,7 +476,7 @@ let state: StoreState = {
   leads: [],
   orders: [],
   blogPosts: DEFAULT_BLOG_POSTS,
-  settings: DEFAULT_SETTINGS,
+  settings: _cachedSettings ?? DEFAULT_SETTINGS,
   userReviews: (() => {
     try { return JSON.parse(localStorage.getItem("teco_user_reviews") ?? "{}"); } catch { return {}; }
   })(),
@@ -715,18 +723,22 @@ export async function initStore() {
       ? settingsRows[0].data
       : null;
 
+  const mergedSettings = mergeSettings(rawSettings);
+  try { localStorage.setItem("teco_settings_cache", JSON.stringify(mergedSettings)); } catch {}
+
   setState({
     products: finalProds.map(dbProductToStore),
     leads: (leads ?? []).map(dbLeadToStore),
     orders: (orders ?? []).map(dbOrderToStore),
     blogPosts: (blogRows ?? []).map(dbBlogPostToStore),
-    settings: mergeSettings(rawSettings),
+    settings: mergedSettings,
     loaded: true,
   });
 }
 
 // ─── Salvare settings în Supabase ───────────────────────────────────
 async function saveSettings(s: ModuleSettings) {
+  try { localStorage.setItem("teco_settings_cache", JSON.stringify(s)); } catch {}
   await supabase.from("settings").upsert({ id: 1, data: s });
 }
 
