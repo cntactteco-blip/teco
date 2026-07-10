@@ -60,6 +60,7 @@ export default function Home() {
     return [116];
   })();
   const storeProducts = useStore((s) => s.products);
+  const categories = useStore((s) => s.settings.categories);
   const loaded = useStore((s) => s.loaded);
   const [heroIndex, setHeroIndex] = useState(0);
 
@@ -405,26 +406,22 @@ export default function Home() {
             </Link>
           </div>
           <div className="flex gap-3 overflow-x-auto no-scrollbar snap-x md:grid md:grid-cols-4 md:gap-5 pb-2">
-            {[
-              { icon: Camera, label: t("home.cat.ip"),         count: "124", img: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=500&q=80&auto=format&fit=crop" },
-              { icon: Server, label: t("home.cat.nvr"),        count: "45",  img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&q=80&auto=format&fit=crop" },
-              { icon: Shield, label: t("home.cat.alarm"),      count: "32",  img: "https://images.unsplash.com/photo-1558002038-1055907df827?w=500&q=80&auto=format&fit=crop" },
-              { icon: Zap,    label: t("home.cat.accessories"), count: "218", img: "https://images.unsplash.com/photo-1620714223084-8fcacc2dfd4d?w=500&q=80&auto=format&fit=crop" },
-            ].map(({ icon: Icon, label, count, img }) => (
-              <Link key={label} href="/produse"
-                className="group relative snap-start min-w-[200px] md:min-w-0 h-[240px] md:h-[300px] rounded-2xl overflow-hidden cursor-pointer flex-shrink-0 block shadow-sm hover:shadow-xl transition-shadow duration-300">
-                <img src={img} alt={label} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-zinc-900/40 to-transparent" />
-                <div className="absolute inset-0 bg-[#FF4F00]/0 group-hover:bg-[#FF4F00]/8 transition-all duration-300" />
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <div className="w-8 h-8 bg-white/15 backdrop-blur-sm border border-white/20 rounded-lg flex items-center justify-center mb-2">
-                    <Icon className="w-4 h-4 text-white" />
+            {categories.map((cat) => {
+              const count = storeProducts.filter((p) => p.category === cat.slug).length;
+              const fallbackImg = "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=500&q=80&auto=format&fit=crop";
+              return (
+                <Link key={cat.id} href={`/produse?cat=${cat.slug}`}
+                  className="group relative snap-start min-w-[200px] md:min-w-0 h-[240px] md:h-[300px] rounded-2xl overflow-hidden cursor-pointer flex-shrink-0 block shadow-sm hover:shadow-xl transition-shadow duration-300">
+                  <img src={cat.image || fallbackImg} alt={cat.label} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-zinc-900/40 to-transparent" />
+                  <div className="absolute inset-0 bg-[#FF4F00]/0 group-hover:bg-[#FF4F00]/8 transition-all duration-300" />
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <h3 className="text-white font-black text-lg leading-tight">{cat.label}</h3>
+                    <p className="text-white/60 text-xs mt-0.5 group-hover:text-[#FF4F00] transition-colors">{count} {t("home.cat.products")} →</p>
                   </div>
-                  <h3 className="text-white font-black text-lg leading-tight">{label}</h3>
-                  <p className="text-white/60 text-xs mt-0.5 group-hover:text-[#FF4F00] transition-colors">{count} {t("home.cat.products")} →</p>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
