@@ -6,59 +6,6 @@ import { useLang } from "@/contexts/LangContext";
 import { SEO, schemas } from "@/components/SEO";
 import { AppointmentBooker } from "@/components/AppointmentBooker";
 
-const SERVICES = [
-  {
-    id: "montaj",
-    icon: Wrench,
-    color: "#FF4F00",
-    bg: "bg-orange-50",
-    border: "border-orange-100",
-    title: "Montaj Camere de Supraveghere",
-    titleRu: "Монтаж Камер Видеонаблюдения",
-    desc: "Echipa noastră de tehnicieni certificați instalează și configurează sisteme complete de supraveghere video la locuința sau afacerea ta. Venim la tine oriunde în Moldova.",
-    descRu: "Наша команда сертифицированных техников устанавливает и настраивает полные системы видеонаблюдения у вас дома или на предприятии. Работаем по всей Молдове.",
-    features: ["Montaj și cablare profesională", "Configurare NVR și aplicație mobilă", "Testare completă a sistemului", "Instruire utilizator inclusă"],
-    featuresRu: ["Профессиональный монтаж и прокладка кабеля", "Настройка NVR и мобильного приложения", "Полное тестирование системы", "Обучение пользователя включено"],
-    price: "de la 300 MDL/cameră",
-    priceRu: "от 300 MDL/камера",
-    badge: "CEL MAI CERUT",
-    badgeRu: "ПОПУЛЯРНОЕ",
-  },
-  {
-    id: "diagnosticare",
-    icon: Search,
-    color: "#3B82F6",
-    bg: "bg-blue-50",
-    border: "border-blue-100",
-    title: "Diagnosticare & Depanare",
-    titleRu: "Диагностика и Устранение Неисправностей",
-    desc: "Sistemul tău nu funcționează? Tehnicianul nostru identifică și rezolvă orice problemă: cameră defectă, conexiune pierdută, configurare incorectă sau NVR blocat.",
-    descRu: "Система не работает? Наш техник выявит и устранит любую проблему: неисправная камера, потеря соединения, неправильная настройка или заблокированный NVR.",
-    features: ["Diagnosticare completă on-site", "Verificare conexiuni și cabluri", "Resetare și reconfigurare sistem", "Raport tehnic detaliat"],
-    featuresRu: ["Полная диагностика на месте", "Проверка соединений и кабелей", "Сброс и перенастройка системы", "Подробный технический отчет"],
-    price: "de la 200 MDL/vizită",
-    priceRu: "от 200 MDL/визит",
-    badge: null,
-    badgeRu: null,
-  },
-  {
-    id: "reparatii",
-    icon: ShieldCheck,
-    color: "#10B981",
-    bg: "bg-green-50",
-    border: "border-green-100",
-    title: "Reparații Echipamente",
-    titleRu: "Ремонт Оборудования",
-    desc: "Reparăm camere IP, NVR-uri, DVR-uri și sisteme de alarmă. Folosim piese originale sau compatibile de calitate și oferim garanție pe reparațiile efectuate.",
-    descRu: "Ремонтируем IP-камеры, NVR, DVR и системы охраны. Используем оригинальные или качественные совместимые детали. Предоставляем гарантию на выполненные ремонты.",
-    features: ["Reparație camere IP și NVR/DVR", "Înlocuire piese defecte", "Garanție 6 luni pe reparație", "Evaluare gratuită prealabilă"],
-    featuresRu: ["Ремонт IP-камер, NVR/DVR", "Замена неисправных деталей", "Гарантия 6 месяцев на ремонт", "Бесплатная предварительная оценка"],
-    price: "prețuri la evaluare",
-    priceRu: "цены по результатам оценки",
-    badge: null,
-    badgeRu: null,
-  },
-];
 
 const STEPS = [
   { n: "01", ro: { t: "Contactezi echipa", d: "Suni, scrii pe WhatsApp sau compleci formularul online" }, ru: { t: "Свяжитесь с нами", d: "Позвоните, напишите в WhatsApp или заполните форму" } },
@@ -89,6 +36,60 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 }
 
 export default function Services() {
+  const sp = useStore((s) => s.settings.servicePrices);
+const SERVICES = [
+  {
+    id: "montaj",
+    icon: Wrench,
+    color: "#FF4F00",
+    bg: "bg-orange-50",
+    border: "border-orange-100",
+    title: "Montaj Camere de Supraveghere",
+    titleRu: "Монтаж Камер Видеонаблюдения",
+    desc: "Echipa noastră de tehnicieni certificați instalează și configurează sisteme complete de supraveghere video la locuința sau afacerea ta. Venim la tine oriunde în Moldova.",
+    descRu: "Наша команда сертифицированных техников устанавливает и настраивает полные системы видеонаблюдения у вас дома или на предприятии. Работаем по всей Молдове.",
+    features: ["Montaj și cablare profesională", "Configurare NVR și aplicație mobilă", "Testare completă a sistemului", "Instruire utilizator inclusă"],
+    featuresRu: ["Профессиональный монтаж и прокладка кабеля", "Настройка NVR и мобильного приложения", "Полное тестирование системы", "Обучение пользователя включено"],
+    price: sp?.montaj || "de la 300 MDL/cameră",
+    priceRu: sp?.montaj || "от 300 MDL/камера",
+    badge: "CEL MAI CERUT",
+    badgeRu: "ПОПУЛЯРНОЕ",
+  },
+  {
+    id: "diagnosticare",
+    icon: Search,
+    color: "#3B82F6",
+    bg: "bg-blue-50",
+    border: "border-blue-100",
+    title: "Diagnosticare & Depanare",
+    titleRu: "Диагностика и Устранение Неисправностей",
+    desc: "Sistemul tău nu funcționează? Tehnicianul nostru identifică și rezolvă orice problemă: cameră defectă, conexiune pierdută, configurare incorectă sau NVR blocat.",
+    descRu: "Система не работает? Наш техник выявит и устранит любую проблему: неисправная камера, потеря соединения, неправильная настройка или заблокированный NVR.",
+    features: ["Diagnosticare completă on-site", "Verificare conexiuni și cabluri", "Resetare și reconfigurare sistem", "Raport tehnic detaliat"],
+    featuresRu: ["Полная диагностика на месте", "Проверка соединений и кабелей", "Сброс и перенастройка системы", "Подробный технический отчет"],
+    price: sp?.diagnosticare || "de la 200 MDL/vizită",
+    priceRu: sp?.diagnosticare || "от 200 MDL/визит",
+    badge: null,
+    badgeRu: null,
+  },
+  {
+    id: "reparatii",
+    icon: ShieldCheck,
+    color: "#10B981",
+    bg: "bg-green-50",
+    border: "border-green-100",
+    title: "Reparații Echipamente",
+    titleRu: "Ремонт Оборудования",
+    desc: "Reparăm camere IP, NVR-uri, DVR-uri și sisteme de alarmă. Folosim piese originale sau compatibile de calitate și oferim garanție pe reparațiile efectuate.",
+    descRu: "Ремонтируем IP-камеры, NVR, DVR и системы охраны. Используем оригинальные или качественные совместимые детали. Предоставляем гарантию на выполненные ремонты.",
+    features: ["Reparație camere IP și NVR/DVR", "Înlocuire piese defecte", "Garanție 6 luni pe reparație", "Evaluare gratuită prealabilă"],
+    featuresRu: ["Ремонт IP-камер, NVR/DVR", "Замена неисправных деталей", "Гарантия 6 месяцев на ремонт", "Бесплатная предварительная оценка"],
+    price: sp?.reparatii || "prețuri la evaluare",
+    priceRu: "цены по результатам оценки",
+    badge: null,
+    badgeRu: null,
+  },
+];
   const { lang } = useLang();
   const ro = lang === "ro";
   const adminPhone = useStore((s) => s.settings.general?.adminPhone ?? "");
