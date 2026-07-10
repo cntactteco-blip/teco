@@ -134,6 +134,11 @@ export interface ModuleSettings {
     freeThreshold: number;
     price: number;
   };
+  servicePrices?: {
+    montaj?: string;
+    diagnosticare?: string;
+    reparatii?: string;
+  };
   gallery?: GalleryItem[];
 }
 
@@ -202,6 +207,11 @@ const DEFAULT_SETTINGS: ModuleSettings = {
   },
   social: { facebook: "", instagram: "", tiktok: "", googleReviews: "" },
   delivery: { freeThreshold: 5000, price: 150 },
+  servicePrices: {
+    montaj: "de la 750 MDL/cameră",
+    diagnosticare: "de la 350 MDL/vizită",
+    reparatii: "de la 400 MDL",
+  },
   gallery: [],
 };
 
@@ -666,6 +676,7 @@ function mergeSettings(loaded: any): ModuleSettings {
     storeInfo: { ...DEFAULT_SETTINGS.storeInfo, ...(loaded?.storeInfo ?? {}) },
     social: { ...DEFAULT_SETTINGS.social, ...(loaded?.social ?? {}) },
     delivery: { ...DEFAULT_SETTINGS.delivery, ...(loaded?.delivery ?? {}) },
+    servicePrices: { ...DEFAULT_SETTINGS.servicePrices, ...(loaded?.servicePrices ?? {}) },
   };
 }
 
@@ -917,6 +928,12 @@ export const storeActions = {
 
   async updateSocial(patch: Partial<ModuleSettings["social"]>) {
     const newSettings = { ...state.settings, social: { ...state.settings.social, ...patch } };
+    setState((s) => ({ ...s, settings: newSettings }));
+    await saveSettings(newSettings);
+  },
+
+  async updateServicePrices(patch: Partial<NonNullable<ModuleSettings["servicePrices"]>>) {
+    const newSettings = { ...state.settings, servicePrices: { ...state.settings.servicePrices, ...patch } };
     setState((s) => ({ ...s, settings: newSettings }));
     await saveSettings(newSettings);
   },

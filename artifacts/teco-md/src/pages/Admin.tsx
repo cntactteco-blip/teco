@@ -7,7 +7,7 @@ import {
   AlertCircle, Circle, SlidersHorizontal, Star, Copy, Download,
   Globe, Truck, Lock, Building2, ArrowUp, ArrowDown, Instagram,
   Facebook, ArrowUpDown, CheckSquare, Square, Upload, Video,
-  Bot, Sparkles, Wand2, Loader2, BrainCircuit, FileText,
+  Bot, Sparkles, Wand2, Loader2, BrainCircuit, FileText, Wrench,
 } from "lucide-react";
 import translations from "@/lib/translations";
 import {
@@ -1837,7 +1837,50 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
         )}
       </SettingsSection>
 
-      {/* ── 4. Livrare ── */}
+      {/* ── 4. Prețuri Servicii ── */}
+      <SettingsSection icon={Wrench} title="Prețuri Servicii"
+        description="Prețurile afișate pe pagina /servicii pentru fiecare tip de serviciu.">
+        <div className="space-y-4">
+          <div>
+            <label className={labelCls}>Montaj Camere (text preț)</label>
+            <input
+              type="text"
+              placeholder="ex: 750 MDL / cameră"
+              value={settings.servicePrices?.montaj ?? ""}
+              onChange={(e) => storeActions.updateServicePrices({ montaj: e.target.value })}
+              className={inputCls}
+            />
+            <p className="text-zinc-600 text-xs mt-1">Afișat ca preț principal pe cardul „Montaj Camere"</p>
+          </div>
+          <div>
+            <label className={labelCls}>Diagnosticare & Depanare (text preț)</label>
+            <input
+              type="text"
+              placeholder="ex: de la 350 MDL / vizită"
+              value={settings.servicePrices?.diagnosticare ?? ""}
+              onChange={(e) => storeActions.updateServicePrices({ diagnosticare: e.target.value })}
+              className={inputCls}
+            />
+            <p className="text-zinc-600 text-xs mt-1">Afișat pe cardul „Diagnosticare & Depanare"</p>
+          </div>
+          <div>
+            <label className={labelCls}>Reparații Echipamente (text preț)</label>
+            <input
+              type="text"
+              placeholder="ex: de la 400 MDL"
+              value={settings.servicePrices?.reparatii ?? ""}
+              onChange={(e) => storeActions.updateServicePrices({ reparatii: e.target.value })}
+              className={inputCls}
+            />
+            <p className="text-zinc-600 text-xs mt-1">Afișat pe cardul „Reparații Echipamente"</p>
+          </div>
+        </div>
+        <div className="mt-3 p-3 bg-zinc-800/50 rounded-lg border border-zinc-700 text-xs text-zinc-400">
+          💡 Modificările se salvează automat și apar imediat pe pagina <span className="text-[#FF4F00]">/servicii</span>
+        </div>
+      </SettingsSection>
+
+      {/* ── 5. Livrare ── */}
       <SettingsSection icon={Truck} title="Setări Livrare"
         description="Configurează pragul de livrare gratuită și costul livrării.">
         <div className="grid grid-cols-2 gap-4">
