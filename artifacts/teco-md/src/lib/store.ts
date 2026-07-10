@@ -178,12 +178,12 @@ const IMAGE_SEED: Record<string, string> = {
 };
 
 export const DEFAULT_CATEGORIES: CategoryDef[] = [
-  { id: "wifi",   slug: "wifi",   label: "Camere WiFi",     labelRu: "WiFi Камеры",       image: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=500&q=80&auto=format&fit=crop" },
-  { id: "poe",    slug: "poe",    label: "Camere PoE",      labelRu: "PoE Камеры",        image: "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=500&q=80&auto=format&fit=crop" },
-  { id: "4g",     slug: "4g",     label: "Camere 4G",       labelRu: "4G Камеры",         image: "https://images.unsplash.com/photo-1616763355548-1b606f439f86?w=500&q=80&auto=format&fit=crop" },
-  { id: "nvr",    slug: "nvr",    label: "NVR-uri",         labelRu: "NVR Регистраторы",  image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&q=80&auto=format&fit=crop" },
+  { id: "wifi",   slug: "wifi",   label: "Camere WiFi",     labelRu: "WiFi Камеры",       image: "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=500&q=80&auto=format&fit=crop" },
+  { id: "poe",    slug: "poe",    label: "Camere PoE",      labelRu: "PoE Камеры",        image: "https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=500&q=80&auto=format&fit=crop" },
+  { id: "4g",     slug: "4g",     label: "Camere 4G",       labelRu: "4G Камеры",         image: "https://images.unsplash.com/photo-1625378760232-c44f6d1e74dd?w=500&q=80&auto=format&fit=crop" },
+  { id: "nvr",    slug: "nvr",    label: "NVR-uri",         labelRu: "NVR Регистраторы",  image: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=500&q=80&auto=format&fit=crop" },
   { id: "kituri", slug: "kituri", label: "Kituri Complete", labelRu: "Комплекты",         image: "https://images.unsplash.com/photo-1558002038-1055907df827?w=500&q=80&auto=format&fit=crop" },
-  { id: "alarme", slug: "alarme", label: "Sisteme Alarmă",  labelRu: "Системы Охраны",   image: "https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=500&q=80&auto=format&fit=crop" },
+  { id: "alarme", slug: "alarme", label: "Sisteme Alarmă",  labelRu: "Системы Охраны",   image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&q=80&auto=format&fit=crop" },
 ];
 
 const DEFAULT_SETTINGS: ModuleSettings = {

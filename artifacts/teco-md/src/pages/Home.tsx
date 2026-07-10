@@ -407,12 +407,14 @@ export default function Home() {
           </div>
           <div className="flex gap-3 overflow-x-auto no-scrollbar snap-x md:grid md:grid-cols-4 md:gap-5 pb-2">
             {categories.map((cat) => {
-              const count = storeProducts.filter((p) => p.category === cat.slug).length;
-              const fallbackImg = "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=500&q=80&auto=format&fit=crop";
+              const catProducts = storeProducts.filter((p) => p.category === cat.slug);
+              const count = catProducts.length;
+              const productImg = catProducts[0]?.imageUrl;
+              const catImg = cat.image || productImg || "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=500&q=80&auto=format&fit=crop";
               return (
                 <Link key={cat.id} href={`/produse?cat=${cat.slug}`}
                   className="group relative snap-start min-w-[200px] md:min-w-0 h-[240px] md:h-[300px] rounded-2xl overflow-hidden cursor-pointer flex-shrink-0 block shadow-sm hover:shadow-xl transition-shadow duration-300">
-                  <img src={cat.image || fallbackImg} alt={cat.label} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <img src={catImg} alt={cat.label} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4 flex flex-col gap-1">
                     <h3 className="text-white font-black text-lg leading-tight tracking-tight">{lang === "ro" ? cat.label : (cat.labelRu || cat.label)}</h3>
