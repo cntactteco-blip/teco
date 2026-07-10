@@ -587,7 +587,7 @@ export default function ProductDetail() {
           {/* ── IMAGE ────────────────────────────────────────────── */}
           <div className="md:col-span-6 lg:col-span-7">
             {/* Main carousel */}
-            <div className="relative bg-zinc-50 md:bg-zinc-900 md:rounded-2xl overflow-hidden h-80 md:h-auto md:aspect-[4/3] group">
+            <div className="relative bg-white md:bg-white md:rounded-2xl overflow-hidden h-80 md:h-auto md:aspect-[4/3] group md:border md:border-zinc-100 md:shadow-sm">
               {/* Scrollable strip */}
               <div
                 ref={carouselRef}
@@ -629,7 +629,7 @@ export default function ProductDetail() {
                 )}
               </div>
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute inset-0 pointer-events-none" />
 
               {/* Zoom hint — bottom-left, desktop only */}
               <div className="hidden md:flex absolute bottom-14 left-4 z-10 items-center gap-1.5 bg-black/55 backdrop-blur-sm text-white text-[11px] font-semibold px-3 py-1.5 rounded-full pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200">

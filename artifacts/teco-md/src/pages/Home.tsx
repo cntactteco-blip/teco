@@ -412,11 +412,13 @@ export default function Home() {
               return (
                 <Link key={cat.id} href={`/produse?cat=${cat.slug}`}
                   className="group relative snap-start min-w-[200px] md:min-w-0 h-[240px] md:h-[300px] rounded-2xl overflow-hidden cursor-pointer flex-shrink-0 block shadow-sm hover:shadow-xl transition-shadow duration-300">
-                  <img src={cat.image || fallbackImg} alt={cat.label} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                  <div className="absolute bottom-0 left-0 right-0 p-4">
-                    <div className="inline-block bg-black/40 backdrop-blur-sm rounded-xl px-3 py-2">
-                      <h3 className="text-white font-black text-base leading-tight">{lang === "ro" ? cat.label : (cat.labelRu || cat.label)}</h3>
-                      <p className="text-white/80 text-xs mt-0.5 group-hover:text-[#FF4F00] transition-colors">{count} {t("home.cat.products")} →</p>
+                  <img src={cat.image || fallbackImg} alt={cat.label} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-4 flex flex-col gap-1">
+                    <h3 className="text-white font-black text-lg leading-tight tracking-tight">{lang === "ro" ? cat.label : (cat.labelRu || cat.label)}</h3>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-[#FF4F00]">{count} {t("home.cat.products")}</span>
+                      <span className="text-[#FF4F00] text-xs">→</span>
                     </div>
                   </div>
                 </Link>
