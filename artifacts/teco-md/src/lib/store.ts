@@ -466,13 +466,23 @@ const _cachedSettings = (() => {
   } catch { return null; }
 })();
 
+const _cachedProducts = (() => {
+  try {
+    const raw = localStorage.getItem("teco_products_cache");
+    if (!raw) return null;
+    return JSON.parse(raw) as StoreProduct[];
+  } catch { return null; }
+})();
+
+const _seedProducts: StoreProduct[] = seedProducts.map((p) => ({
+  ...p,
+  imageUrl: IMAGE_SEED[(p as { imageType: string }).imageType] ?? "",
+  inStock: true,
+  description: p.description ?? "",
+})) as StoreProduct[];
+
 let state: StoreState = {
-  products: seedProducts.map((p) => ({
-    ...p,
-    imageUrl: IMAGE_SEED[(p as { imageType: string }).imageType] ?? "",
-    inStock: true,
-    description: p.description ?? "",
-  })) as StoreProduct[],
+  products: _cachedProducts ?? _seedProducts,
   leads: [],
   orders: [],
   blogPosts: DEFAULT_BLOG_POSTS,
@@ -726,14 +736,21 @@ export async function initStore() {
   const mergedSettings = mergeSettings(rawSettings);
   try { localStorage.setItem("teco_settings_cache", JSON.stringify(mergedSettings)); } catch {}
 
+  const mappedProducts = finalProds.map(dbProductToStore);
+  try { localStorage.setItem("teco_products_cache", JSON.stringify(mappedProducts)); } catch {}
+
   setState({
-    products: finalProds.map(dbProductToStore),
+    products: mappedProducts,
     leads: (leads ?? []).map(dbLeadToStore),
     orders: (orders ?? []).map(dbOrderToStore),
     blogPosts: (blogRows ?? []).map(dbBlogPostToStore),
     settings: mergedSettings,
     loaded: true,
   });
+}
+
+function cacheProducts(products: StoreProduct[]) {
+  try { localStorage.setItem("teco_products_cache", JSON.stringify(products)); } catch {}
 }
 
 // ─── Salvare settings în Supabase ───────────────────────────────────
@@ -750,7 +767,11 @@ export const storeActions = {
     const newProduct: StoreProduct = { ...p, id };
     const { error } = await supabase.from("products").insert(storeProductToDb(newProduct));
     if (error) { console.error("addProduct error:", error); return; }
-    setState((s) => ({ ...s, products: [...s.products, newProduct] }));
+    setState((s) => {
+      const products = [...s.products, newProduct];
+      cacheProducts(products);
+      return { ...s, products };
+    });
   },
 
   async updateProduct(id: number, patch: Partial<StoreProduct>) {
@@ -762,16 +783,21 @@ export const storeActions = {
       .update(storeProductToDb(updated))
       .eq("id", id);
     if (error) { console.error("updateProduct error:", error); return; }
-    setState((s) => ({
-      ...s,
-      products: s.products.map((p) => (p.id === id ? updated : p)),
-    }));
+    setState((s) => {
+      const products = s.products.map((p) => (p.id === id ? updated : p));
+      cacheProducts(products);
+      return { ...s, products };
+    });
   },
 
   async deleteProduct(id: number) {
     const { error } = await supabase.from("products").delete().eq("id", id);
     if (error) { console.error("deleteProduct error:", error); return; }
-    setState((s) => ({ ...s, products: s.products.filter((p) => p.id !== id) }));
+    setState((s) => {
+      const products = s.products.filter((p) => p.id !== id);
+      cacheProducts(products);
+      return { ...s, products };
+    });
   },
 
   async duplicateProduct(id: number) {
@@ -781,13 +807,21 @@ export const storeActions = {
     const copy: StoreProduct = { ...original, id: newId, name: `${original.name} (copie)` };
     const { error } = await supabase.from("products").insert(storeProductToDb(copy));
     if (error) { console.error("duplicateProduct error:", error); return; }
-    setState((s) => ({ ...s, products: [...s.products, copy] }));
+    setState((s) => {
+      const products = [...s.products, copy];
+      cacheProducts(products);
+      return { ...s, products };
+    });
   },
 
   async bulkDeleteProducts(ids: number[]) {
     const { error } = await supabase.from("products").delete().in("id", ids);
     if (error) { console.error("bulkDeleteProducts error:", error); return; }
-    setState((s) => ({ ...s, products: s.products.filter((p) => !ids.includes(p.id)) }));
+    setState((s) => {
+      const products = s.products.filter((p) => !ids.includes(p.id));
+      cacheProducts(products);
+      return { ...s, products };
+    });
   },
 
   // Leads
