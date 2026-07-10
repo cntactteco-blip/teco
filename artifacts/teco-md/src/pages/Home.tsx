@@ -413,11 +413,11 @@ export default function Home() {
                 <Link key={cat.id} href={`/produse?cat=${cat.slug}`}
                   className="group relative snap-start min-w-[200px] md:min-w-0 h-[240px] md:h-[300px] rounded-2xl overflow-hidden cursor-pointer flex-shrink-0 block shadow-sm hover:shadow-xl transition-shadow duration-300">
                   <img src={cat.image || fallbackImg} alt={cat.label} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-zinc-900/40 to-transparent" />
-                  <div className="absolute inset-0 bg-[#FF4F00]/0 group-hover:bg-[#FF4F00]/8 transition-all duration-300" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                  <div className="absolute inset-0 bg-[#FF4F00]/0 group-hover:bg-[#FF4F00]/10 transition-all duration-300" />
                   <div className="absolute bottom-0 left-0 right-0 p-4">
-                    <h3 className="text-white font-black text-lg leading-tight">{lang === "ro" ? cat.label : (cat.labelRu || cat.label)}</h3>
-                    <p className="text-white/60 text-xs mt-0.5 group-hover:text-[#FF4F00] transition-colors">{count} {t("home.cat.products")} →</p>
+                    <h3 className="text-white font-black text-lg leading-tight drop-shadow-lg">{lang === "ro" ? cat.label : (cat.labelRu || cat.label)}</h3>
+                    <p className="text-white/80 text-xs mt-0.5 group-hover:text-[#FF4F00] transition-colors drop-shadow">{count} {t("home.cat.products")} →</p>
                   </div>
                 </Link>
               );
