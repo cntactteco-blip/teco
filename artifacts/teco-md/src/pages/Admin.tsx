@@ -2251,28 +2251,7 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
         ))}
       </SettingsSection>
 
-      {/* ── 14. Prețuri Servicii ── */}
-      <SettingsSection icon={FileText} title="Prețuri Servicii" description="Prețurile afișate pe pagina /servicii și orașele de servicii.">
-        {[
-          { key: "montaj", label: "Montaj Camere", placeholder: "ex: 750 MDL (o cameră) / 650 MDL per cameră (mai multe)" },
-          { key: "diagnosticare", label: "Diagnosticare & Depanare", placeholder: "ex: 350 MDL (aduci tu) / de la 650 MDL (cu deplasare)" },
-          { key: "reparatii", label: "Reparații Echipamente", placeholder: "ex: de la 400 MDL" },
-        ].map(({ key, label, placeholder }) => (
-          <div key={key} className="mb-4">
-            <label className="block text-[11px] font-semibold text-zinc-400 mb-1 uppercase tracking-wider">{label}</label>
-            <input
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
-              value={(settings.servicePrices as Record<string,string> | undefined)?.[key] ?? ""}
-              placeholder={placeholder}
-              onChange={e => storeActions.updateSettings({
-                servicePrices: { ...(settings.servicePrices ?? { montaj: "", diagnosticare: "", reparatii: "" }), [key]: e.target.value }
-              })}
-            />
-          </div>
-        ))}
-      </SettingsSection>
-
-      {/* ── 15. Danger zone ── */}
+      {/* ── 14. Danger zone ── */}
       <div className="bg-red-950/20 border border-red-900/40 rounded-2xl p-6">
         <h3 className="font-bold text-red-400 mb-1 flex items-center gap-2"><AlertCircle className="w-4 h-4" /> Zonă Periculoasă</h3>
         <p className="text-zinc-500 text-xs mb-4">Resetează catalogul de produse la valorile implicite. Lead-urile și comenzile NU se șterg.</p>

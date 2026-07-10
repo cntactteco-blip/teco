@@ -19,8 +19,8 @@ const SERVICES = [
     descRu: "Наша команда сертифицированных техников устанавливает и настраивает полные системы видеонаблюдения у вас дома или на предприятии. Работаем по всей Молдове.",
     features: ["Montaj și cablare profesională", "Configurare NVR și aplicație mobilă", "Testare completă a sistemului", "Instruire utilizator inclusă"],
     featuresRu: ["Профессиональный монтаж и прокладка кабеля", "Настройка NVR и мобильного приложения", "Полное тестирование системы", "Обучение пользователя включено"],
-    price: sp?.montaj ?? "de la 300 MDL/cameră",
-    priceRu: sp?.montaj ?? "от 300 MDL/камера",
+    price: "de la 300 MDL/cameră",
+    priceRu: "от 300 MDL/камера",
     badge: "CEL MAI CERUT",
     badgeRu: "ПОПУЛЯРНОЕ",
   },
@@ -36,8 +36,8 @@ const SERVICES = [
     descRu: "Система не работает? Наш техник выявит и устранит любую проблему: неисправная камера, потеря соединения, неправильная настройка или заблокированный NVR.",
     features: ["Diagnosticare completă on-site", "Verificare conexiuni și cabluri", "Resetare și reconfigurare sistem", "Raport tehnic detaliat"],
     featuresRu: ["Полная диагностика на месте", "Проверка соединений и кабелей", "Сброс и перенастройка системы", "Подробный технический отчет"],
-    price: sp?.diagnosticare ?? "de la 200 MDL/vizită",
-    priceRu: sp?.diagnosticare ?? "от 200 MDL/визит",
+    price: "de la 200 MDL/vizită",
+    priceRu: "от 200 MDL/визит",
     badge: null,
     badgeRu: null,
   },
@@ -89,7 +89,6 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 }
 
 export default function Services() {
-  const sp = useStore((s) => s.settings.servicePrices);
   const { lang } = useLang();
   const ro = lang === "ro";
   const adminPhone = useStore((s) => s.settings.general?.adminPhone ?? "");
