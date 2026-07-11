@@ -1,6 +1,7 @@
 import { useSyncExternalStore, useMemo, useRef } from "react";
 import { supabase } from "./supabase";
 import { products as seedProducts } from "./products";
+import _snapshot from "./catalog-snapshot.json";
 
 // ─── Types ─────────────────────────────────────────────────────────
 export interface StoreProduct {
@@ -481,12 +482,27 @@ const _seedProducts: StoreProduct[] = seedProducts.map((p) => ({
   description: p.description ?? "",
 })) as StoreProduct[];
 
+const _snapshotProducts: StoreProduct[] | null = (() => {
+  try {
+    const rows = (_snapshot as any).products;
+    if (!rows || rows.length === 0) return null;
+    return rows.map(dbProductToStore);
+  } catch { return null; }
+})();
+
+const _snapshotSettings: ModuleSettings | null = (() => {
+  try {
+    const s = (_snapshot as any).settings;
+    return s ? mergeSettings(s) : null;
+  } catch { return null; }
+})();
+
 let state: StoreState = {
-  products: _cachedProducts ?? _seedProducts,
+  products: _cachedProducts ?? _snapshotProducts ?? _seedProducts,
   leads: [],
   orders: [],
   blogPosts: DEFAULT_BLOG_POSTS,
-  settings: _cachedSettings ?? DEFAULT_SETTINGS,
+  settings: _cachedSettings ?? _snapshotSettings ?? DEFAULT_SETTINGS,
   userReviews: (() => {
     try { return JSON.parse(localStorage.getItem("teco_user_reviews") ?? "{}"); } catch { return {}; }
   })(),
