@@ -1,5 +1,4 @@
-import { Home, Grid2x2, ShoppingCart, X, Wrench, Heart } from "lucide-react";
-import { useWishlist } from "@/hooks/useWishlist";
+import { Home, Grid2x2, ShoppingCart, X, Wrench, ClipboardList } from "lucide-react";
 import { useLocation, useRouter } from "wouter";
 import { useCart } from "@/hooks/useCart";
 import { useStore } from "@/lib/store";
@@ -29,7 +28,6 @@ export function BottomNav() {
   const router = useRouter();
   const cartCount = useCart((state) => state.count);
   const openCart = useCart((state) => state.openCart);
-  const { count: wishCount } = useWishlist();
   const adminPhone = useStore((s) => s.settings.general?.adminPhone ?? "");
   const [contactOpen, setContactOpen] = useState(false);
   const contactRef = useRef<HTMLDivElement>(null);
@@ -127,18 +125,16 @@ export function BottomNav() {
           </button>
 
           <button
-            onClick={() => navigate("/favorit")}
-            className={`flex flex-col items-center justify-center gap-0.5 w-14 relative transition-colors ${location === "/favorit" ? "text-red-500" : "text-zinc-400"}`}
+            onClick={() => navigate("/oferta")}
+            className={`flex flex-col items-center justify-center gap-0.5 w-14 relative transition-colors ${location === "/oferta" ? "text-[#FF4F00]" : "text-zinc-400"}`}
           >
             <div className="relative">
-              <Heart className={`w-5 h-5 transition-all ${wishCount > 0 ? "text-red-500 fill-red-500" : ""}`} />
-              {wishCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[8px] font-bold h-3.5 min-w-[14px] px-0.5 rounded-full flex items-center justify-center border border-white">
-                  {wishCount}
-                </span>
+              <ClipboardList className="w-5 h-5" />
+              {location !== "/oferta" && (
+                <span className="absolute -top-1 -right-1.5 bg-[#FF4F00] w-2 h-2 rounded-full border border-white" />
               )}
             </div>
-            <span className="text-[9px] font-medium">{lang === "ru" ? "Избранное" : "Favorite"}</span>
+            <span className="text-[9px] font-medium">{lang === "ru" ? "Ofertă" : "Ofertă"}</span>
           </button>
 
           <button

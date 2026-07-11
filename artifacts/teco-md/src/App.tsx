@@ -29,6 +29,7 @@ import Confidentialitate from "@/pages/Confidentialitate";
 import Garantii from "@/pages/Garantii";
 const Admin = lazy(() => import("@/pages/Admin"));
 const Wishlist = lazy(() => import("@/pages/Wishlist"));
+const RequestQuote = lazy(() => import("@/pages/RequestQuote"));
 const B2B = lazy(() => import("@/pages/B2B"));
 const ServiceCity = lazy(() => import("@/pages/ServiceCity"));
 
@@ -61,6 +62,7 @@ function ShopRoutes() {
         <Route path="/servicii/:city" component={ServiceCity} />
         <Route path="/b2b" component={B2B} />
         <Route path="/favorit" component={Wishlist} />
+        <Route path="/oferta" component={RequestQuote} />
         <Route path="/blog" component={Blog} />
         <Route path="/blog/:slug" component={BlogPost} />
         <Route path="/termeni" component={Termeni} />
