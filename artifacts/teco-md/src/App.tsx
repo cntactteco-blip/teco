@@ -27,6 +27,7 @@ import { ComparatorDrawer } from "@/components/ComparatorDrawer";
 import Termeni from "@/pages/Termeni";
 import Confidentialitate from "@/pages/Confidentialitate";
 import Garantii from "@/pages/Garantii";
+import Livrare from "@/pages/Livrare";
 const Admin = lazy(() => import("@/pages/Admin"));
 const Wishlist = lazy(() => import("@/pages/Wishlist"));
 const RequestQuote = lazy(() => import("@/pages/RequestQuote"));
@@ -68,6 +69,7 @@ function ShopRoutes() {
         <Route path="/termeni" component={Termeni} />
         <Route path="/confidentialitate" component={Confidentialitate} />
         <Route path="/garantii" component={Garantii} />
+        <Route path="/livrare" component={Livrare} />
         <Route path="/checkout" component={Checkout} />
         <Route component={NotFound} />
       </Switch>

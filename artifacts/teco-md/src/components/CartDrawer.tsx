@@ -154,12 +154,12 @@ export function CartDrawer() {
             {/* Free shipping indicator */}
             {total < 5000 && (
               <div className="mb-3">
-                <div className="flex justify-between text-xs text-zinc-500 mb-1">
-                  <span>Livrare gratuită de la 5.000 MDL</span>
-                  <span>{(5000 - total).toLocaleString()} MDL mai</span>
+                <div className="flex justify-between text-xs mb-1">
+                  <span className="text-zinc-500">Mai adaugă produse de</span>
+                  <span className="font-bold text-[#FF4F00]">{(5000 - total).toLocaleString()} MDL pentru LIVRARE GRATUITĂ!</span>
                 </div>
                 <div className="h-1.5 bg-zinc-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-[#FF4F00] rounded-full transition-all" style={{ width: `${Math.min((total / 5000) * 100, 100)}%` }} />
+                  <div className="h-full bg-[#FF4F00] rounded-full transition-all duration-500" style={{ width: `${Math.min((total / 5000) * 100, 100)}%` }} />
                 </div>
               </div>
             )}

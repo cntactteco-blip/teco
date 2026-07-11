@@ -5,12 +5,26 @@ import { useCart } from "@/hooks/useCart";
 import { storeActions, getState } from "@/lib/store";
 import { SEO } from "@/components/SEO";
 
+// ── Shipping config ─────────────────────────────────────────────────────────
+export const SHIPPING_OPTIONS = [
+  { id: "chisinau",  label: "Livrare prin Curier Rapid",           hint: "Chișinău (Oraș)",                                                          price: 95  },
+  { id: "suburbii",  label: "Livrare Suburbii - Curier Rapid",     hint: "Codru, Durlești, Stăuceni, Bubuieci etc.",                                  price: 125 },
+  { id: "national",  label: "Livrare Națională - Curier Rapid",    hint: "Restul raioanelor Republicii Moldova",                                      price: 145 },
+] as const;
+
+export const FREE_SHIPPING_THRESHOLD = 5000;
+
+export function getShippingCost(deliveryId: string, cartTotal: number): number {
+  if (cartTotal >= FREE_SHIPPING_THRESHOLD) return 0;
+  return SHIPPING_OPTIONS.find((o) => o.id === deliveryId)?.price ?? 95;
+}
+
 interface FormData {
   name: string; phone: string; email: string;
   address: string; delivery: string; notes: string;
 }
 
-const EMPTY: FormData = { name: "", phone: "", email: "", address: "", delivery: "Livrare la domiciliu", notes: "" };
+const EMPTY: FormData = { name: "", phone: "", email: "", address: "", delivery: "chisinau", notes: "" };
 
 // ── Extracted OUTSIDE Checkout — prevents input remount/keyboard-dismiss on every keystroke ──
 function FormField({ label, field, type = "text", placeholder = "", icon: Icon, form, errors, onChange }: {
@@ -175,17 +189,31 @@ export default function Checkout() {
                 <Truck className="w-4 h-4 text-[#FF4F00]" />
                 <h2 className="font-bold text-[#09090B]">Livrare</h2>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-                {["Livrare la domiciliu", "Livrare curier express"].map((opt) => (
-                  <button
-                    key={opt}
-                    type="button"
-                    onClick={() => set("delivery", opt)}
-                    className={`px-4 py-3 rounded-xl border text-sm font-medium text-left transition-all ${form.delivery === opt ? "border-[#FF4F00] bg-orange-50 text-[#FF4F00]" : "border-zinc-200 text-zinc-600 hover:border-zinc-300"}`}
-                  >
-                    {opt}
-                  </button>
-                ))}
+              {total >= FREE_SHIPPING_THRESHOLD && (
+                <div className="flex items-center gap-2 mb-4 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+                  <span className="text-green-700 text-sm font-bold">✓ Comandă peste 5.000 MDL — Livrare GRATUITĂ oriunde în Moldova!</span>
+                </div>
+              )}
+              <div className="flex flex-col gap-3 mb-4">
+                {SHIPPING_OPTIONS.map((opt) => {
+                  const cost = getShippingCost(opt.id, total);
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => set("delivery", opt.id)}
+                      className={`flex items-center justify-between px-4 py-3.5 rounded-xl border text-left transition-all active:scale-[0.99] ${form.delivery === opt.id ? "border-[#FF4F00] bg-orange-50" : "border-zinc-200 bg-white hover:border-zinc-300"}`}
+                    >
+                      <div>
+                        <p className={`text-sm font-bold ${form.delivery === opt.id ? "text-[#FF4F00]" : "text-[#09090B]"}`}>{opt.label}</p>
+                        <p className="text-xs text-zinc-400 mt-0.5">{opt.hint}</p>
+                      </div>
+                      <span className={`font-black text-base shrink-0 ml-4 ${cost === 0 ? "text-green-600" : form.delivery === opt.id ? "text-[#FF4F00]" : "text-[#09090B]"}`}>
+                        {cost === 0 ? "GRATUIT" : `${cost} MDL`}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
               <FormField label="Adresa de livrare *" field="address" icon={MapPin} placeholder="Str. Exemplu 12, ap. 5, Chișinău" form={form} errors={errors} onChange={set} />
             </div>
@@ -238,11 +266,14 @@ export default function Checkout() {
                 </div>
                 <div className="flex justify-between text-sm text-zinc-500">
                   <span>Livrare</span>
-                  <span className="text-green-600 font-semibold">{total >= 5000 ? "GRATUITĂ" : "200 MDL"}</span>
+                  {getShippingCost(form.delivery, total) === 0
+                    ? <span className="text-green-600 font-bold">GRATUITĂ</span>
+                    : <span className="font-semibold text-[#09090B]">{getShippingCost(form.delivery, total)} MDL</span>
+                  }
                 </div>
                 <div className="flex justify-between font-black text-base text-[#09090B] pt-2 border-t border-zinc-100">
                   <span>Total</span>
-                  <span className="font-mono text-[#FF4F00]">{(total + (total < 5000 ? 200 : 0)).toLocaleString()} MDL</span>
+                  <span className="font-mono text-[#FF4F00]">{(total + getShippingCost(form.delivery, total)).toLocaleString()} MDL</span>
                 </div>
               </div>
 
