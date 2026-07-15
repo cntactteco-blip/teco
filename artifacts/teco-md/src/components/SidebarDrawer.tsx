@@ -13,7 +13,7 @@ const categories = [
   { href: "/produse?cat=poe",    icon: Camera, label: "Camere PoE",              count: 9 },
   { href: "/produse?cat=4g",     icon: Camera, label: "Camere 4G / Solar",       count: 3 },
   { href: "/produse?cat=nvr",    icon: Server, label: "Înregistratoare NVR",     count: 4 },
-  { href: "/produse?cat=kituri", icon: Package, label: "Kituri Complete",        count: 2 },
+  { href: "/seturi-camere-supraveghere", icon: Package, label: "Kituri Complete", count: 2 },
   { href: "/produse?cat=alarme", icon: Shield, label: "Sisteme Alarmă",          count: 1 },
 ];
 
