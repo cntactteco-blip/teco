@@ -58,6 +58,7 @@ function ShopRoutes() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/produse" component={Products} />
+        <Route path="/seturi-camere-supraveghere" component={Products} />
         <Route path="/product/:id" component={ProductDetail} />
         <Route path="/servicii" component={Services} />
         <Route path="/servicii/:city" component={ServiceCity} />

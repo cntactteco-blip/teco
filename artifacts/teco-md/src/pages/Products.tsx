@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { Link } from "wouter";
+import { Link, useRoute } from "wouter";
 import { Search, ShoppingCart, SlidersHorizontal, X, ChevronDown, Check, ArrowUpDown, Heart, BarChart2 } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
@@ -200,10 +200,11 @@ function ProductCard({ product }: { product: StoreProduct }) {
 }
 
 export default function Products() {
+  const [isKitRoute] = useRoute("/seturi-camere-supraveghere");
   const { t, lang } = useLang();
   const products = useStore((s) => s.products);
 
-  const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [activeCategory, setActiveCategory] = useState<string>(isKitRoute ? "kituri" : "all");
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortKey>("relevance");
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
@@ -277,12 +278,12 @@ export default function Products() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const pageTitle = lang === "ru"
-    ? "Каталог Продуктов — Камеры, NVR, Комплекты | Teco.md"
-    : "Catalog Produse — Camere, NVR-uri, Kituri, Alarme | Teco.md";
-  const pageDesc = lang === "ru"
-    ? "Полный каталог оборудования для видеонаблюдения: камеры IP, WiFi, PoE, 4G, NVR, комплекты, сигнализации. Молдова."
-    : "Catalog complet sisteme de supraveghere: camere IP, WiFi, PoE, 4G, NVR, kituri, alarme. Livrare în 24h.";
+  const pageTitle = isKitRoute
+    ? (lang === "ru" ? "Комплекты Видеонаблюдения — Готовые Наборы Камер | Teco.md" : "Seturi Camere de Supraveghere — Cele Mai Bune Kituri din Moldova | Teco.md")
+    : (lang === "ru" ? "Каталог Продуктов — Камеры, NVR, Комплекты | Teco.md" : "Catalog Produse — Camere, NVR-uri, Kituri, Alarme | Teco.md");
+  const pageDesc = isKitRoute
+    ? (lang === "ru" ? "Готовые комплекты видеонаблюдения для дома и офиса. Установка под ключ, гарантия 12 месяцев." : "Seturi complete camere de supraveghere pentru casă și birou. Montaj profesional, garanție 12 luni, livrare în toată Moldova.")
+    : (lang === "ru" ? "Полный каталог оборудования для видеонаблюдения: камеры IP, WiFi, PoE, 4G, NVR, комплекты, сигнализации. Молдова." : "Catalog complet sisteme de supraveghere: camere IP, WiFi, PoE, 4G, NVR, kituri, alarme. Livrare în 24h.");
   const jsonLd = [
     schemas.collectionPage(filtered.map(p => ({ id: p.id, name: p.name, imageUrl: p.imageUrl, price: p.price }))),
     schemas.breadcrumb([
@@ -293,7 +294,7 @@ export default function Products() {
 
   return (
     <>
-      <SEO title={pageTitle} description={pageDesc} keywords={lang === "ru" ? "каталог, камеры, NVR, молдова" : "catalog, camere, NVR, Moldova"} canonical="/produse" lang={lang} jsonLd={jsonLd} />
+      <SEO title={pageTitle} description={pageDesc} keywords={lang === "ru" ? "каталог, камеры, NVR, молдова" : "catalog, camere, NVR, Moldova"} canonical={isKitRoute ? "/seturi-camere-supraveghere" : "/produse"} lang={lang} jsonLd={jsonLd} />
 
       {/* ── Mobile Filter Bottom Sheet ── */}
       {showFilters && (
