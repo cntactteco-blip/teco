@@ -370,10 +370,6 @@ export default function Home() {
 
       </section>
 
-      <Suspense fallback={null}>
-        <SmartCostCalculator />
-      </Suspense>
-
       {/* 5. TRUST STRIP */}
       <section className="bg-white border-y border-zinc-100 py-5 md:py-10">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
@@ -533,6 +529,10 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <Suspense fallback={null}>
+        <SmartCostCalculator />
+      </Suspense>
 
       {/* 8b. BUNDLE BUILDER */}
       <BundleBuilder />
