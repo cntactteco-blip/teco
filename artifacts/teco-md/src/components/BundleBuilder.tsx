@@ -94,9 +94,9 @@ export default function BundleBuilder({ onClose }: { onClose?: () => void } = {}
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="flex flex-col md:grid md:grid-cols-3 gap-6">
           {/* Step 1: Cameras qty */}
-          <div className="md:col-span-2 space-y-5">
+          <div className="md:col-span-2 space-y-5 min-w-0">
             {/* Qty */}
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
               <div className="flex items-center gap-2 mb-4">
@@ -204,8 +204,8 @@ export default function BundleBuilder({ onClose }: { onClose?: () => void } = {}
           </div>
 
           {/* Summary */}
-          <div className="md:col-span-1">
-            <div className="sticky top-4 bg-white rounded-2xl p-5 shadow-xl">
+          <div className="md:col-span-1 min-w-0">
+            <div className="md:sticky md:top-4 bg-white rounded-2xl p-5 shadow-xl">
               <h3 className="font-black text-[#09090B] text-lg mb-4">{ro ? "Rezumatul tău" : "Ваш заказ"}</h3>
               <div className="space-y-2.5 mb-5">
                 <div className="flex justify-between text-sm">
