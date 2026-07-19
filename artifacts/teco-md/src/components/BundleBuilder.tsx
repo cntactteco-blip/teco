@@ -153,12 +153,12 @@ export default function BundleBuilder({ onClose }: { onClose?: () => void } = {}
                   <div className="w-6 h-6 rounded-full bg-[#FF4F00] flex items-center justify-center text-white text-xs font-black">3</div>
                   <h3 className="font-bold text-white text-sm">{ro ? "Modelul camerei" : "Модель камеры"}</h3>
                 </div>
-                <div className="space-y-2">
+                <div className="flex flex-col gap-2 max-h-64 overflow-y-auto pr-0.5">
                   {cameras.map((c) => (
                     <button
                       key={c.id}
                       onClick={() => setSelCamera(c.id)}
-                      className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${(selCamera === c.id || (!selCamera && c === cameras[0])) ? "border-[#FF4F00] bg-[#FF4F00]/10" : "border-white/10 hover:border-white/30"}`}
+                      className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all flex-shrink-0 ${(selCamera === c.id || (!selCamera && c === cameras[0])) ? "border-[#FF4F00] bg-[#FF4F00]/10" : "border-white/10 hover:border-white/30"}`}
                     >
                       <img src={c.imageUrl} alt={c.name} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
                       <div className="flex-1 min-w-0">
@@ -169,6 +169,9 @@ export default function BundleBuilder({ onClose }: { onClose?: () => void } = {}
                     </button>
                   ))}
                 </div>
+                {cameras.length > 3 && (
+                  <p className="text-[10px] text-zinc-500 text-center mt-1">↕ Derulează pentru mai multe ({cameras.length} modele)</p>
+                )}
               </div>
             )}
 
