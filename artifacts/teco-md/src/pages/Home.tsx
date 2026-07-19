@@ -389,6 +389,11 @@ export default function Home() {
         </div>
       </section>
 
+      {/* 5b. CALCULATOR */}
+      <Suspense fallback={null}>
+        <SmartCostCalculator />
+      </Suspense>
+
       {/* 6. CATEGORIES */}
       <section className="bg-white py-8 md:py-20 overflow-hidden border-b border-zinc-100">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
@@ -529,10 +534,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      <Suspense fallback={null}>
-        <SmartCostCalculator />
-      </Suspense>
 
       {/* 8b. BUNDLE BUILDER */}
       <BundleBuilder />

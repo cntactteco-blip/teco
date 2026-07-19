@@ -28,9 +28,15 @@ export default function BundleBuilder({ onClose }: { onClose?: () => void } = {}
   const [withInstall, setWithInstall] = useState(false);
 
   const cameras = useMemo(() =>
-    products.filter((p) => p.category === camType && p.inStock !== false)
-      .sort((a, b) => a.price - b.price)
-      .slice(0, 3),
+    products.filter((p) => {
+      if (p.inStock === false) return false;
+      const cat = (p.category ?? "").toLowerCase();
+      const haystack = `${p.name} ${p.specs ?? ""} ${p.description ?? ""}`.toLowerCase();
+      const isCamera = cat.includes("camer") || cat === "camere" || cat === "camera";
+      if (!isCamera) return false;
+      if (camType === "wifi") return haystack.includes("wifi") || haystack.includes("wi-fi") || haystack.includes("wireless");
+      return !haystack.includes("wifi") && !haystack.includes("wi-fi") && !haystack.includes("wireless");
+    }).sort((a, b) => a.price - b.price),
     [products, camType]
   );
   const nvrs = useMemo(() =>
