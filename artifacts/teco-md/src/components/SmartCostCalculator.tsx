@@ -171,22 +171,25 @@ export default function SmartCostCalculator() {
         <div className="text-center mb-10">
           <p className="text-[#FF4F00] text-xs font-black uppercase tracking-[0.2em] mb-3">Calculator Gratuit</p>
           <h2 className="text-[#09090B] font-black text-3xl md:text-4xl mb-3 tracking-tight">
-            Cât costă sistemul<br />
-            <span className="text-[#FF4F00]">potrivit pentru tine?</span>
+            Calculează Costul<br />Sistemului Tău
           </h2>
           <p className="text-zinc-500 text-sm max-w-sm mx-auto">
-            Răspunde la 4 întrebări — îți calculăm un deviz personalizat cu produse reale din stocul nostru.
+            Răspunde la 4 întrebări și primești devizul estimativ gratuit în 60 de secunde.
           </p>
         </div>
 
-        {/* Progress bar */}
+        {/* Step circles */}
         {step <= 4 && (
-          <div className="flex gap-1.5 mb-8">
-            {[1, 2, 3, 4].map((s) => (
-              <div
-                key={s}
-                className={`h-1 flex-1 rounded-full transition-all duration-500 ${step >= s ? "bg-[#FF4F00]" : "bg-zinc-200"}`}
-              />
+          <div className="flex items-center justify-center mb-10 gap-0">
+            {[1, 2, 3, 4].map((s, i) => (
+              <React.Fragment key={s}>
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-black border-2 transition-all duration-300 ${step > s ? "bg-[#FF4F00] border-[#FF4F00] text-white" : step === s ? "bg-[#FF4F00] border-[#FF4F00] text-white shadow-[0_0_0_4px_rgba(255,79,0,0.15)]" : "bg-white border-zinc-300 text-zinc-400"}`}>
+                  {step > s ? <Check className="w-4 h-4" /> : s}
+                </div>
+                {i < 3 && (
+                  <div className={`h-0.5 w-12 transition-all duration-500 ${step > s ? "bg-[#FF4F00]" : "bg-zinc-200"}`} />
+                )}
+              </React.Fragment>
             ))}
           </div>
         )}
