@@ -70,7 +70,7 @@ export default function BundleBuilder({ onClose }: { onClose?: () => void } = {}
   };
 
   return (
-    <section className="py-16 bg-[#09090B]" id="bundle-builder">
+    <section className="py-16 bg-[#09090B] overflow-hidden" id="bundle-builder">
       <div className="max-w-5xl mx-auto px-4 md:px-6">
         <div className="text-center mb-10 relative">
           {onClose && (
@@ -103,7 +103,7 @@ export default function BundleBuilder({ onClose }: { onClose?: () => void } = {}
                 <div className="w-6 h-6 rounded-full bg-[#FF4F00] flex items-center justify-center text-white text-xs font-black">1</div>
                 <h3 className="font-bold text-white text-sm">{ro ? "Câte camere?" : "Сколько камер?"}</h3>
               </div>
-              <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                 {CAMERA_OPTIONS.map((o) => (
                   <button
                     key={o.qty}
@@ -158,7 +158,7 @@ export default function BundleBuilder({ onClose }: { onClose?: () => void } = {}
                     <button
                       key={c.id}
                       onClick={() => setSelCamera(c.id)}
-                      className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all flex-shrink-0 ${(selCamera === c.id || (!selCamera && c === cameras[0])) ? "border-[#FF4F00] bg-[#FF4F00]/10" : "border-white/10 hover:border-white/30"}`}
+                      className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${(selCamera === c.id || (!selCamera && c === cameras[0])) ? "border-[#FF4F00] bg-[#FF4F00]/10" : "border-white/10 hover:border-white/30"}`}
                     >
                       <img src={c.imageUrl} alt={c.name} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
                       <div className="flex-1 min-w-0">
