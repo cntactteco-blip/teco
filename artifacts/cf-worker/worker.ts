@@ -354,12 +354,101 @@ async function sendTgFirstMessage(env: any, p: { message: string; page: string; 
   ].join("\n"));
 }
 
+// ─── AI sales message generator ──────────────────────────────────────
+
+function aiDefaultMessage(firstName: string): string {
+  const h = new Date().getHours();
+  const greet = h < 12 ? "Bună dimineața" : h < 18 ? "Bună ziua" : "Bună seara";
+  return `${greet}, ${firstName}! Sunt Andrei de la Teco.md — am văzut că ești interesat de sisteme de supraveghere. Îți pregătesc o ofertă personalizată în 10 minute. Când îți convine un apel scurt?`;
+}
+
+async function generateSalesMessage(env: any, opts: {
+  name: string;
+  source: string;
+  notes?: string;
+  context?: string;
+}): Promise<string> {
+  const firstName = (opts.name || "").split(/\s+/)[0] || "client";
+  const apiKey = (env.GOOGLE_API_KEY as string | undefined)?.trim();
+  if (!apiKey) return aiDefaultMessage(firstName);
+
+  const h = new Date().getHours();
+  const timeOfDay = h < 12 ? "dimineață" : h < 18 ? "după-amiază" : "seară";
+
+  const prompt = `Ești Andrei, consultant senior la Teco.md (lider sisteme supraveghere Moldova).
+Un client a lăsat datele pe site. Scrie un mesaj WhatsApp/Viber de follow-up.
+
+Date client:
+- Prenume: ${firstName}
+- Sursă: ${opts.source}
+${opts.notes ? `- Cerere/detalii: ${opts.notes}` : ""}
+${opts.context ? `- Context conversație: ${opts.context}` : ""}
+- Ora curentă: ${timeOfDay}
+
+REGULI STRICTE:
+1. Exact 2-3 propoziții, naturale, pentru WhatsApp/Viber
+2. Folosește prenumele o singură dată (la început)
+3. Ton: cald, de partener de încredere — NU vânzător agresiv
+4. Creează ușor: curiozitate, urgență blândă SAU valoare concretă
+5. Menționează "Teco.md" subtil (o singură dată)
+6. Max 2 emoji, plasate natural
+7. FĂRĂ "Bună ziua/seara" dacă e ${timeOfDay === "seară" ? "seară" : "după-amiază"}
+8. Returnează DOAR mesajul final — fără ghilimele, fără explicații`;
+
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.82, maxOutputTokens: 180 },
+        }),
+      }
+    );
+    const d = await res.json() as any;
+    const text = (d.candidates?.[0]?.content?.parts?.[0]?.text as string | undefined)?.trim();
+    if (text && text.length > 20) return text;
+  } catch (e) {
+    console.error("generateSalesMessage error:", e);
+  }
+  return aiDefaultMessage(firstName);
+}
+
+function tgAiBlock(aiMsg: string, phone: string): string {
+  const num = phone.replace(/\D/g, "");
+  const waLink = `https://wa.me/${num}?text=${encodeURIComponent(aiMsg)}`;
+  const viberLink = `viber://chat?number=%2B${num}`;
+  return [
+    ``,
+    `━━━━━━━━━━━━━━━━━━━━`,
+    `🤖 <b>Mesaj AI gata de trimis:</b>`,
+    `<i>${tgEsc(aiMsg)}</i>`,
+    ``,
+    `<a href="${waLink}">💬 1 Tap → WhatsApp</a>  ·  <a href="${viberLink}">📲 Viber</a>`,
+  ].join("\n");
+}
+
+// ─── Telegram send functions ──────────────────────────────────────────
+
 async function sendTgLeadChat(env: any, p: { name: string; phone: string; messages: any[]; session: any }): Promise<void> {
   const { name, phone, messages, session: s } = p;
   const loc = [s.city, s.country].filter(Boolean).join(", ");
   const pagesText = (s.pages || []).map((pg: any) => `• ${tgEsc(pg.path)}`).slice(0, 8).join("\n") || "• /";
-  const transcript = messages.filter((m: any) => !m.content.includes("LEAD_CAPTURED")).slice(-20)
-    .map((m: any) => `${m.role === "user" ? "👤" : "🤖"} ${tgEsc(m.content.replace(/LEAD_CAPTURED:[^\n]*/g, "").trim().slice(0, 300))}`).join("\n");
+  const cleanMsgs = messages.filter((m: any) => !m.content.includes("LEAD_CAPTURED")).slice(-20);
+  const transcript = cleanMsgs
+    .map((m: any) => `${m.role === "user" ? "👤" : "🤖"} ${tgEsc(m.content.replace(/LEAD_CAPTURED:[^\n]*/g, "").trim().slice(0, 300))}`)
+    .join("\n");
+  const chatContext = cleanMsgs
+    .filter((m: any) => m.role === "user")
+    .map((m: any) => m.content.replace(/LEAD_CAPTURED:[^\n]*/g, "").trim())
+    .slice(-4)
+    .join(" | ")
+    .slice(0, 300);
+
+  const aiMsg = await generateSalesMessage(env, { name, source: "TecoBot AI Chat", context: chatContext });
+
   await tgSend(env, [
     `🤖 <b>Lead Nou — TecoBot AI</b>`,
     ``,
@@ -375,6 +464,7 @@ async function sendTgLeadChat(env: any, p: { name: string; phone: string; messag
     `─────────────────`,
     transcript,
     `─────────────────`,
+    tgAiBlock(aiMsg, phone),
   ].join("\n"));
 }
 
@@ -382,6 +472,14 @@ async function sendTgCalculator(env: any, p: { name: string; phone: string; sele
   const { name, phone, selections: sel, equipmentCost, installCost, totalCost, session: s } = p;
   const loc = [s.city, s.country].filter(Boolean).join(", ");
   const pagesSum = (s.pages || []).map((pg: any) => pg.path).slice(0, 5).join(" → ") || "/";
+  const selContext = `Obiectiv: ${sel.objective || "—"}, Camere: ${sel.cameras || "—"}, Stocare: ${sel.storage || "—"}, Total estimat: ${Number(totalCost).toLocaleString("ro-MD")} MDL`;
+
+  const aiMsg = await generateSalesMessage(env, {
+    name: name || "client",
+    source: "Calculator Cost",
+    notes: selContext,
+  });
+
   await tgSend(env, [
     `🧮 <b>Lead Nou — Calculator Cost</b>`,
     ``,
@@ -402,6 +500,7 @@ async function sendTgCalculator(env: any, p: { name: string; phone: string; sele
     `• <b>Total: ~${Number(totalCost).toLocaleString("ro-MD")} MDL</b>`,
     ``,
     `📄 Pagini: <i>${tgEsc(pagesSum)}</i>`,
+    tgAiBlock(aiMsg, phone),
   ].join("\n"));
 }
 
@@ -411,7 +510,9 @@ async function sendTgLead(env: any, p: { name: string; phone: string; source: st
   const src = tgSource(s.referrer || "", s.utmSource || "", s.utmMedium || "");
   const flagEmoji = tgFlag(s.country || "");
   const dev = s.deviceType === "mobile" ? "📱" : "💻";
-  const viberNum = phone.replace(/\D/g, "");
+
+  const aiMsg = await generateSalesMessage(env, { name, source, notes });
+
   const lines = [
     `🔔 <b>Lead Nou — ${tgEsc(source)}</b>`,
     ``,
@@ -423,8 +524,7 @@ async function sendTgLead(env: any, p: { name: string; phone: string; source: st
     ``,
     `🕐 ${tgTime(s.startedAt || Date.now())}  ${flagEmoji} ${tgEsc(loc || "Locație necunoscută")}  ${dev}`,
     `🌐 Sursă traffic: ${tgEsc(src)}  |  ⏱ ${tgDur(s.duration ?? 0)} pe site`,
-    ``,
-    `<a href="viber://chat?number=%2B${viberNum}">📲 Viber</a>  |  <a href="https://wa.me/${viberNum}">💬 WhatsApp</a>`,
+    tgAiBlock(aiMsg, phone),
   );
   await tgSend(env, lines.join("\n"));
 }
@@ -435,10 +535,16 @@ async function sendTgOrder(env: any, p: { orderId: string; name: string; phone: 
   const src = tgSource(s.referrer || "", s.utmSource || "", s.utmMedium || "");
   const flagEmoji = tgFlag(s.country || "");
   const dev = s.deviceType === "mobile" ? "📱" : "💻";
-  const viberNum = phone.replace(/\D/g, "");
+  const itemNames = items.slice(0, 3).map((i: any) => i.name).join(", ");
   const itemLines = items.slice(0, 10).map((i: any) =>
     `  • ${tgEsc(i.name)} × ${i.qty} — ${Number(i.price * i.qty).toLocaleString("ro-MD")} MDL`
   ).join("\n");
+
+  const aiMsg = await generateSalesMessage(env, {
+    name,
+    source: "Comandă Online",
+    notes: `A comandat: ${itemNames}. Total: ${Number(total).toLocaleString("ro-MD")} MDL. Livrare: ${delivery}.`,
+  });
 
   await tgSend(env, [
     `🛒 <b>Comandă Nouă — #${tgEsc(orderId)}</b>`,
@@ -457,8 +563,7 @@ async function sendTgOrder(env: any, p: { orderId: string; name: string; phone: 
     `  Subtotal: ${Number(subtotal).toLocaleString("ro-MD")} MDL`,
     shippingCost > 0 ? `  🚚 Livrare: ${shippingCost} MDL` : `  🚚 Livrare: GRATUITĂ`,
     `💰 <b>Total: ${Number(total).toLocaleString("ro-MD")} MDL</b>`,
-    ``,
-    `<a href="viber://chat?number=%2B${viberNum}">📲 Viber</a>  |  <a href="https://wa.me/${viberNum}">💬 WhatsApp</a>`,
+    tgAiBlock(aiMsg, phone),
   ].join("\n"));
 }
 
