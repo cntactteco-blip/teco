@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useCallback } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import {
   LayoutDashboard, Package, ShoppingBag, Users, Settings, LogOut,
   ShieldCheck, Eye, EyeOff, Plus, Edit2, Trash2, X, Save, Search,
@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import translations from "@/lib/translations";
 import {
-  useStore, storeActions, initStore,
+  useStore, storeActions, refreshFromSupabase,
   type StoreProduct, type Lead, type Order, type ModuleSettings, type CategoryDef, type GalleryItem, type BlogPost,
   getState, DEFAULT_CATEGORIES,
 } from "@/lib/store";
@@ -2453,7 +2453,7 @@ function ImportTab() {
       await new Promise(r => setTimeout(r, 80));
     }
     setImported(ok); setProgress(100); setStep("done");
-    await initStore();
+    await refreshFromSupabase();
   };
 
   return (
@@ -2889,6 +2889,13 @@ export default function Admin() {
   const settings = useStore((s) => s.settings);
 
   const effectivePin = settings.general?.adminPin || ADMIN_PIN_FALLBACK;
+
+  // Încarcă date fresh din Supabase când adminul se autentifică
+  useEffect(() => {
+    if (authed) {
+      refreshFromSupabase().catch((e) => console.error("[admin] refreshFromSupabase failed:", e));
+    }
+  }, [authed]);
 
   if (!authed) return <PinGate onAuth={() => setAuthed(true)} effectivePin={effectivePin} />;
 

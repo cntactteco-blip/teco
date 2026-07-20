@@ -748,69 +748,83 @@ function mergeSettings(loaded: any): ModuleSettings {
   };
 }
 
-// ─── Inițializare — încarcă totul din Supabase ──────────────────────
-export async function initStore() {
-  // Run everything in parallel: seed checks + data fetches together
-  const [
-    ,
-    ,
-    prodsResult,
-    leadsResult,
-    ordersResult,
-    blogResult,
-    settingsResult,
-  ] = await Promise.all([
-    seedProductsIfEmpty().catch((e) => console.warn("[store] seedProducts failed:", e)),
-    seedBlogPostsIfEmpty(),
-    supabase.from("products").select("*").order("id"),
-    supabase.from("leads").select("*").order("timestamp", { ascending: false }),
-    supabase.from("orders").select("*").order("timestamp", { ascending: false }),
-    Promise.resolve(supabase.from("blog_posts").select("*").order("published_at", { ascending: false }))
-      .catch(() => ({ data: null, error: null })),
-    supabase.from("settings").select("*").eq("id", 1),
-  ]);
-
-  const prods = (prodsResult as any)?.data ?? null;
-  const leads = (leadsResult as any)?.data ?? null;
-  const orders = (ordersResult as any)?.data ?? null;
-  const blogRows = (blogResult as any)?.data ?? null;
-  const settingsRows = (settingsResult as any)?.data ?? null;
-
-  // If DB had no products yet (first ever run), re-fetch after seed inserted them
-  let finalProds = prods ?? [];
-  if (finalProds.length === 0) {
-    const { data: reseeded } = await supabase.from("products").select("*").order("id");
-    finalProds = reseeded ?? [];
+// ─── initStore — VIZITATORI: instant din snapshot/cache, ZERO apeluri Supabase ──
+// Supabase e apelat NUMAI din Admin panel via refreshFromSupabase().
+// Asta elimină egress-ul Supabase pentru vizitatori și face site-ul instant.
+export function initStore(): void {
+  // Datele sunt deja în state (din _cachedProducts / _snapshotProducts / _seedProducts
+  // și _cachedSettings / _snapshotSettings / DEFAULT_SETTINGS) — mark loaded și gata.
+  if (!state.loaded) {
+    setState({ ...state, loaded: true });
   }
+}
 
-  const rawSettings =
-    settingsRows && settingsRows.length > 0 && settingsRows[0].data
-      ? settingsRows[0].data
-      : null;
+// ─── refreshFromSupabase — NUMAI pentru Admin panel ─────────────────────────
+// Preia date fresh din Supabase: produse, lead-uri, comenzi, settings, blog posts.
+// Nu apela din pagini publice — costă egress și încetinește Supabase.
+export async function refreshFromSupabase(): Promise<void> {
+  if (!supabase || typeof supabase.from !== "function") return;
 
-  // ⚠️ CRITIC: suprascrie settings NUMAI dacă Supabase a returnat date reale.
-  // Când Supabase e pauzat/offline, rawSettings = null → păstrăm state curent
-  // (cache localStorage sau snapshot) în loc să resetăm cu DEFAULT_SETTINGS.
-  const mergedSettings = rawSettings ? mergeSettings(rawSettings) : null;
-  if (mergedSettings) {
-    try { localStorage.setItem("teco_settings_cache", JSON.stringify({ ...mergedSettings, _v: SETTINGS_CACHE_VERSION })); } catch {}
+  try {
+    const [
+      ,
+      ,
+      prodsResult,
+      leadsResult,
+      ordersResult,
+      blogResult,
+      settingsResult,
+    ] = await Promise.all([
+      seedProductsIfEmpty().catch((e) => console.warn("[store] seedProducts failed:", e)),
+      seedBlogPostsIfEmpty(),
+      supabase.from("products").select("*").order("id"),
+      supabase.from("leads").select("*").order("timestamp", { ascending: false }),
+      supabase.from("orders").select("*").order("timestamp", { ascending: false }),
+      Promise.resolve(supabase.from("blog_posts").select("*").order("published_at", { ascending: false }))
+        .catch(() => ({ data: null, error: null })),
+      supabase.from("settings").select("*").eq("id", 1),
+    ]);
+
+    const prods = (prodsResult as any)?.data ?? null;
+    const leads = (leadsResult as any)?.data ?? null;
+    const orders = (ordersResult as any)?.data ?? null;
+    const blogRows = (blogResult as any)?.data ?? null;
+    const settingsRows = (settingsResult as any)?.data ?? null;
+
+    // Dacă nu au produse → seed și re-fetch
+    let finalProds = prods ?? [];
+    if (finalProds.length === 0) {
+      const { data: reseeded } = await supabase.from("products").select("*").order("id");
+      finalProds = reseeded ?? [];
+    }
+
+    const rawSettings =
+      settingsRows && settingsRows.length > 0 && settingsRows[0].data
+        ? settingsRows[0].data
+        : null;
+
+    const mergedSettings = rawSettings ? mergeSettings(rawSettings) : null;
+    if (mergedSettings) {
+      try { localStorage.setItem("teco_settings_cache", JSON.stringify({ ...mergedSettings, _v: SETTINGS_CACHE_VERSION })); } catch {}
+    }
+
+    const mappedProducts = finalProds.map(dbProductToStore);
+    if (mappedProducts.length > 0) {
+      try { localStorage.setItem("teco_products_cache", JSON.stringify(mappedProducts)); } catch {}
+    }
+
+    setState({
+      products: mappedProducts.length > 0 ? mappedProducts : state.products,
+      leads: (leads ?? []).map(dbLeadToStore),
+      orders: (orders ?? []).map(dbOrderToStore),
+      blogPosts: (blogRows ?? []).map(dbBlogPostToStore),
+      settings: mergedSettings ?? state.settings,
+      loaded: true,
+    });
+  } catch (e) {
+    console.error("[store] refreshFromSupabase failed:", e);
+    setState({ ...state, loaded: true });
   }
-
-  const mappedProducts = finalProds.map(dbProductToStore);
-  // Nu suprascrie cache-ul sau state-ul cu array gol — păstrăm snapshot/cache existent
-  if (mappedProducts.length > 0) {
-    try { localStorage.setItem("teco_products_cache", JSON.stringify(mappedProducts)); } catch {}
-  }
-
-  setState({
-    products: mappedProducts.length > 0 ? mappedProducts : state.products,
-    leads: (leads ?? []).map(dbLeadToStore),
-    orders: (orders ?? []).map(dbOrderToStore),
-    blogPosts: (blogRows ?? []).map(dbBlogPostToStore),
-    // Păstrează settings curente dacă Supabase nu a returnat date
-    settings: mergedSettings ?? state.settings,
-    loaded: true,
-  });
 }
 
 function cacheProducts(products: StoreProduct[]) {
@@ -1139,7 +1153,7 @@ export const storeActions = {
     await supabase.from("leads").delete().neq("id", "00000000-0000-0000-0000-000000000000");
     await supabase.from("orders").delete().neq("id", "00000000-0000-0000-0000-000000000000");
     await supabase.from("settings").delete().eq("id", 1);
-    await initStore();
+    await refreshFromSupabase();
   },
 
   addReview(productId: number, review: Omit<UserReview, "id" | "helpful">) {

@@ -34,6 +34,6 @@ createRoot(document.getElementById("root")!).render(
     <App />
   </ErrorBoundary>
 );
-initStore().catch((err) => {
-  console.error("initStore failed:", err);
-});
+// initStore e acum sincron — încarcă instant din snapshot/cache fără Supabase.
+// Apeluri Supabase se fac NUMAI din Admin panel via refreshFromSupabase().
+initStore();
