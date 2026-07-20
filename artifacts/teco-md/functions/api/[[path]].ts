@@ -1012,7 +1012,8 @@ CUM RECOMANZI PRODUSE:
 CÂND CERI CONTACT:
 - Când clientul vrea instalare, reparație, meșter, ofertă concretă sau arată interes real.
 - Natural: "Ca să programăm tehnicianul, îmi dai un număr de telefon? Și cum te cheamă?"
-- Când primești NUMELE și TELEFONUL, răspunzi normal și adaugi pe ultima linie EXACT: LEAD_CAPTURED:name=NUME,phone=TELEFON
+- Când primești NUMELE și TELEFONUL (ambele obligatorii, nu goale), răspunzi normal și adaugi pe ultima linie EXACT: LEAD_CAPTURED:name=NUME,phone=TELEFON
+- IMPORTANT: NU scrie LEAD_CAPTURED dacă nu ai primit explicit atât numele cât și numărul de telefon de la client în mesajele conversației.
 
 LIMBA: Răspunzi în limba clientului (română sau rusă), niciodată mixat.`;
 
