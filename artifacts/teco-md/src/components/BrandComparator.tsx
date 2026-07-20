@@ -103,7 +103,7 @@ export default function BrandComparator() {
   };
 
   const prod = adminProd
-    ? { name: adminProd.name, price: adminProd.price, specs: adminProd.specs, badge: adminProd.badge, desc: adminProd.description, imageUrl: adminProd.imageUrl, urgency: "Disponibil azi" }
+    ? { name: adminProd.name, price: adminProd.price, specs: adminProd.specs, badge: adminProd.badge, desc: adminProd.description, imageUrl: adminProd.imageUrl || feedImage, urgency: "Disponibil azi" }
     : { ...FALLBACK[active], imageUrl: feedImage };
 
   const stars = BRAND_STARS[active];
