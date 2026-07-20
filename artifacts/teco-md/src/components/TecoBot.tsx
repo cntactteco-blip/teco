@@ -41,8 +41,20 @@ export function TecoBot() {
   }));
   const cartAddItem = useCart((s) => s.addItem);
   const cartOpen = useCart((s) => s.openCart);
-  const adminPhone = useStore((s) => s.settings.general?.adminPhone ?? "");
+  const settings = useStore((s) => s.settings);
+  const adminPhone = settings.general?.adminPhone ?? "";
   const phone = (adminPhone || "37367200463").replace(/\D/g, "");
+  // Setările trimise la AI pentru prompt dinamic
+  const storeSettings = {
+    phone: "+" + phone,
+    workingHours: settings.storeInfo?.workingHours || "Lun–Sâm 09:00–19:00",
+    city: settings.storeInfo?.city || "Chișinău, Moldova",
+    address: settings.storeInfo?.address || "",
+    deliveryPrice: settings.delivery?.price ?? 150,
+    deliveryFreeAt: settings.delivery?.freeThreshold ?? 5000,
+    montaj: settings.servicePrices?.montaj || "de la 750 MDL/cameră",
+    diagnosticare: settings.servicePrices?.diagnosticare || "de la 350 MDL/vizită",
+  };
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -136,7 +148,7 @@ export function TecoBot() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: allMessages.filter((m, i) => !(i === 0 && m.role === "assistant")).map((m) => ({ role: m.role, content: m.content })),
-          lang, products,
+          lang, products, storeSettings,
         }),
         signal: abortRef.current.signal,
       });
