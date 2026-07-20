@@ -818,6 +818,21 @@ app.post("/notify/order", async (c) => {
 
 // ─── Notify: daily-report (admin) ─────────────────────────────────────────────
 
+// ─── Debug Telegram (temporar) ───────────────────────────────────────────────
+app.get("/notify/tg-test", async (c) => {
+  const token = c.env.TELEGRAM_BOT_TOKEN;
+  const chatId = c.env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId) return c.json({ error: "lipsă token sau chatId" });
+
+  const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, text: "✅ Test TecoBot notificări CF Pages — funcționează!" }),
+  });
+  const data = await res.json();
+  return c.json({ status: res.status, telegram: data });
+});
+
 app.post("/notify/daily-report", async (c) => {
   const pin = c.req.header("x-admin-pin");
   if (!pin || pin !== c.env.SESSION_SECRET) {

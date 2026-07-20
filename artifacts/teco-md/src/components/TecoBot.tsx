@@ -130,7 +130,7 @@ export function TecoBot() {
     setInput("");
     const userMsg: Message = { role: "user", content: text, ts: Date.now() };
     const allMessages = [...messages, userMsg];
-    if (allMessages.length === 1) {
+    if (allMessages.filter(m => m.role === "user").length === 1) {
       fetch(API + "/api/notify/chat-notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
