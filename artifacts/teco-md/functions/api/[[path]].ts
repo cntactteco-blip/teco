@@ -45,15 +45,38 @@ function esc(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-function flag(country: string): string {
-  const map: Record<string, string> = {
-    Moldova: "🇲🇩", Romania: "🇷🇴", Germany: "🇩🇪", Italy: "🇮🇹",
-    France: "🇫🇷", "United Kingdom": "🇬🇧", "United States": "🇺🇸",
-    Ukraine: "🇺🇦", Russia: "🇷🇺", Israel: "🇮🇱", Spain: "🇪🇸",
-    Portugal: "🇵🇹", Netherlands: "🇳🇱", Belgium: "🇧🇪",
-    Austria: "🇦🇹", Switzerland: "🇨🇭", Canada: "🇨🇦", Australia: "🇦🇺",
-  };
-  return map[country] || "🌍";
+// Generează flag emoji din cod ISO-2 (MD→🇲🇩) sau din nume de țară
+const COUNTRY_NAME: Record<string, string> = {
+  MD: "Moldova", RO: "România", DE: "Germania", IT: "Italia",
+  FR: "Franța", GB: "Marea Britanie", US: "SUA", UA: "Ucraina",
+  RU: "Rusia", IL: "Israel", ES: "Spania", PT: "Portugalia",
+  NL: "Olanda", BE: "Belgia", AT: "Austria", CH: "Elveția",
+  CA: "Canada", AU: "Australia", PL: "Polonia", CZ: "Cehia",
+  SK: "Slovacia", HU: "Ungaria", BG: "Bulgaria", GR: "Grecia",
+  TR: "Turcia", AE: "Emirates", GB: "UK",
+};
+
+function flagFromCode(code: string): string {
+  if (!code || code.length !== 2) return "🌍";
+  return String.fromCodePoint(
+    ...code.toUpperCase().split("").map((c) => 0x1f1e6 + c.charCodeAt(0) - 65),
+  );
+}
+
+function flag(countryOrCode: string): string {
+  if (!countryOrCode) return "🌍";
+  // Dacă e cod ISO-2 (ex: "MD")
+  if (countryOrCode.length === 2) return flagFromCode(countryOrCode);
+  // Dacă e nume de țară, găsim codul
+  const code = Object.entries(COUNTRY_NAME).find(([, n]) => n === countryOrCode)?.[0];
+  if (code) return flagFromCode(code);
+  return "🌍";
+}
+
+function countryDisplay(countryOrCode: string): string {
+  if (!countryOrCode) return "";
+  if (countryOrCode.length === 2) return COUNTRY_NAME[countryOrCode.toUpperCase()] || countryOrCode;
+  return countryOrCode;
 }
 
 function formatSource(referrer: string, utmSource: string, utmMedium: string): string {
@@ -81,6 +104,28 @@ function formatDur(seconds: number): string {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return s > 0 ? `${m}m ${s}s` : `${m}m`;
+}
+
+// ─── Cloudflare geo (mai fiabil decât ip-api.com din browser) ───────────────
+
+interface CfGeo { country: string; city: string; isp: string; countryName: string; }
+
+function cfGeo(req: Request): CfGeo {
+  const cf = (req as any).cf ?? {};
+  const code: string = cf.country ?? "";
+  const city: string = cf.city ?? "";
+  const isp: string = cf.asOrganization ?? "";
+  return { country: code, city, isp, countryName: countryDisplay(code) };
+}
+
+/** Îmbogățește sesiunea cu geo din CF (suprascrie câmpurile goale din client) */
+function mergeGeo(session: SessionInfo, geo: CfGeo): SessionInfo {
+  return {
+    ...session,
+    country: geo.countryName || session.country || "",
+    city: geo.city || session.city || "",
+    isp: geo.isp || session.isp || "",
+  };
 }
 
 // ─── D1 helpers ──────────────────────────────────────────────────────────────
@@ -552,7 +597,9 @@ app.get("/stats/:date", async (c) => {
 
 app.post("/notify/visitor", async (c) => {
   if (!c.env.TELEGRAM_BOT_TOKEN) return c.json({ ok: true, skipped: "not configured" });
-  const session: SessionInfo = (await c.req.json().catch(() => ({}))).session ?? {};
+  const body = await c.req.json().catch(() => ({}));
+  // CF geo suprascrie locația din browser (ip-api.com adesea blocat/rate-limited)
+  const session: SessionInfo = mergeGeo(body.session ?? {}, cfGeo(c.req.raw));
   const sessionId = session.sessionId;
   const ip = c.req.header("CF-Connecting-IP") || c.req.header("X-Forwarded-For")?.split(",")[0]?.trim() || "unknown";
   const today = chisinauDate();
@@ -576,7 +623,7 @@ app.post("/notify/visitor", async (c) => {
 app.post("/notify/first-message", async (c) => {
   if (!c.env.TELEGRAM_BOT_TOKEN) return c.json({ ok: true, skipped: "not configured" });
   const body = await c.req.json().catch(() => ({}));
-  const session: SessionInfo = body.session ?? {};
+  const session: SessionInfo = mergeGeo(body.session ?? {}, cfGeo(c.req.raw));
   const sessionId = session.sessionId;
 
   const count = chatNotifyCounts.get(sessionId ?? "") ?? 0;
@@ -605,7 +652,8 @@ app.post("/notify/lead-chat", async (c) => {
 
   await notifyLeadChat(c.env, {
     name: body.name ?? "", phone,
-    messages: body.messages ?? [], session: body.session ?? {},
+    messages: body.messages ?? [],
+    session: mergeGeo(body.session ?? {}, cfGeo(c.req.raw)),
   });
   return c.json({ ok: true });
 });
@@ -630,7 +678,7 @@ app.post("/notify/lead-calculator", async (c) => {
     equipmentCost: body.equipmentCost ?? 0,
     installCost: body.installCost ?? 0,
     totalCost: body.totalCost ?? 0,
-    session: body.session ?? {},
+    session: mergeGeo(body.session ?? {}, cfGeo(c.req.raw)),
   });
   return c.json({ ok: true });
 });
@@ -640,7 +688,7 @@ app.post("/notify/lead-calculator", async (c) => {
 app.post("/notify/chat-notify", async (c) => {
   if (!c.env.TELEGRAM_BOT_TOKEN) return c.json({ ok: true, skipped: "not configured" });
   const body = await c.req.json().catch(() => ({}));
-  const session: SessionInfo = body.session ?? {};
+  const session: SessionInfo = mergeGeo(body.session ?? {}, cfGeo(c.req.raw));
   const sessionId = session.sessionId;
 
   const count = chatNotifyCounts.get(sessionId ?? "") ?? 0;
@@ -670,7 +718,8 @@ app.post("/notify/chat-lead", async (c) => {
 
   await notifyLeadChat(c.env, {
     name: body.name ?? "", phone,
-    messages: body.messages ?? [], session: body.session ?? {},
+    messages: body.messages ?? [],
+    session: mergeGeo(body.session ?? {}, cfGeo(c.req.raw)),
   });
   return c.json({ ok: true });
 });
@@ -695,7 +744,7 @@ app.post("/notify/calculator", async (c) => {
     equipmentCost: body.equipmentCost ?? 0,
     installCost: body.installCost ?? 0,
     totalCost: body.totalCost ?? 0,
-    session: body.session ?? {},
+    session: mergeGeo(body.session ?? {}, cfGeo(c.req.raw)),
   });
   return c.json({ ok: true });
 });
@@ -705,7 +754,8 @@ app.post("/notify/calculator", async (c) => {
 app.post("/notify/lead", async (c) => {
   if (!c.env.TELEGRAM_BOT_TOKEN) return c.json({ ok: true, skipped: "not configured" });
   const body = await c.req.json().catch(() => ({}));
-  const { name = "", phone = "", source = "", notes = "", session = {} as SessionInfo } = body;
+  const { name = "", phone = "", source = "", notes = "" } = body;
+  const session: SessionInfo = mergeGeo(body.session ?? {}, cfGeo(c.req.raw));
   const today = chisinauDate();
   const normalized = (phone as string).replace(/\D/g, "");
 
@@ -720,7 +770,7 @@ app.post("/notify/lead", async (c) => {
     `🎯 <b>Lead Nou — ${esc(source || "Site")}</b>`,
     ``,
     `👤 <b>${esc(name || "Anonim")}</b>  |  📞 <code>${esc(phone)}</code>`,
-    loc ? `📍 ${esc(loc)}` : "",
+    loc ? `${flag(session.country || "")} ${esc(loc)}` : "",
     `🌐 Sursă: ${esc(src)}`,
     notes ? `📝 ${esc(notes)}` : "",
   ].filter(Boolean).join("\n");
@@ -737,19 +787,21 @@ app.post("/notify/order", async (c) => {
   const {
     orderId = "", name = "", phone = "", address = "", delivery = "",
     items = [], subtotal = 0, shippingCost = 0, total = 0,
-    session = {} as SessionInfo,
   } = body;
+  const session: SessionInfo = mergeGeo(body.session ?? {}, cfGeo(c.req.raw));
 
   const itemsText = (items as any[])
     .slice(0, 10)
     .map((i: any) => `  • ${esc(i.name)} × ${i.qty} — ${(i.price * i.qty).toLocaleString("ro-MD")} MDL`)
     .join("\n");
 
+  const loc = [session.city, session.country].filter(Boolean).join(", ");
   const lines = [
     `🛒 <b>Comandă Nouă #${esc(orderId)}</b>`,
     ``,
     `👤 <b>${esc(name)}</b>  |  📞 <code>${esc(phone)}</code>`,
     `📍 ${esc(address || "—")}  |  🚚 ${esc(delivery || "—")}`,
+    loc ? `${flag(session.country || "")} ${esc(loc)}` : "",
     ``,
     `📦 <b>Produse:</b>`,
     itemsText,
@@ -757,7 +809,6 @@ app.post("/notify/order", async (c) => {
     `💰 Subtotal: ${Number(subtotal).toLocaleString("ro-MD")} MDL`,
     shippingCost > 0 ? `🚚 Livrare: ${Number(shippingCost).toLocaleString("ro-MD")} MDL` : "",
     `💳 <b>Total: ${Number(total).toLocaleString("ro-MD")} MDL</b>`,
-    session.country ? `🌍 ${esc([session.city, session.country].filter(Boolean).join(", "))}` : "",
   ].filter(Boolean).join("\n");
 
   await sendTelegram(c.env, lines);
