@@ -639,14 +639,25 @@ async function seedProductsIfEmpty() {
 
 // ─── Seed blog posts în Supabase (prima rulare) ──────────────
 async function seedBlogPostsIfEmpty() {
-  const { count } = await supabase
-    .from("blog_posts")
-    .select("*", { count: "exact", head: true });
+  try {
+    const { count, error } = await supabase
+      .from("blog_posts")
+      .select("*", { count: "exact", head: true });
 
-  if ((count ?? 0) > 0) return;
+    // Tabelul nu există încă (migration nepasată) — skip silențios
+    if (error) {
+      console.warn("[store] blog_posts table not ready:", error.message ?? error);
+      return;
+    }
 
-  const rows = DEFAULT_BLOG_POSTS.map((p) => storeBlogPostToDb(p));
-  await supabase.from("blog_posts").insert(rows);
+    if ((count ?? 0) > 0) return;
+
+    const rows = DEFAULT_BLOG_POSTS.map((p) => storeBlogPostToDb(p));
+    const { error: insertErr } = await supabase.from("blog_posts").insert(rows);
+    if (insertErr) console.warn("[store] seedBlogPosts insert error:", insertErr.message ?? insertErr);
+  } catch (e) {
+    console.warn("[store] seedBlogPostsIfEmpty failed:", e);
+  }
 }
 
 function dbBlogPostToStore(row: any): BlogPost {
@@ -727,20 +738,27 @@ export async function initStore() {
   const [
     ,
     ,
-    { data: prods },
-    { data: leads },
-    { data: orders },
-    { data: blogRows },
-    { data: settingsRows },
+    prodsResult,
+    leadsResult,
+    ordersResult,
+    blogResult,
+    settingsResult,
   ] = await Promise.all([
-    seedProductsIfEmpty(),
+    seedProductsIfEmpty().catch((e) => console.warn("[store] seedProducts failed:", e)),
     seedBlogPostsIfEmpty(),
     supabase.from("products").select("*").order("id"),
     supabase.from("leads").select("*").order("timestamp", { ascending: false }),
     supabase.from("orders").select("*").order("timestamp", { ascending: false }),
-    supabase.from("blog_posts").select("*").order("published_at", { ascending: false }),
+    supabase.from("blog_posts").select("*").order("published_at", { ascending: false })
+      .catch(() => ({ data: null, error: null })),
     supabase.from("settings").select("*").eq("id", 1),
   ]);
+
+  const prods = (prodsResult as any)?.data ?? null;
+  const leads = (leadsResult as any)?.data ?? null;
+  const orders = (ordersResult as any)?.data ?? null;
+  const blogRows = (blogResult as any)?.data ?? null;
+  const settingsRows = (settingsResult as any)?.data ?? null;
 
   // If DB had no products yet (first ever run), re-fetch after seed inserted them
   let finalProds = prods ?? [];
