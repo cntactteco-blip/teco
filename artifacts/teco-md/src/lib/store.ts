@@ -1,7 +1,6 @@
 import { useSyncExternalStore, useMemo, useRef } from "react";
-import { supabase } from "./supabase";
-import { products as seedProducts } from "./products";
 import _snapshot from "./catalog-snapshot.json";
+import { products as seedProducts } from "./products";
 
 // ─── Types ─────────────────────────────────────────────────────────
 export interface StoreProduct {
@@ -617,58 +616,7 @@ function dbOrderToStore(row: any): Order {
   };
 }
 
-// ─── Seed produse în Supabase (prima rulare) ─────────────────────────
-async function seedProductsIfEmpty() {
-  const { count } = await supabase
-    .from("products")
-    .select("*", { count: "exact", head: true });
-
-  if ((count ?? 0) > 0) return;
-
-  const rows = seedProducts.map((p) => ({
-    id: p.id,
-    name: p.name,
-    model: p.model,
-    brand: p.brand,
-    price: p.price,
-    old_price: p.oldPrice,
-    specs: p.specs,
-    badge: p.badge,
-    category: p.category,
-    image_url: IMAGE_SEED[p.imageType] ?? IMAGE_SEED["indoor"],
-    images: [],
-    description: p.description ?? "",
-    long_description: null,
-    tech_specs: null,
-    in_stock: true,
-    icon: p.icon,
-  }));
-
-  await supabase.from("products").insert(rows);
-}
-
-// ─── Seed blog posts în Supabase (prima rulare) ──────────────
-async function seedBlogPostsIfEmpty() {
-  try {
-    const { count, error } = await supabase
-      .from("blog_posts")
-      .select("*", { count: "exact", head: true });
-
-    // Tabelul nu există încă (migration nepasată) — skip silențios
-    if (error) {
-      console.warn("[store] blog_posts table not ready:", error.message ?? error);
-      return;
-    }
-
-    if ((count ?? 0) > 0) return;
-
-    const rows = DEFAULT_BLOG_POSTS.map((p) => storeBlogPostToDb(p));
-    const { error: insertErr } = await supabase.from("blog_posts").insert(rows);
-    if (insertErr) console.warn("[store] seedBlogPosts insert error:", insertErr.message ?? insertErr);
-  } catch (e) {
-    console.warn("[store] seedBlogPostsIfEmpty failed:", e);
-  }
-}
+// Seed-ul este acum gestionat de api-server la startup (nu mai e nevoie în frontend)
 
 function dbBlogPostToStore(row: any): BlogPost {
   return {
@@ -753,84 +701,54 @@ export function initStore(): void {
   }
 }
 
-// ─── refreshFromSupabase — NUMAI pentru Admin panel ─────────────────────────
-// Preia date fresh din Supabase: produse, lead-uri, comenzi, settings, blog posts.
-// Nu apela din pagini publice — costă egress și încetinește Supabase.
-export async function refreshFromSupabase(): Promise<void> {
-  if (!supabase || typeof supabase.from !== "function") return;
+// ─── refreshFromApiServer — NUMAI pentru Admin panel ────────────────────────
+// Preia date fresh din api-server (SQLite local, niciodată offline).
+// Nu apela din pagini publice — vizitatorii folosesc snapshot/localStorage.
+export async function refreshFromApiServer(): Promise<void> {
+  if (!_API) {
+    // Fără api-server configurat → rămânem pe localStorage/snapshot
+    setState({ ...state, loaded: true });
+    return;
+  }
 
   try {
-    const [
-      ,
-      ,
-      prodsResult,
-      leadsResult,
-      ordersResult,
-      blogResult,
-      settingsResult,
-    ] = await Promise.all([
-      seedProductsIfEmpty().catch((e) => console.warn("[store] seedProducts failed:", e)),
-      seedBlogPostsIfEmpty(),
-      supabase.from("products").select("*").order("id"),
-      supabase.from("leads").select("*").order("timestamp", { ascending: false }),
-      supabase.from("orders").select("*").order("timestamp", { ascending: false }),
-      Promise.resolve(supabase.from("blog_posts").select("*").order("published_at", { ascending: false }))
-        .catch(() => ({ data: null, error: null })),
-      supabase.from("settings").select("*").eq("id", 1),
+    const [prodsRes, leadsRes, ordersRes, settingsRes, blogRes] = await Promise.all([
+      fetch(_API + "/api/products").then((r) => r.ok ? r.json() : null).catch(() => null),
+      fetch(_API + "/api/leads").then((r) => r.ok ? r.json() : null).catch(() => null),
+      fetch(_API + "/api/orders").then((r) => r.ok ? r.json() : null).catch(() => null),
+      fetch(_API + "/api/settings").then((r) => r.ok ? r.json() : null).catch(() => null),
+      fetch(_API + "/api/blog-posts").then((r) => r.ok ? r.json() : null).catch(() => null),
     ]);
 
-    const prods = (prodsResult as any)?.data ?? null;
-    const leads = (leadsResult as any)?.data ?? null;
-    const orders = (ordersResult as any)?.data ?? null;
-    const blogRows = (blogResult as any)?.data ?? null;
-    const settingsRows = (settingsResult as any)?.data ?? null;
+    const products: any[] = prodsRes?.data ?? null;
+    const leads: any[] = leadsRes?.data ?? null;
+    const orders: any[] = ordersRes?.data ?? null;
+    const rawSettings = settingsRes?.data ?? null;
+    const blogRows: any[] = blogRes?.data ?? null;
 
-    // Dacă nu au produse → seed și re-fetch
-    let finalProds = prods ?? [];
-    if (finalProds.length === 0) {
-      const { data: reseeded } = await supabase.from("products").select("*").order("id");
-      finalProds = reseeded ?? [];
-    }
-
-    const rawSettings =
-      settingsRows && settingsRows.length > 0 && settingsRows[0].data
-        ? settingsRows[0].data
-        : null;
-
-    // ── Settings: localStorage are PRIORITATE absolută ────────────────────────
-    // Supabase poate fi pauzat, offline sau conține date mai vechi decât localStorage.
-    // Regula: categoriile din Supabase sunt acceptate NUMAI dacă sunt cel puțin la
-    // fel de multe ca cele locale. Orice categorie adăugată local și neajunsă în
-    // Supabase este păstrată și re-sincronizată.
+    // ── Settings: localStorage + api-server, categoriile locale au prioritate ─
     let mergedSettings: ModuleSettings | null = null;
     if (rawSettings) {
-      const fromSupabase = mergeSettings(rawSettings);
+      const fromServer = mergeSettings(rawSettings);
       const localCats: CategoryDef[] = state.settings.categories ?? [];
-      const supabaseCats: CategoryDef[] = fromSupabase.categories ?? [];
-      const supabaseSlugs = new Set(supabaseCats.map((c: CategoryDef) => c.slug));
-      const extraLocal = localCats.filter((c: CategoryDef) => !supabaseSlugs.has(c.slug));
+      const serverCats: CategoryDef[] = fromServer.categories ?? [];
+      const serverSlugs = new Set(serverCats.map((c: CategoryDef) => c.slug));
+      const extraLocal = localCats.filter((c: CategoryDef) => !serverSlugs.has(c.slug));
 
       if (extraLocal.length > 0) {
-        // Local are categorii în plus față de Supabase → merge și re-sync
-        mergedSettings = { ...fromSupabase, categories: [...supabaseCats, ...extraLocal] };
-        if (_API) {
-          fetch(_API + "/api/settings", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(mergedSettings),
-          }).catch(() => {});
-        }
-        supabase.from("settings").upsert({ id: 1, data: mergedSettings }).catch(() => {});
+        mergedSettings = { ...fromServer, categories: [...serverCats, ...extraLocal] };
+        fetch(_API + "/api/settings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(mergedSettings),
+        }).catch(() => {});
       } else {
-        mergedSettings = fromSupabase;
+        mergedSettings = fromServer;
       }
-      // Salvăm în localStorage NUMAI dacă Supabase a returnat date valide
       try { localStorage.setItem("teco_settings_cache", JSON.stringify({ ...mergedSettings, _v: SETTINGS_CACHE_VERSION })); } catch {}
     }
-    // Dacă rawSettings e null (Supabase offline/eroare) → mergedSettings rămâne null
-    // → setState va folosi state.settings (din localStorage, deja corect)
 
-    const mappedProducts = finalProds.map(dbProductToStore);
+    const mappedProducts = (products ?? []).map(dbProductToStore);
     if (mappedProducts.length > 0) {
       try { localStorage.setItem("teco_products_cache", JSON.stringify(mappedProducts)); } catch {}
     }
@@ -844,10 +762,13 @@ export async function refreshFromSupabase(): Promise<void> {
       loaded: true,
     });
   } catch (e) {
-    console.error("[store] refreshFromSupabase failed:", e);
+    console.error("[store] refreshFromApiServer failed:", e);
     setState({ ...state, loaded: true });
   }
 }
+
+// Alias pentru compatibilitate cu Admin.tsx
+export const refreshFromSupabase = refreshFromApiServer;
 
 function cacheProducts(products: StoreProduct[]) {
   try { localStorage.setItem("teco_products_cache", JSON.stringify(products)); } catch {}
@@ -858,15 +779,11 @@ const _API = typeof import.meta !== "undefined"
   ? ((import.meta as any).env?.VITE_API_URL ?? "")
   : "";
 
-// ─── Salvare settings în Supabase + api-server (service role bypass RLS) ──────
+// ─── Salvare settings — localStorage imediat + api-server în background ───────
 async function saveSettings(s: ModuleSettings) {
-  // 1. localStorage imediat — persistă chiar dacă totul eșuează
+  // 1. localStorage imediat — persistă chiar dacă api-server e offline
   try { localStorage.setItem("teco_settings_cache", JSON.stringify({ ...s, _v: SETTINGS_CACHE_VERSION })); } catch {}
-  // 2. Supabase direct (anon key) — poate fi restricționat de RLS
-  supabase.from("settings").upsert({ id: 1, data: s })
-    .then(({ error }: any) => { if (error) console.warn("[store] settings direct supabase:", error?.message); })
-    .catch(() => {});
-  // 3. api-server (service role key) — mereu funcționează, bypass RLS
+  // 2. api-server (SQLite local) — mereu funcționează, gratuit, permanent
   if (_API) {
     fetch(_API + "/api/settings", {
       method: "POST",
@@ -876,51 +793,41 @@ async function saveSettings(s: ModuleSettings) {
   }
 }
 
+// ─── Sync produse la api-server (fire-and-forget) ───────────────────────────
+function syncProduct(method: "POST" | "DELETE", product?: any, id?: number) {
+  if (!_API) return;
+  if (method === "DELETE" && id !== undefined) {
+    fetch(_API + `/api/products/${id}`, { method: "DELETE" }).catch(() => {});
+  } else if (product) {
+    fetch(_API + "/api/products", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(storeProductToDb(product)),
+    }).catch(() => {});
+  }
+}
+
 // ─── Actions ────────────────────────────────────────────────────────
 export const storeActions = {
-  // Products — actualizare optimistă: state + cache instant, Supabase în background
+  // Products — actualizare optimistă: state + cache instant, api-server în background
   async addProduct(p: Omit<StoreProduct, "id">) {
     const id = Math.max(0, ...state.products.map((x) => x.id)) + 1;
     const newProduct: StoreProduct = { ...p, id };
-    // Actualizare imediată → UI responsive chiar dacă Supabase e offline
-    setState((s) => {
-      const products = [...s.products, newProduct];
-      cacheProducts(products);
-      return { ...s, products };
-    });
-    // Sync Supabase în background (nu blochează UI)
-    supabase.from("products").insert(storeProductToDb(newProduct))
-      .then(({ error }: any) => { if (error) console.warn("[store] addProduct sync error:", error?.message); })
-      .catch((e: any) => console.warn("[store] addProduct sync failed:", e?.message));
+    setState((s) => { const products = [...s.products, newProduct]; cacheProducts(products); return { ...s, products }; });
+    syncProduct("POST", newProduct);
   },
 
   async updateProduct(id: number, patch: Partial<StoreProduct>) {
     const existing = state.products.find((p) => p.id === id);
     if (!existing) return;
     const updated = { ...existing, ...patch };
-    // Actualizare imediată
-    setState((s) => {
-      const products = s.products.map((p) => (p.id === id ? updated : p));
-      cacheProducts(products);
-      return { ...s, products };
-    });
-    // Sync Supabase în background
-    supabase.from("products").update(storeProductToDb(updated)).eq("id", id)
-      .then(({ error }: any) => { if (error) console.warn("[store] updateProduct sync error:", error?.message); })
-      .catch((e: any) => console.warn("[store] updateProduct sync failed:", e?.message));
+    setState((s) => { const products = s.products.map((p) => (p.id === id ? updated : p)); cacheProducts(products); return { ...s, products }; });
+    syncProduct("POST", updated);
   },
 
   async deleteProduct(id: number) {
-    // Actualizare imediată
-    setState((s) => {
-      const products = s.products.filter((p) => p.id !== id);
-      cacheProducts(products);
-      return { ...s, products };
-    });
-    // Sync Supabase în background
-    supabase.from("products").delete().eq("id", id)
-      .then(({ error }: any) => { if (error) console.warn("[store] deleteProduct sync error:", error?.message); })
-      .catch((e: any) => console.warn("[store] deleteProduct sync failed:", e?.message));
+    setState((s) => { const products = s.products.filter((p) => p.id !== id); cacheProducts(products); return { ...s, products }; });
+    syncProduct("DELETE", undefined, id);
   },
 
   async duplicateProduct(id: number) {
@@ -928,33 +835,13 @@ export const storeActions = {
     if (!original) return;
     const newId = Math.max(0, ...state.products.map((x) => x.id)) + 1;
     const copy: StoreProduct = { ...original, id: newId, name: `${original.name} (copie)` };
-    // Actualizare imediată
-    setState((s) => {
-      const products = [...s.products, copy];
-      cacheProducts(products);
-      return { ...s, products };
-    });
-    // Sync Supabase în background
-    supabase.from("products").insert(storeProductToDb(copy))
-      .then(({ error }: any) => { if (error) console.warn("[store] duplicateProduct sync error:", error?.message); })
-      .catch((e: any) => console.warn("[store] duplicateProduct sync failed:", e?.message));
+    setState((s) => { const products = [...s.products, copy]; cacheProducts(products); return { ...s, products }; });
+    syncProduct("POST", copy);
   },
 
   async bulkDeleteProducts(ids: number[]) {
-    // Actualizare imediată
-    setState((s) => {
-      const products = s.products.filter((p) => !ids.includes(p.id));
-      cacheProducts(products);
-      return { ...s, products };
-    });
-    // Sync Supabase în background — șterge câte unul dacă .in() nu e disponibil
-    Promise.all(
-      ids.map((id) =>
-        supabase.from("products").delete().eq("id", id)
-          .then(({ error }: any) => { if (error) console.warn("[store] bulkDelete sync error id=" + id + ":", error?.message); })
-          .catch((e: any) => console.warn("[store] bulkDelete sync failed id=" + id + ":", e?.message))
-      )
-    );
+    setState((s) => { const products = s.products.filter((p) => !ids.includes(p.id)); cacheProducts(products); return { ...s, products }; });
+    if (_API) ids.forEach((id) => fetch(_API + `/api/products/${id}`, { method: "DELETE" }).catch(() => {}));
   },
 
   // Leads
@@ -965,40 +852,30 @@ export const storeActions = {
       timestamp: new Date().toISOString(),
       status: "new",
     };
-    const { error } = await supabase.from("leads").insert({
-      id: newLead.id,
-      name: newLead.name,
-      phone: newLead.phone,
-      source: newLead.source,
-      timestamp: newLead.timestamp,
-      status: newLead.status,
-      notes: newLead.notes ?? null,
-      selections: newLead.selections ?? null,
-    });
-    if (error) { console.error("addLead error:", error); return newLead; }
     setState((s) => ({ ...s, leads: [newLead, ...s.leads] }));
+    if (_API) {
+      fetch(_API + "/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: newLead.id, name: newLead.name, phone: newLead.phone, source: newLead.source, timestamp: newLead.timestamp, status: newLead.status, notes: newLead.notes ?? null, selections: newLead.selections ?? null }),
+      }).catch(() => {});
+    }
     return newLead;
   },
 
   async updateLeadStatus(id: string, status: Lead["status"]) {
-    await supabase.from("leads").update({ status }).eq("id", id);
-    setState((s) => ({
-      ...s,
-      leads: s.leads.map((l) => (l.id === id ? { ...l, status } : l)),
-    }));
+    setState((s) => ({ ...s, leads: s.leads.map((l) => (l.id === id ? { ...l, status } : l)) }));
+    if (_API) fetch(_API + `/api/leads/${id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) }).catch(() => {});
   },
 
   async updateLeadNotes(id: string, notes: string) {
-    await supabase.from("leads").update({ notes }).eq("id", id);
-    setState((s) => ({
-      ...s,
-      leads: s.leads.map((l) => (l.id === id ? { ...l, notes } : l)),
-    }));
+    setState((s) => ({ ...s, leads: s.leads.map((l) => (l.id === id ? { ...l, notes } : l)) }));
+    if (_API) fetch(_API + `/api/leads/${id}/notes`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ notes }) }).catch(() => {});
   },
 
   async deleteLead(id: string) {
-    await supabase.from("leads").delete().eq("id", id);
     setState((s) => ({ ...s, leads: s.leads.filter((l) => l.id !== id) }));
+    if (_API) fetch(_API + `/api/leads/${id}`, { method: "DELETE" }).catch(() => {});
   },
 
   // Orders
@@ -1009,30 +886,25 @@ export const storeActions = {
       timestamp: new Date().toISOString(),
       status: "new",
     };
-    const { error } = await supabase.from("orders").insert({
-      id: newOrder.id,
-      customer: newOrder.customer,
-      items: newOrder.items,
-      total: newOrder.total,
-      timestamp: newOrder.timestamp,
-      status: newOrder.status,
-    });
-    if (error) { console.error("addOrder error:", error); return newOrder; }
     setState((s) => ({ ...s, orders: [newOrder, ...s.orders] }));
+    if (_API) {
+      fetch(_API + "/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: newOrder.id, customer: newOrder.customer, items: newOrder.items, total: newOrder.total, timestamp: newOrder.timestamp, status: newOrder.status }),
+      }).catch(() => {});
+    }
     return newOrder;
   },
 
   async updateOrderStatus(id: string, status: Order["status"]) {
-    await supabase.from("orders").update({ status }).eq("id", id);
-    setState((s) => ({
-      ...s,
-      orders: s.orders.map((o) => (o.id === id ? { ...o, status } : o)),
-    }));
+    setState((s) => ({ ...s, orders: s.orders.map((o) => (o.id === id ? { ...o, status } : o)) }));
+    if (_API) fetch(_API + `/api/orders/${id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) }).catch(() => {});
   },
 
   async deleteOrder(id: string) {
-    await supabase.from("orders").delete().eq("id", id);
     setState((s) => ({ ...s, orders: s.orders.filter((o) => o.id !== id) }));
+    if (_API) fetch(_API + `/api/orders/${id}`, { method: "DELETE" }).catch(() => {});
   },
 
   // Settings
@@ -1137,31 +1009,14 @@ export const storeActions = {
     const now = new Date().toISOString();
     const readingTime = Math.ceil((p.content?.split(/\s+/).length || 0) / 200);
     const newPost: BlogPost = { ...p, id, publishedAt: now, updatedAt: now, readingTime };
-    const { error } = await supabase.from("blog_posts").insert({
-      id: newPost.id,
-      slug: newPost.slug,
-      title: newPost.title,
-      title_ru: newPost.titleRu,
-      description: newPost.description,
-      description_ru: newPost.descriptionRu,
-      content: newPost.content,
-      content_ru: newPost.contentRu,
-      image_url: newPost.imageUrl,
-      category: newPost.category,
-      category_ru: newPost.categoryRu,
-      published_at: newPost.publishedAt,
-      updated_at: newPost.updatedAt,
-      author: newPost.author,
-      meta_title: newPost.metaTitle,
-      meta_title_ru: newPost.metaTitleRu,
-      meta_description: newPost.metaDescription,
-      meta_description_ru: newPost.metaDescriptionRu,
-      keywords: newPost.keywords,
-      keywords_ru: newPost.keywordsRu,
-      published: newPost.published,
-    });
-    if (error) { console.error("addBlogPost error:", error); }
     setState((s) => ({ ...s, blogPosts: [newPost, ...s.blogPosts] }));
+    if (_API) {
+      fetch(_API + "/api/blog-posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(storeBlogPostToDb(newPost)),
+      }).catch(() => {});
+    }
     return newPost;
   },
 
@@ -1169,46 +1024,26 @@ export const storeActions = {
     const existing = state.blogPosts.find((p) => p.id === id);
     if (!existing) return;
     const updated = { ...existing, ...patch, updatedAt: new Date().toISOString() };
-    const { error } = await supabase.from("blog_posts").update({
-      slug: updated.slug,
-      title: updated.title,
-      title_ru: updated.titleRu,
-      description: updated.description,
-      description_ru: updated.descriptionRu,
-      content: updated.content,
-      content_ru: updated.contentRu,
-      image_url: updated.imageUrl,
-      category: updated.category,
-      category_ru: updated.categoryRu,
-      updated_at: updated.updatedAt,
-      author: updated.author,
-      meta_title: updated.metaTitle,
-      meta_title_ru: updated.metaTitleRu,
-      meta_description: updated.metaDescription,
-      meta_description_ru: updated.metaDescriptionRu,
-      keywords: updated.keywords,
-      keywords_ru: updated.keywordsRu,
-      published: updated.published,
-    }).eq("id", id);
-    if (error) { console.error("updateBlogPost error:", error); return; }
-    setState((s) => ({
-      ...s,
-      blogPosts: s.blogPosts.map((p) => (p.id === id ? updated : p)),
-    }));
+    setState((s) => ({ ...s, blogPosts: s.blogPosts.map((p) => (p.id === id ? updated : p)) }));
+    if (_API) {
+      fetch(_API + "/api/blog-posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(storeBlogPostToDb(updated)),
+      }).catch(() => {});
+    }
   },
 
   async deleteBlogPost(id: string) {
-    const { error } = await supabase.from("blog_posts").delete().eq("id", id);
-    if (error) { console.error("deleteBlogPost error:", error); return; }
     setState((s) => ({ ...s, blogPosts: s.blogPosts.filter((p) => p.id !== id) }));
+    if (_API) fetch(_API + `/api/blog-posts/${id}`, { method: "DELETE" }).catch(() => {});
   },
 
   async resetToDefaults() {
-    await supabase.from("products").delete().neq("id", 0);
-    await supabase.from("leads").delete().neq("id", "00000000-0000-0000-0000-000000000000");
-    await supabase.from("orders").delete().neq("id", "00000000-0000-0000-0000-000000000000");
-    await supabase.from("settings").delete().eq("id", 1);
-    await refreshFromSupabase();
+    // Șterge cacheul local și reîncarcă din api-server
+    try { localStorage.removeItem("teco_settings_cache"); } catch {}
+    try { localStorage.removeItem("teco_products_cache"); } catch {}
+    await refreshFromApiServer();
   },
 
   addReview(productId: number, review: Omit<UserReview, "id" | "helpful">) {

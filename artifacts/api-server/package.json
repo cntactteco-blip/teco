@@ -12,8 +12,10 @@
   "dependencies": {
     "@google/genai": "^2.8.0",
     "@supabase/supabase-js": "^2.108.2",
+    "@types/better-sqlite3": "^7.6.13",
     "@workspace/api-zod": "workspace:*",
     "@workspace/db": "workspace:*",
+    "better-sqlite3": "^12.11.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "drizzle-orm": "catalog:",

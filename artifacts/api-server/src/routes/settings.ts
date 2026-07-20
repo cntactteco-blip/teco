@@ -1,156 +1,255 @@
 /**
- * /api/settings  — citire/scriere setări via Supabase service role key
- * /api/products  — CRUD produse via Supabase service role key
+ * API routes — toate datele via SQLite local (niciodată offline, gratuit permanent)
  *
- * Aceste rute există pentru că frontend-ul poate folosi anon key (restricționat
- * de RLS), dar api-server-ul are SUPABASE_SERVICE_ROLE_KEY care bypasează RLS.
- * Salvările din admin trec prin aceste rute → ajung sigur în Supabase.
+ * GET  /api/settings
+ * POST /api/settings
+ * GET  /api/products
+ * POST /api/products          (upsert)
+ * DELETE /api/products/:id
+ * GET  /api/leads
+ * POST /api/leads             (upsert)
+ * PATCH /api/leads/:id/status
+ * PATCH /api/leads/:id/notes
+ * DELETE /api/leads/:id
+ * GET  /api/orders
+ * POST /api/orders            (upsert)
+ * PATCH /api/orders/:id/status
+ * DELETE /api/orders/:id
+ * GET  /api/blog-posts
+ * POST /api/blog-posts        (upsert)
+ * DELETE /api/blog-posts/:id
  */
 
 import { Router, type Request, type Response } from "express";
-import { createClient } from "@supabase/supabase-js";
+import { readFileSync, existsSync } from "fs";
+import { resolve } from "path";
+import {
+  getSettings, saveSettings,
+  getProducts, upsertProduct, deleteProduct, seedProductsIfEmpty,
+  getLeads, upsertLead, updateLeadStatus, updateLeadNotes, deleteLead,
+  getOrders, upsertOrder, updateOrderStatus, deleteOrder,
+  getBlogPosts, upsertBlogPost, deleteBlogPost,
+} from "../db";
 
 const router = Router();
 
-// ─── Client cu service role (bypass RLS) ─────────────────────────────────────
-function db() {
-  const url = process.env.VITE_SUPABASE_URL;
-  const key =
-    process.env.SUPABASE_SERVICE_KEY ??
-    process.env.SUPABASE_SERVICE_ROLE_KEY ??
-    process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key) return null;
-  return createClient(url, key, { auth: { persistSession: false } });
+// ─── Seed produse la pornire ──────────────────────────────────────────────────
+function loadSnapshot(): { products: Record<string, unknown>[] } {
+  const candidates = [
+    resolve(process.cwd(), "../teco-md/src/lib/catalog-snapshot.json"),
+    resolve(process.cwd(), "artifacts/teco-md/src/lib/catalog-snapshot.json"),
+    resolve(process.cwd(), "../../artifacts/teco-md/src/lib/catalog-snapshot.json"),
+  ];
+  for (const p of candidates) {
+    if (existsSync(p)) {
+      try { return JSON.parse(readFileSync(p, "utf8")); } catch { continue; }
+    }
+  }
+  console.warn("[routes] catalog-snapshot.json not found, skipping product seed");
+  return { products: [] };
 }
 
-// ─── GET /api/settings ────────────────────────────────────────────────────────
-router.get("/settings", async (_req: Request, res: Response) => {
-  const client = db();
-  if (!client) { res.status(503).json({ error: "Supabase not configured" }); return; }
+try {
+  const snapshotProducts = loadSnapshot().products ?? [];
+  if (snapshotProducts.length > 0) {
+    seedProductsIfEmpty(snapshotProducts.map((p) => ({
+      id: p.id,
+      name: p.name,
+      model: p.model ?? "",
+      brand: p.brand ?? "",
+      price: p.price ?? 0,
+      old_price: (p as Record<string, unknown>).old_price ?? null,
+      specs: p.specs ?? "",
+      badge: p.badge ?? null,
+      category: p.category ?? "",
+      image_url: (p as Record<string, unknown>).image_url ?? "",
+      images: p.images ?? [],
+      description: p.description ?? "",
+      long_description: null,
+      tech_specs: null,
+      in_stock: true,
+      icon: p.icon ?? "camera",
+    })));
+  }
+} catch (e) {
+  console.warn("[routes/settings] seed failed:", e);
+}
 
+// ─── Settings ─────────────────────────────────────────────────────────────────
+
+router.get("/settings", (_req: Request, res: Response) => {
   try {
-    const { data, error } = await (client as any)
-      .from("settings")
-      .select("*")
-      .eq("id", 1)
-      .single();
-
-    if (error && error.code !== "PGRST116") {
-      res.status(500).json({ error: error.message });
-      return;
-    }
-    res.json({ data: data?.data ?? null });
-  } catch (e: any) {
-    res.status(500).json({ error: e?.message ?? "unknown error" });
-  }
-});
-
-// ─── POST /api/settings ───────────────────────────────────────────────────────
-router.post("/settings", async (req: Request, res: Response) => {
-  const client = db();
-  if (!client) { res.status(503).json({ error: "Supabase not configured" }); return; }
-
-  const settings = req.body;
-  if (!settings || typeof settings !== "object") {
-    res.status(400).json({ error: "Invalid body" });
-    return;
-  }
-
-  try {
-    const { error } = await (client as any)
-      .from("settings")
-      .upsert({ id: 1, data: settings });
-
-    if (error) { res.status(500).json({ error: error.message }); return; }
-    res.json({ ok: true });
-  } catch (e: any) {
-    res.status(500).json({ error: e?.message ?? "unknown error" });
-  }
-});
-
-// ─── GET /api/products ────────────────────────────────────────────────────────
-router.get("/products", async (_req: Request, res: Response) => {
-  const client = db();
-  if (!client) { res.status(503).json({ error: "Supabase not configured" }); return; }
-
-  try {
-    const { data, error } = await (client as any)
-      .from("products")
-      .select("*")
-      .order("id");
-
-    if (error) { res.status(500).json({ error: error.message }); return; }
-    res.json({ data: data ?? [] });
-  } catch (e: any) {
-    res.status(500).json({ error: e?.message ?? "unknown error" });
-  }
-});
-
-// ─── POST /api/products — insert one product ──────────────────────────────────
-router.post("/products", async (req: Request, res: Response) => {
-  const client = db();
-  if (!client) { res.status(503).json({ error: "Supabase not configured" }); return; }
-
-  const product = req.body;
-  if (!product || typeof product !== "object") {
-    res.status(400).json({ error: "Invalid body" });
-    return;
-  }
-
-  try {
-    const { data, error } = await (client as any)
-      .from("products")
-      .upsert(Array.isArray(product) ? product : [product])
-      .select();
-
-    if (error) { res.status(500).json({ error: error.message }); return; }
+    const data = getSettings();
     res.json({ data });
-  } catch (e: any) {
-    res.status(500).json({ error: e?.message ?? "unknown error" });
+  } catch (e: unknown) {
+    res.status(500).json({ error: (e as Error).message });
   }
 });
 
-// ─── PUT /api/products/:id — update product ───────────────────────────────────
-router.put("/products/:id", async (req: Request, res: Response) => {
-  const client = db();
-  if (!client) { res.status(503).json({ error: "Supabase not configured" }); return; }
-
-  const id = Number(req.params.id);
-  const patch = req.body;
-  if (!patch || typeof patch !== "object") {
-    res.status(400).json({ error: "Invalid body" });
-    return;
-  }
-
+router.post("/settings", (req: Request, res: Response) => {
   try {
-    const { error } = await (client as any)
-      .from("products")
-      .update(patch)
-      .eq("id", id);
-
-    if (error) { res.status(500).json({ error: error.message }); return; }
+    const body = req.body;
+    if (!body || typeof body !== "object") { res.status(400).json({ error: "Invalid body" }); return; }
+    saveSettings(body);
     res.json({ ok: true });
-  } catch (e: any) {
-    res.status(500).json({ error: e?.message ?? "unknown error" });
+  } catch (e: unknown) {
+    res.status(500).json({ error: (e as Error).message });
   }
 });
 
-// ─── DELETE /api/products/:id — delete one product ───────────────────────────
-router.delete("/products/:id", async (req: Request, res: Response) => {
-  const client = db();
-  if (!client) { res.status(503).json({ error: "Supabase not configured" }); return; }
+// ─── Products ─────────────────────────────────────────────────────────────────
 
-  const id = Number(req.params.id);
+router.get("/products", (_req: Request, res: Response) => {
   try {
-    const { error } = await (client as any)
-      .from("products")
-      .delete()
-      .eq("id", id);
+    res.json({ data: getProducts() });
+  } catch (e: unknown) {
+    res.status(500).json({ error: (e as Error).message });
+  }
+});
 
-    if (error) { res.status(500).json({ error: error.message }); return; }
+router.post("/products", (req: Request, res: Response) => {
+  try {
+    const body = req.body;
+    const items = Array.isArray(body) ? body : [body];
+    for (const p of items) upsertProduct(p as Record<string, unknown>);
     res.json({ ok: true });
-  } catch (e: any) {
-    res.status(500).json({ error: e?.message ?? "unknown error" });
+  } catch (e: unknown) {
+    res.status(500).json({ error: (e as Error).message });
+  }
+});
+
+router.put("/products/:id", (req: Request, res: Response) => {
+  try {
+    upsertProduct({ ...req.body, id: Number(req.params.id) });
+    res.json({ ok: true });
+  } catch (e: unknown) {
+    res.status(500).json({ error: (e as Error).message });
+  }
+});
+
+router.delete("/products/:id", (req: Request, res: Response) => {
+  try {
+    deleteProduct(Number(req.params.id));
+    res.json({ ok: true });
+  } catch (e: unknown) {
+    res.status(500).json({ error: (e as Error).message });
+  }
+});
+
+// ─── Leads ────────────────────────────────────────────────────────────────────
+
+router.get("/leads", (_req: Request, res: Response) => {
+  try {
+    res.json({ data: getLeads() });
+  } catch (e: unknown) {
+    res.status(500).json({ error: (e as Error).message });
+  }
+});
+
+router.post("/leads", (req: Request, res: Response) => {
+  try {
+    const lead = req.body;
+    if (!lead?.id) { res.status(400).json({ error: "Missing id" }); return; }
+    upsertLead(lead as Record<string, unknown>);
+    res.json({ ok: true });
+  } catch (e: unknown) {
+    res.status(500).json({ error: (e as Error).message });
+  }
+});
+
+router.patch("/leads/:id/status", (req: Request, res: Response) => {
+  try {
+    updateLeadStatus(req.params.id, req.body.status);
+    res.json({ ok: true });
+  } catch (e: unknown) {
+    res.status(500).json({ error: (e as Error).message });
+  }
+});
+
+router.patch("/leads/:id/notes", (req: Request, res: Response) => {
+  try {
+    updateLeadNotes(req.params.id, req.body.notes ?? "");
+    res.json({ ok: true });
+  } catch (e: unknown) {
+    res.status(500).json({ error: (e as Error).message });
+  }
+});
+
+router.delete("/leads/:id", (req: Request, res: Response) => {
+  try {
+    deleteLead(req.params.id);
+    res.json({ ok: true });
+  } catch (e: unknown) {
+    res.status(500).json({ error: (e as Error).message });
+  }
+});
+
+// ─── Orders ───────────────────────────────────────────────────────────────────
+
+router.get("/orders", (_req: Request, res: Response) => {
+  try {
+    res.json({ data: getOrders() });
+  } catch (e: unknown) {
+    res.status(500).json({ error: (e as Error).message });
+  }
+});
+
+router.post("/orders", (req: Request, res: Response) => {
+  try {
+    const order = req.body;
+    if (!order?.id) { res.status(400).json({ error: "Missing id" }); return; }
+    upsertOrder(order as Record<string, unknown>);
+    res.json({ ok: true });
+  } catch (e: unknown) {
+    res.status(500).json({ error: (e as Error).message });
+  }
+});
+
+router.patch("/orders/:id/status", (req: Request, res: Response) => {
+  try {
+    updateOrderStatus(req.params.id, req.body.status);
+    res.json({ ok: true });
+  } catch (e: unknown) {
+    res.status(500).json({ error: (e as Error).message });
+  }
+});
+
+router.delete("/orders/:id", (req: Request, res: Response) => {
+  try {
+    deleteOrder(req.params.id);
+    res.json({ ok: true });
+  } catch (e: unknown) {
+    res.status(500).json({ error: (e as Error).message });
+  }
+});
+
+// ─── Blog posts ───────────────────────────────────────────────────────────────
+
+router.get("/blog-posts", (_req: Request, res: Response) => {
+  try {
+    res.json({ data: getBlogPosts() });
+  } catch (e: unknown) {
+    res.status(500).json({ error: (e as Error).message });
+  }
+});
+
+router.post("/blog-posts", (req: Request, res: Response) => {
+  try {
+    const post = req.body;
+    if (!post?.id) { res.status(400).json({ error: "Missing id" }); return; }
+    upsertBlogPost(post as Record<string, unknown>);
+    res.json({ ok: true });
+  } catch (e: unknown) {
+    res.status(500).json({ error: (e as Error).message });
+  }
+});
+
+router.delete("/blog-posts/:id", (req: Request, res: Response) => {
+  try {
+    deleteBlogPost(req.params.id);
+    res.json({ ok: true });
+  } catch (e: unknown) {
+    res.status(500).json({ error: (e as Error).message });
   }
 });
 
