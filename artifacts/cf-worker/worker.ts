@@ -1,7 +1,7 @@
 import Groq from "groq-sdk";
 
 export default {
-  async fetch(request: Request, env: any): Promise<Response> {
+  async fetch(request: Request, env: any, ctx: ExecutionContext): Promise<Response> {
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -195,25 +195,25 @@ Returneaza DOAR array JSON valid, fara markdown, fara explicatii:
       if (sid && notifiedSessions.has(sid)) return new Response(JSON.stringify({ ok: true, skipped: "dup" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       if (sid) notifiedSessions.add(sid);
       if (notifiedSessions.size > 5000) notifiedSessions.clear();
-      sendTgVisitor(env, session).catch(() => {});
+      ctx.waitUntil(sendTgVisitor(env, session));
       return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     if ((url.pathname === "/api/notify/chat-notify" || url.pathname === "/api/chat-notify") && request.method === "POST") {
       const { message = "", page = "/", session = {} } = await request.json() as any;
-      sendTgFirstMessage(env, { message, page, session }).catch(() => {});
+      ctx.waitUntil(sendTgFirstMessage(env, { message, page, session }));
       return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     if (url.pathname === "/api/notify/chat-lead" && request.method === "POST") {
       const { name = "", phone = "", messages = [], session = {} } = await request.json() as any;
-      sendTgLeadChat(env, { name, phone, messages, session }).catch(() => {});
+      ctx.waitUntil(sendTgLeadChat(env, { name, phone, messages, session }));
       return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     if (url.pathname === "/api/notify/calculator" && request.method === "POST") {
       const { name = "", phone = "", selections = {}, equipmentCost = 0, installCost = 0, totalCost = 0, session = {} } = await request.json() as any;
-      sendTgCalculator(env, { name, phone, selections, equipmentCost, installCost, totalCost, session }).catch(() => {});
+      ctx.waitUntil(sendTgCalculator(env, { name, phone, selections, equipmentCost, installCost, totalCost, session }));
       return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
