@@ -11,6 +11,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260619.1",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.4",
     "@radix-ui/react-alert-dialog": "^1.1.7",
@@ -76,6 +77,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
+    "hono": "^4.12.31",
     "react-helmet-async": "^3.0.0",
     "xlsx": "^0.18.5"
   }

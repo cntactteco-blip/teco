@@ -705,12 +705,6 @@ export function initStore(): void {
 // Preia date fresh din api-server (SQLite local, niciodată offline).
 // Nu apela din pagini publice — vizitatorii folosesc snapshot/localStorage.
 export async function refreshFromApiServer(): Promise<void> {
-  if (!_API) {
-    // Fără api-server configurat → rămânem pe localStorage/snapshot
-    setState({ ...state, loaded: true });
-    return;
-  }
-
   try {
     const [prodsRes, leadsRes, ordersRes, settingsRes, blogRes] = await Promise.all([
       fetch(_API + "/api/products").then((r) => r.ok ? r.json() : null).catch(() => null),
@@ -753,6 +747,15 @@ export async function refreshFromApiServer(): Promise<void> {
       try { localStorage.setItem("teco_products_cache", JSON.stringify(mappedProducts)); } catch {}
     }
 
+    // Dacă D1 e gol (prima rulare), seeds automat produsele din snapshot/localStorage
+    if ((products ?? []).length === 0 && state.products.length > 0) {
+      fetch(_API + "/api/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(state.products.map(storeProductToDb)),
+      }).catch(() => {});
+    }
+
     setState({
       products: mappedProducts.length > 0 ? mappedProducts : state.products,
       leads: (leads ?? []).map(dbLeadToStore),
@@ -783,19 +786,16 @@ const _API = typeof import.meta !== "undefined"
 async function saveSettings(s: ModuleSettings) {
   // 1. localStorage imediat — persistă chiar dacă api-server e offline
   try { localStorage.setItem("teco_settings_cache", JSON.stringify({ ...s, _v: SETTINGS_CACHE_VERSION })); } catch {}
-  // 2. api-server (SQLite local) — mereu funcționează, gratuit, permanent
-  if (_API) {
-    fetch(_API + "/api/settings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(s),
-    }).catch(() => {});
-  }
+  // 2. CF Pages Function sau api-server — funcționează pe același domeniu
+  fetch(_API + "/api/settings", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(s),
+  }).catch(() => {});
 }
 
 // ─── Sync produse la api-server (fire-and-forget) ───────────────────────────
 function syncProduct(method: "POST" | "DELETE", product?: any, id?: number) {
-  if (!_API) return;
   if (method === "DELETE" && id !== undefined) {
     fetch(_API + `/api/products/${id}`, { method: "DELETE" }).catch(() => {});
   } else if (product) {
@@ -841,7 +841,7 @@ export const storeActions = {
 
   async bulkDeleteProducts(ids: number[]) {
     setState((s) => { const products = s.products.filter((p) => !ids.includes(p.id)); cacheProducts(products); return { ...s, products }; });
-    if (_API) ids.forEach((id) => fetch(_API + `/api/products/${id}`, { method: "DELETE" }).catch(() => {}));
+    ids.forEach((id) => fetch(_API + `/api/products/${id}`, { method: "DELETE" }).catch(() => {}));
   },
 
   // Leads
@@ -853,29 +853,27 @@ export const storeActions = {
       status: "new",
     };
     setState((s) => ({ ...s, leads: [newLead, ...s.leads] }));
-    if (_API) {
-      fetch(_API + "/api/leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: newLead.id, name: newLead.name, phone: newLead.phone, source: newLead.source, timestamp: newLead.timestamp, status: newLead.status, notes: newLead.notes ?? null, selections: newLead.selections ?? null }),
-      }).catch(() => {});
-    }
+    fetch(_API + "/api/leads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: newLead.id, name: newLead.name, phone: newLead.phone, source: newLead.source, timestamp: newLead.timestamp, status: newLead.status, notes: newLead.notes ?? null, selections: newLead.selections ?? null }),
+    }).catch(() => {});
     return newLead;
   },
 
   async updateLeadStatus(id: string, status: Lead["status"]) {
     setState((s) => ({ ...s, leads: s.leads.map((l) => (l.id === id ? { ...l, status } : l)) }));
-    if (_API) fetch(_API + `/api/leads/${id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) }).catch(() => {});
+    fetch(_API + `/api/leads/${id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) }).catch(() => {});
   },
 
   async updateLeadNotes(id: string, notes: string) {
     setState((s) => ({ ...s, leads: s.leads.map((l) => (l.id === id ? { ...l, notes } : l)) }));
-    if (_API) fetch(_API + `/api/leads/${id}/notes`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ notes }) }).catch(() => {});
+    fetch(_API + `/api/leads/${id}/notes`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ notes }) }).catch(() => {});
   },
 
   async deleteLead(id: string) {
     setState((s) => ({ ...s, leads: s.leads.filter((l) => l.id !== id) }));
-    if (_API) fetch(_API + `/api/leads/${id}`, { method: "DELETE" }).catch(() => {});
+    fetch(_API + `/api/leads/${id}`, { method: "DELETE" }).catch(() => {});
   },
 
   // Orders
@@ -887,24 +885,22 @@ export const storeActions = {
       status: "new",
     };
     setState((s) => ({ ...s, orders: [newOrder, ...s.orders] }));
-    if (_API) {
-      fetch(_API + "/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: newOrder.id, customer: newOrder.customer, items: newOrder.items, total: newOrder.total, timestamp: newOrder.timestamp, status: newOrder.status }),
-      }).catch(() => {});
-    }
+    fetch(_API + "/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: newOrder.id, customer: newOrder.customer, items: newOrder.items, total: newOrder.total, timestamp: newOrder.timestamp, status: newOrder.status }),
+    }).catch(() => {});
     return newOrder;
   },
 
   async updateOrderStatus(id: string, status: Order["status"]) {
     setState((s) => ({ ...s, orders: s.orders.map((o) => (o.id === id ? { ...o, status } : o)) }));
-    if (_API) fetch(_API + `/api/orders/${id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) }).catch(() => {});
+    fetch(_API + `/api/orders/${id}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) }).catch(() => {});
   },
 
   async deleteOrder(id: string) {
     setState((s) => ({ ...s, orders: s.orders.filter((o) => o.id !== id) }));
-    if (_API) fetch(_API + `/api/orders/${id}`, { method: "DELETE" }).catch(() => {});
+    fetch(_API + `/api/orders/${id}`, { method: "DELETE" }).catch(() => {});
   },
 
   // Settings
@@ -1010,13 +1006,11 @@ export const storeActions = {
     const readingTime = Math.ceil((p.content?.split(/\s+/).length || 0) / 200);
     const newPost: BlogPost = { ...p, id, publishedAt: now, updatedAt: now, readingTime };
     setState((s) => ({ ...s, blogPosts: [newPost, ...s.blogPosts] }));
-    if (_API) {
-      fetch(_API + "/api/blog-posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(storeBlogPostToDb(newPost)),
-      }).catch(() => {});
-    }
+    fetch(_API + "/api/blog-posts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(storeBlogPostToDb(newPost)),
+    }).catch(() => {});
     return newPost;
   },
 
@@ -1025,18 +1019,16 @@ export const storeActions = {
     if (!existing) return;
     const updated = { ...existing, ...patch, updatedAt: new Date().toISOString() };
     setState((s) => ({ ...s, blogPosts: s.blogPosts.map((p) => (p.id === id ? updated : p)) }));
-    if (_API) {
-      fetch(_API + "/api/blog-posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(storeBlogPostToDb(updated)),
-      }).catch(() => {});
-    }
+    fetch(_API + "/api/blog-posts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(storeBlogPostToDb(updated)),
+    }).catch(() => {});
   },
 
   async deleteBlogPost(id: string) {
     setState((s) => ({ ...s, blogPosts: s.blogPosts.filter((p) => p.id !== id) }));
-    if (_API) fetch(_API + `/api/blog-posts/${id}`, { method: "DELETE" }).catch(() => {});
+    fetch(_API + `/api/blog-posts/${id}`, { method: "DELETE" }).catch(() => {});
   },
 
   async resetToDefaults() {

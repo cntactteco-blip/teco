@@ -3,3 +3,4 @@
 - [Migration-backup port conflict](port-conflict.md) — migration-backup always claims port 24182 first; app still serves correctly via it, main workflow shows failed but HMR works
 - [Warranty text consistency](warranty-text.md) — product pages show 2–3 ani (manufacturer), "why us" section uses 5 ani (service promise); these are intentionally different
 - [Supabase architecture](supabase-architecture.md) — ZERO Supabase calls for visitors; initStore() instant from snapshot; refreshFromSupabase() admin-only; .catch() needs Promise.resolve() wrapper on query builders
+- [Cloudflare D1 deployment](cloudflare-d1-deployment.md) — teco-cig.pages.dev runs Hono Pages Functions + D1; deploy via `wrangler pages deploy dist` from artifacts/teco-md/; token needs D1+Pages+Workers Edit perms

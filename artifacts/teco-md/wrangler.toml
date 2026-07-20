@@ -1,0 +1,10 @@
+# Cloudflare Pages — configurare locală (wrangler pages dev)
+# Binding-urile de producție sunt configurate direct pe Pages project.
+name = "teco"
+pages_build_output_dir = "dist/public"
+compatibility_date = "2024-09-23"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "teco-db"
+database_id = "7b079aff-44e2-42e9-a7f3-44eae42f5b9e"
