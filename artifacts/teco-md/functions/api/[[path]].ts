@@ -897,21 +897,29 @@ const CAT_LABELS: Record<string, string> = {
 interface PEntry { id: number; name: string; brand: string; price: number; oldPrice?: number | null; specs: string; category: string; badge?: string | null; inStock?: boolean; }
 
 function buildCatalog(products: PEntry[]): string {
-  if (!products?.length) return "(catalog indisponibil)";
+  if (!products?.length) return "(catalog indisponibil — trimite clientul la telefon)";
   const groups: Record<string, PEntry[]> = {};
   for (const p of products) (groups[p.category] ??= []).push(p);
   const order = ["wifi", "poe", "4g", "nvr", "kituri", "alarme"];
   const sorted = [...order.filter(k => groups[k]), ...Object.keys(groups).filter(k => !order.includes(k))];
-  return sorted.map(cat => {
+  const lines: string[] = [
+    `!! IMPORTANT: Acestea sunt SINGURELE produse existente. Prețul și numele TREBUIE copiate exact. Nu inventa produse sau prețuri inexistente. !!`,
+    `Formatul: [ID] Brand Nume — Specs — Preț MDL. Când recomanzi, folosește exact [ID] și exact prețul de mai jos.`,
+    ``,
+  ];
+  for (const cat of sorted) {
     const label = CAT_LABELS[cat] ?? cat.toUpperCase();
-    const lines = groups[cat].map(p => {
-      const stock = p.inStock === false ? " [LIPSĂ STOC]" : "";
-      const promo = p.oldPrice ? ` (era ${p.oldPrice} MDL)` : "";
-      const badge = p.badge ? ` [${p.badge}]` : "";
-      return `[${p.id}] ${p.brand} ${p.name}${badge}${stock} — ${p.specs} — ${p.price} MDL${promo}`;
-    });
-    return `=== ${label} ===\n${lines.join("\n")}`;
-  }).join("\n\n");
+    lines.push(`=== ${label} ===`);
+    for (const p of groups[cat]) {
+      const stock  = p.inStock === false ? " [LIPSĂ STOC]" : "";
+      const promo  = p.oldPrice ? ` (era ${p.oldPrice} MDL)` : "";
+      const badge  = p.badge ? ` [${p.badge}]` : "";
+      const specs  = p.specs?.trim() ? p.specs.trim() : "specificații la cerere";
+      lines.push(`[${p.id}] ${p.brand} ${p.name}${badge}${stock} — ${specs} — ${p.price} MDL${promo}`);
+    }
+    lines.push(``);
+  }
+  return lines.join("\n");
 }
 
 interface StoreSettings {
@@ -1110,14 +1118,24 @@ CATALOG LIVE (actualizat automat din admin):
 {CATALOG}
 
 ════════════════════════════════════════════
-REGULA CARDURILOR INTERACTIVE — OBLIGATORIE
+REGULA ABSOLUTĂ — PRODUSE ȘI CARDURI
 ════════════════════════════════════════════
 
-Când menționezi orice produs din catalog, scrie [id] imediat după nume — activează cardul cu imagine, preț și buton "În coș":
-  ✓ "Kit-ul DAHUA ColorNoaptea [12] la 6800 MDL e exact ce îți trebuie pentru curte."
-  ✓ "Ai două variante bune: UNIVIEW 4MP [23] la 12795 MDL cu instalare inclusă, sau DAHUA PoE [8] la 8500 MDL."
-Maxim 2–3 produse odată. Prețul EXACT din catalog. NU inventa nimic.
-Dacă nu ai varianta potrivită — spune sincer și trimite la ${phone}.
+FOLOSEȘTI NUMAI produse din catalogul de mai sus — zero excepții.
+Numele, prețul și [ID] din răspuns = copiate EXACT din catalog. Nu parafrazezi, nu estimezi, nu inventezi.
+
+PROCES: citești catalogul → găsești produsul potrivit → copiezi [ID], numele exact și prețul exact.
+
+EXEMPLE CORECTE (din catalogul real de seturi 4 camere):
+✓ "Pentru curte ai [119] UNIVIEW Set Supraveghere 4 Camere 4MP ColorNoaptea la 12.795 MDL — Switch PoE și instalare incluse."
+✓ "Mai accesibil: [122] TIANDY Set Tri-Light 4 Camere 2MP + NVR 5Ch + HDD 1TB la 9.990 MDL."
+✓ "Dacă vrei fără cabluri (4G/Solar): [26] DAHUA Kit Pro-Solar 4G 4 Camere Imou Cell 3C la 9.980 MDL."
+
+GREȘIT — NICIODATĂ:
+✗ "DAHUA Kit 4 Camere Exterioare la 6800 MDL" → nu există în catalog, e inventat!
+✗ Orice preț care nu apare exact în catalog = halucinație = interzis.
+
+Maxim 2–3 produse odată. Dacă nu ai ce potrivit → spune sincer și dă ${phone}.
 
 ════════════════════════════════════════════
 CAPTARE LEAD — CÂND ȘI CUM
