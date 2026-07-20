@@ -66,6 +66,23 @@ Token created 2026-07-20 with permissions: D1:Edit, Cloudflare Pages:Edit, Worke
 
 **Why**: The original token only had read permissions and couldn't create D1 databases or deploy functions.
 
-## AI Chat
+## AI Endpoints (all in Pages Function, Groq via fetch)
 
-The `/api/ai/chat` endpoint is NOT implemented in Pages Function — it still requires the Replit api-server or a separate Cloudflare Worker with Groq integration.
+- POST `/api/ai/chat` — SSE streaming (TecoBot)
+- POST `/api/ai/lead-analyze` — JSON lead scoring
+- POST `/api/ai/whatsapp-message` — WhatsApp message generator
+- POST `/api/ai/description` — SEO product description
+- POST `/api/ai/business-insights` — business analysis
+- POST `/api/ai/import-products` — CSV/XLS product import parser
+- POST `/api/ai/blog-post` — full SEO blog article (bilingual)
+
+No `groq-sdk` used — all calls via native `fetch` to `https://api.groq.com/openai/v1/chat/completions`.
+Streaming uses `TransformStream` + `ReadableStream`, native in CF Workers.
+GROQ_API_KEY bound to Pages as secret.
+
+## Cron Trigger (daily Telegram report)
+
+`onScheduled` handler exported from the Pages Function.
+Configure in CF Dashboard → Pages → teco → Settings → Functions → Cron Triggers.
+Recommended schedule: `0 19 * * *` (22:00 Chișinău / 19:00 UTC).
+Pages cron triggers cannot be set via API — dashboard UI only.

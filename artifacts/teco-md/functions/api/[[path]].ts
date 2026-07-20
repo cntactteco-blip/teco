@@ -14,6 +14,7 @@ interface Env {
   TELEGRAM_BOT_TOKEN?: string;
   TELEGRAM_CHAT_ID?: string;
   SESSION_SECRET?: string;
+  GROQ_API_KEY?: string;
 }
 
 interface SessionInfo {
@@ -813,6 +814,469 @@ app.post("/notify/daily-report", async (c) => {
   return c.json({ ok: true, date: today, ...todayStats });
 });
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// ─── AI — Groq helpers ────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const GROQ_API = "https://api.groq.com/openai/v1/chat/completions";
+const GROQ_MODEL = "llama-3.3-70b-versatile";
+
+type GMsg = { role: "system" | "user" | "assistant"; content: string };
+
+async function groqJSON(apiKey: string, messages: GMsg[], maxTokens = 1024): Promise<string> {
+  const resp = await fetch(GROQ_API, {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ model: GROQ_MODEL, messages, max_tokens: maxTokens, stream: false }),
+  });
+  const data = await resp.json() as any;
+  return data?.choices?.[0]?.message?.content ?? "";
+}
+
+// ─── Catalog builder (identic cu api-server) ─────────────────────────────────
+
+const CAT_LABELS: Record<string, string> = {
+  wifi: "CAMERE WiFi", poe: "CAMERE PoE (Cablate)",
+  "4g": "CAMERE 4G/Solar (fără WiFi, fără curent)",
+  nvr: "NVR-uri (Înregistratoare)",
+  kituri: "Kituri Complete (cameră+NVR+HDD, gata de instalat)",
+  alarme: "Sisteme Alarmă",
+};
+
+interface PEntry { id: number; name: string; brand: string; price: number; oldPrice?: number | null; specs: string; category: string; badge?: string | null; inStock?: boolean; }
+
+function buildCatalog(products: PEntry[]): string {
+  if (!products?.length) return "(catalog indisponibil)";
+  const groups: Record<string, PEntry[]> = {};
+  for (const p of products) (groups[p.category] ??= []).push(p);
+  const order = ["wifi", "poe", "4g", "nvr", "kituri", "alarme"];
+  const sorted = [...order.filter(k => groups[k]), ...Object.keys(groups).filter(k => !order.includes(k))];
+  return sorted.map(cat => {
+    const label = CAT_LABELS[cat] ?? cat.toUpperCase();
+    const lines = groups[cat].map(p => {
+      const stock = p.inStock === false ? " [LIPSĂ STOC]" : "";
+      const promo = p.oldPrice ? ` (era ${p.oldPrice} MDL)` : "";
+      const badge = p.badge ? ` [${p.badge}]` : "";
+      return `[${p.id}] ${p.brand} ${p.name}${badge}${stock} — ${p.specs} — ${p.price} MDL${promo}`;
+    });
+    return `=== ${label} ===\n${lines.join("\n")}`;
+  }).join("\n\n");
+}
+
+const TECOBOT_PROMPT = `Ești TecoBot, omul de la Teco.md care răspunde pe chat — un magazin de sisteme de supraveghere din Chișinău, unde lucrezi de ani buni și ai instalat sute de sisteme prin toată Moldova.
+
+CUM VORBEȘTI:
+- Vorbești ca un om, nu ca un formular. Cald, direct, fără fraze de robot ("Înțeleg că aveți nevoie de...").
+- Răspunzi SCURT (2-4 propoziții). Oamenii sunt pe telefon, nu citesc eseuri.
+- Nu pui toate întrebările deodată. Întrebi UN lucru, aștepți răspunsul, apoi continui firesc.
+- Dacă clientul zice doar "salut" sau ceva vag, nu repeți mesajul de bun venit — întrebi natural cum îl poți ajuta.
+- Validezi nevoia clientului înainte să recomanzi — nu sari direct la vânzare.
+- Folosești experiența reală ca argument, nu ca slogan repetat: menționezi numărul de instalări sau garanția O DATĂ, când e relevant.
+
+NOTĂ DESPRE TON:
+- Nu zici "Salut" la fiecare mesaj — doar dacă e chiar primul mesaj al clientului.
+- Eviți formulele fixe repetate ("Am înțeles", "Perfect" la fiecare răspuns) — variezi cum reacționezi.
+- Poți avea un mic strop de umor sau căldură când situația o permite — dar nu forțezi.
+- Dacă clientul răspunde scurt sau vag, continui firesc discuția, ca și cum ai vorbi la telefon.
+- Eviți tonul de "agent de vânzări" — ești omul priceput care vrea să-l ajute să aleagă bine.
+
+NOTĂ DESPRE LUNGIME (strict):
+- Răspunsul tău normal are 1-2 propoziții SCURTE.
+- NU explici termeni tehnici în paranteze (PoE, NVR etc.) decât dacă clientul întreabă explicit.
+- Niciun răspuns nu are mai mult de 2 idei.
+
+CONTACT TECO.MD:
+- Telefon/WhatsApp: +373 67 200 463
+- Program: Luni-Sâmbătă 09:00–19:00
+- Instalare profesională în 24h oriunde în Moldova
+- Garanție 2-3 ani pe produse, garanție pe lucrare
+- 847+ instalări finalizate, rating 4.9/5
+
+CATALOG CURENT (prețuri MDL):
+{CATALOG}
+
+CUM RECOMANZI:
+1. Recomandă produse SPECIFICE din catalog, cu preț exact în MDL — niciodată generic.
+2. Dacă nu ai detalii suficiente, întreabă UN lucru cheie, nu un interogatoriu.
+3. NU inventezi prețuri, produse sau specificații care nu sunt în catalog.
+4. Instalarea e gratuită la consultație — prețul final depinde de nr. camere și distanță.
+
+CÂND CERI CONTACT:
+- Doar când clientul arată interes real de cumpărare sau instalare.
+- Ceri natural: "Ca să te pot ajuta mai concret, cum te-aș putea contacta — nume și telefon?"
+- Când primești NUMELE și TELEFONUL, răspunzi normal, cald, dar adaugi pe ultima linie EXACT: LEAD_CAPTURED:name=NUME,phone=TELEFON
+
+LIMBA: Răspunzi întotdeauna în limba clientului (română sau rusă), niciodată mixat.`;
+
+// ─── AI: chat streaming (SSE) ─────────────────────────────────────────────────
+
+app.post("/ai/chat", async (c) => {
+  const key = c.env.GROQ_API_KEY;
+  if (!key) return c.json({ error: "GROQ_API_KEY not configured" }, 503);
+
+  const body = await c.req.json().catch(() => ({}));
+  const { messages = [], lang = "ro", products = [] } = body as {
+    messages: { role: "user" | "assistant"; content: string }[];
+    lang?: string;
+    products?: PEntry[];
+  };
+
+  let systemPrompt = TECOBOT_PROMPT.replace("{CATALOG}", buildCatalog(products));
+  if (lang === "ru") systemPrompt += "\n\nNOTĂ: Clientul comunică în rusă. Răspunde în rusă.";
+
+  const groqMessages: GMsg[] = [
+    { role: "system", content: systemPrompt },
+    ...messages.map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
+  ];
+
+  // Stream via TransformStream — funcționează nativ în CF Workers
+  const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
+  const writer = writable.getWriter();
+  const enc = new TextEncoder();
+
+  (async () => {
+    try {
+      const groqResp = await fetch(GROQ_API, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ model: GROQ_MODEL, messages: groqMessages, max_tokens: 1024, stream: true }),
+      });
+
+      if (!groqResp.body) throw new Error("no body");
+      const reader = groqResp.body.getReader();
+      const dec = new TextDecoder();
+      let buf = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const parts = buf.split("\n\n");
+        buf = parts.pop() ?? "";
+        for (const part of parts) {
+          for (const line of part.split("\n")) {
+            if (!line.startsWith("data: ")) continue;
+            const raw = line.slice(6).trim();
+            if (raw === "[DONE]") continue;
+            try {
+              const chunk = JSON.parse(raw);
+              const text = chunk.choices?.[0]?.delta?.content ?? "";
+              if (text) await writer.write(enc.encode(`data: ${JSON.stringify({ content: text })}\n\n`));
+            } catch {}
+          }
+        }
+      }
+      await writer.write(enc.encode(`data: ${JSON.stringify({ done: true })}\n\n`));
+    } catch (err) {
+      await writer.write(enc.encode(`data: ${JSON.stringify({ error: String(err) })}\n\n`));
+    } finally {
+      await writer.close();
+    }
+  })();
+
+  return new Response(readable, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "X-Accel-Buffering": "no",
+    },
+  });
+});
+
+// ─── AI: lead-analyze ─────────────────────────────────────────────────────────
+
+app.post("/ai/lead-analyze", async (c) => {
+  const key = c.env.GROQ_API_KEY;
+  if (!key) return c.json({ error: "GROQ_API_KEY not configured" }, 503);
+
+  const { lead } = await c.req.json().catch(() => ({ lead: {} })) as {
+    lead: { name: string; phone: string; message?: string; source?: string };
+  };
+
+  const prompt = `Analizează acest lead pentru magazinul Teco.md (sisteme supraveghere Moldova):
+Nume: ${lead.name}
+Telefon: ${lead.phone}
+Mesaj: ${lead.message || "—"}
+Sursă: ${lead.source || "—"}
+
+Răspunde în română în format JSON strict (doar JSON, fără alte texte):
+{
+  "score": 1-10,
+  "potential": "mic|mediu|mare",
+  "estimatedBudget": "estimare în MDL",
+  "recommendation": "ce să îi oferi",
+  "whatsappMessage": "mesaj WhatsApp personalizat gata de trimis în română"
+}`;
+
+  try {
+    const text = await groqJSON(key, [{ role: "user", content: prompt }], 1024);
+    return c.json(JSON.parse(text.replace(/```json|```/g, "").trim()));
+  } catch (err) {
+    return c.json({ error: String(err) }, 500);
+  }
+});
+
+// ─── AI: whatsapp-message ─────────────────────────────────────────────────────
+
+app.post("/ai/whatsapp-message", async (c) => {
+  const key = c.env.GROQ_API_KEY;
+  if (!key) return c.json({ error: "GROQ_API_KEY not configured" }, 503);
+
+  const { lead, context } = await c.req.json().catch(() => ({ lead: {}, context: "" })) as {
+    lead: { name: string; phone: string; message?: string };
+    context?: string;
+  };
+
+  const prompt = `Generează un mesaj WhatsApp profesional și prietenos pentru clientul:
+Nume: ${lead.name}
+Mesaj/Cerere: ${lead.message || "interesat de sisteme supraveghere"}
+Context suplimentar: ${context || "—"}
+
+Magazin: Teco.md — sisteme supraveghere, instalare profesională în Moldova
+Telefon: +373 67 200 463
+
+Mesajul trebuie să fie:
+- Scurt (max 5 rânduri)
+- Personalizat cu numele clientului
+- În română
+- Să includă o ofertă sau să ceară detalii
+- Să se termine cu o întrebare pentru a continua dialogul
+
+Returnează DOAR mesajul, fără explicații.`;
+
+  try {
+    const message = await groqJSON(key, [{ role: "user", content: prompt }], 512);
+    return c.json({ message });
+  } catch (err) {
+    return c.json({ error: String(err) }, 500);
+  }
+});
+
+// ─── AI: description ─────────────────────────────────────────────────────────
+
+app.post("/ai/description", async (c) => {
+  const key = c.env.GROQ_API_KEY;
+  if (!key) return c.json({ error: "GROQ_API_KEY not configured" }, 503);
+
+  const { name, specs, brand, price, category } = await c.req.json().catch(() => ({})) as {
+    name: string; specs: string; brand: string; price: number; category: string;
+  };
+
+  const prompt = `Generează o descriere SEO optimizată pentru produs de la Teco.md:
+Produs: ${name}
+Brand: ${brand}
+Specificații: ${specs}
+Preț: ${price} MDL
+Categorie: ${category}
+
+Cerințe:
+- 2-3 propoziții
+- Menționează specificațiile cheie
+- Orientat spre client moldovean
+- Include cuvinte cheie SEO pentru Moldova
+- În română
+- Fără bullet points, text continuu
+
+Returnează DOAR descrierea produsului.`;
+
+  try {
+    const description = await groqJSON(key, [{ role: "user", content: prompt }], 512);
+    return c.json({ description });
+  } catch (err) {
+    return c.json({ error: String(err) }, 500);
+  }
+});
+
+// ─── AI: business-insights ───────────────────────────────────────────────────
+
+app.post("/ai/business-insights", async (c) => {
+  const key = c.env.GROQ_API_KEY;
+  if (!key) return c.json({ error: "GROQ_API_KEY not configured" }, 503);
+
+  const { orders, leads, products } = await c.req.json().catch(() => ({})) as {
+    orders: unknown[]; leads: unknown[]; products: unknown[];
+  };
+
+  const prompt = `Analizează datele de business ale magazinului Teco.md (sisteme supraveghere, Moldova):
+
+Comenzi recente: ${JSON.stringify(orders?.slice(0, 20) ?? [])}
+Lead-uri recente: ${JSON.stringify(leads?.slice(0, 20) ?? [])}
+Produse (top după stoc): ${JSON.stringify(products?.slice(0, 15) ?? [])}
+
+Oferă 3-5 recomandări acționabile în română în format JSON strict (doar JSON):
+{
+  "summary": "rezumat scurt al stării business-ului",
+  "insights": [
+    {"title": "...", "description": "...", "action": "ce să faci concret"}
+  ],
+  "topOpportunity": "cea mai mare oportunitate de creștere acum"
+}`;
+
+  try {
+    const text = await groqJSON(key, [{ role: "user", content: prompt }], 2048);
+    return c.json(JSON.parse(text.replace(/```json|```/g, "").trim()));
+  } catch (err) {
+    return c.json({ error: String(err) }, 500);
+  }
+});
+
+// ─── AI: import-products ─────────────────────────────────────────────────────
+
+app.post("/ai/import-products", async (c) => {
+  const key = c.env.GROQ_API_KEY;
+  if (!key) return c.json({ error: "GROQ_API_KEY not configured" }, 503);
+
+  const { csvData, usdRate, markup, fileName } = await c.req.json().catch(() => ({})) as {
+    csvData: string; usdRate?: string; markup?: string; fileName?: string;
+  };
+
+  const rate = parseFloat(usdRate ?? "17.8") || 17.8;
+  const markupPct = parseFloat(markup ?? "0") || 0;
+
+  const prompt = `Ești un expert în import de produse pentru un magazin online de sisteme de supraveghere din Moldova (Teco.md).
+
+Analizează acest CSV/tabel de produse și extrage fiecare produs ca JSON.
+
+REGULI CRITICE pentru prețuri (foarte important):
+1. Dacă există coloane cu prețuri în MDL (ex: "lei", "MDL"), folosește-le DIRECT — NU converti din USD.
+2. Coloana "la zi" sau "preț curent" sau cel mai mic preț MDL = câmpul "price" (prețul de vânzare).
+3. Coloana "RRP" sau "preț recomandat" sau cel mai mare preț MDL = câmpul "oldPrice" (prețul barat/anterior).
+4. Dacă există DOAR prețuri în USD, atunci: price = USD × ${rate.toFixed(2)} × ${(1 + markupPct / 100).toFixed(4)}. Rotunjește la număr întreg.
+5. Nu calcula oldPrice din USD când există deja un preț MDL în coloane.
+6. Dacă nu există oldPrice separat, lasă câmpul null.
+
+REGULI pentru categorii — alege una din: "wifi", "poe", "4g", "nvr", "kituri", "alarme", "Camere IP"
+
+Fișier: ${fileName ?? "import.xlsx"}
+Rată USD→MDL: ${rate}
+
+Date CSV:
+${csvData}
+
+Returnează STRICT un array JSON valid (fără text înainte/după, fără markdown), cu structura exactă:
+[
+  {
+    "name": "nume complet produs",
+    "model": "cod model",
+    "brand": "brand",
+    "price": 799,
+    "oldPrice": 999,
+    "category": "wifi",
+    "specs": "specificații scurte",
+    "description": "descriere 2-3 propoziții SEO în română pentru Moldova",
+    "inStock": true
+  }
+]`;
+
+  try {
+    const text = await groqJSON(key, [{ role: "user", content: prompt }], 4096);
+    const clean = text.replace(/```json|```/g, "").trim();
+    const match = clean.match(/\[[\s\S]*\]/);
+    return c.json(JSON.parse(match ? match[0] : clean));
+  } catch (err) {
+    return c.json({ error: String(err) }, 500);
+  }
+});
+
+// ─── AI: blog-post ────────────────────────────────────────────────────────────
+
+app.post("/ai/blog-post", async (c) => {
+  const key = c.env.GROQ_API_KEY;
+  if (!key) return c.json({ error: "GROQ_API_KEY not configured" }, 503);
+
+  const { topic } = await c.req.json().catch(() => ({ topic: "" })) as { topic: string };
+
+  const prompt = `Ești un expert SEO și content writer pentru Teco.md — magazin de sisteme de supraveghere din Moldova (camere, NVR, kituri, alarme Ajax).
+
+Scrie un articol de blog complet și optimizat SEO despre: "${topic}"
+
+Returnează STRICT JSON valid (fără markdown, fără \`\`\`), cu structura exactă:
+{
+  "title": "titlu atractiv în română (max 65 caractere)",
+  "titleRu": "titlu în rusă",
+  "slug": "slug-url-fara-diacritice-cu-liniute",
+  "category": "Ghiduri",
+  "categoryRu": "Руководства",
+  "description": "meta description SEO română (150-160 caractere)",
+  "descriptionRu": "meta description rusă",
+  "metaTitle": "meta title română cu keyword (max 65 caractere)",
+  "metaTitleRu": "meta title rusă",
+  "metaDescription": "meta description română (150-160 caractere)",
+  "metaDescriptionRu": "meta description rusă",
+  "keywords": "cuvinte, cheie, separate, prin, virgula",
+  "keywordsRu": "ключевые, слова, через, запятую",
+  "content": "articol complet în română în format Markdown cu headings H2/H3, liste, minim 600 cuvinte, optimizat SEO, include sfaturi practice pentru Moldova",
+  "contentRu": "articol complet în rusă în format Markdown, minim 600 cuvinte"
+}`;
+
+  try {
+    const text = await groqJSON(key, [{ role: "user", content: prompt }], 8192);
+    return c.json(JSON.parse(text.replace(/```json|```/g, "").trim()));
+  } catch (err) {
+    return c.json({ error: String(err) }, 500);
+  }
+});
+
 // ─── Export ──────────────────────────────────────────────────────────────────
 
 export const onRequest = handle(app);
+
+// ─── Scheduled: raport zilnic automat (Cloudflare Cron Trigger) ──────────────
+// Configurează în CF Dashboard → Pages → teco → Settings → Functions → Cron Triggers
+// Recomandare: "0 19 * * *"  (22:00 ora Chișinăului, UTC+3)
+
+export const onScheduled: PagesFunction<Env> = async (context) => {
+  const env = context.env as unknown as Env;
+  if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) return;
+
+  const today = chisinauDate(0);
+  const yesterday = chisinauDate(-1);
+
+  const getStats = async (date: string) => {
+    const [v, l] = await Promise.all([
+      env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE date = ?").bind(date).first<{ cnt: number }>(),
+      env.DB.prepare("SELECT COUNT(*) as cnt FROM sessions WHERE date = ? AND is_lead = 1").bind(date).first<{ cnt: number }>(),
+    ]);
+    return { visitors: v?.cnt ?? 0, leads: l?.cnt ?? 0 };
+  };
+
+  const getOrderStats = async (date: string) => {
+    const row = await env.DB.prepare(
+      "SELECT COUNT(*) as cnt, COALESCE(SUM(total),0) as rev FROM orders WHERE date(timestamp) = ?"
+    ).bind(date).first<{ cnt: number; rev: number }>();
+    return { orders: row?.cnt ?? 0, revenue: row?.rev ?? 0 };
+  };
+
+  const [[todayStats, yesterdayStats], [todayOrders]] = await Promise.all([
+    Promise.all([getStats(today), getStats(yesterday)]),
+    Promise.all([getOrderStats(today)]),
+  ]);
+
+  const pct = (now: number, prev: number) => {
+    if (prev === 0) return now > 0 ? " 🆕" : "";
+    const diff = Math.round(((now - prev) / prev) * 100);
+    return diff === 0 ? " (=)" : diff > 0 ? ` (+${diff}%)` : ` (${diff}%)`;
+  };
+
+  const dateLabel = new Intl.DateTimeFormat("ro-MD", {
+    weekday: "long", day: "numeric", month: "long",
+  }).format(new Date(today));
+
+  const lines = [
+    `📊 <b>Raport Zilnic — Teco.md</b>`,
+    `<i>${esc(dateLabel)}</i>`,
+    ``,
+    `👥 Vizitatori: <b>${todayStats.visitors}</b>${pct(todayStats.visitors, yesterdayStats.visitors)}`,
+    `🎯 Leaduri noi: <b>${todayStats.leads}</b>`,
+    todayOrders.orders > 0
+      ? `🛒 Comenzi: <b>${todayOrders.orders}</b> — ${todayOrders.revenue.toLocaleString("ro-MD")} MDL`
+      : `🛒 Comenzi: 0`,
+  ].join("\n");
+
+  const tgUrl = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`;
+  await fetch(tgUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: env.TELEGRAM_CHAT_ID, text: lines, parse_mode: "HTML" }),
+  });
+};
