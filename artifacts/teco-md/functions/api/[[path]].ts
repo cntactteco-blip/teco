@@ -870,65 +870,51 @@ app.post("/notify/daily-report", async (c) => {
 // ─── AI — Groq + Gemini fallback ─────────────────────────────────────────────
 // ============================================
 
-const GROQ_API   = "https://api.groq.com/openai/v1/chat/completions";
-const GROQ_MODEL = "llama-3.1-8b-instant";
-// Gemini OpenAI-compat endpoint — același format de mesaje ca Groq
-const GEMINI_API   = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-const GEMINI_MODEL = "gemini-2.0-flash";
+const GROQ_API        = "https://api.groq.com/openai/v1/chat/completions";
+const GROQ_MODEL_MAIN = "llama-3.3-70b-versatile";   // primar — calitate mai bună, 100K tok/zi
+const GROQ_MODEL_FAST = "llama-3.1-8b-instant";       // rezervă — 500K tok/zi, preia când 70b e la limită
 
 type GMsg = { role: "system" | "user" | "assistant"; content: string };
 
-async function callAI(
-  groqKey: string | undefined,
-  geminiKey: string | undefined,
-  messages: GMsg[],
-  maxTokens = 1024
-): Promise<{ content: string; provider: string }> {
-
-  // --- încearcă Groq ---
-  if (groqKey) {
+async function groqCall(apiKey: string, model: string, messages: GMsg[], maxTokens = 1024): Promise<{ ok: boolean; content: string; rate_limited: boolean }> {
+  try {
     const resp = await fetch(GROQ_API, {
       method: "POST",
-      headers: { "Authorization": `Bearer ${groqKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: GROQ_MODEL, messages, max_tokens: maxTokens, stream: false }),
+      headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model, messages, max_tokens: maxTokens, stream: false }),
     });
     if (resp.ok) {
       const data = await resp.json() as any;
-      return { content: data?.choices?.[0]?.message?.content ?? "", provider: "groq" };
+      return { ok: true, content: data?.choices?.[0]?.message?.content ?? "", rate_limited: false };
     }
-    if (resp.status !== 429) {
-      // altă eroare Groq non-rate-limit — nu mai încearcăm Gemini
-      throw new Error(`Groq ${resp.status}`);
-    }
-    // 429 → fallback la Gemini
+    return { ok: false, content: "", rate_limited: resp.status === 429 };
+  } catch {
+    return { ok: false, content: "", rate_limited: false };
   }
-
-  // --- fallback Gemini ---
-  if (geminiKey) {
-    const resp = await fetch(GEMINI_API, {
-      method: "POST",
-      headers: { "Authorization": `Bearer ${geminiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: GEMINI_MODEL, messages, max_tokens: maxTokens }),
-    });
-    if (resp.ok) {
-      const data = await resp.json() as any;
-      return { content: data?.choices?.[0]?.message?.content ?? "", provider: "gemini" };
-    }
-    throw new Error(`Gemini ${resp.status}`);
-  }
-
-  throw new Error("No AI key available");
 }
 
-// wrapper simplu pentru rutele non-chat (lead-analyze, whatsapp etc.)
+async function callAI(groqKey: string | undefined, _geminiKey: string | undefined, messages: GMsg[], maxTokens = 1024): Promise<{ content: string }> {
+  if (!groqKey) throw new Error("No GROQ_API_KEY");
+
+  // Încearcă 70b (calitate mai bună)
+  const main = await groqCall(groqKey, GROQ_MODEL_MAIN, messages, maxTokens);
+  if (main.ok) return { content: main.content };
+
+  // Dacă 70b e rate-limited → încearcă 8b
+  if (main.rate_limited) {
+    const fast = await groqCall(groqKey, GROQ_MODEL_FAST, messages, maxTokens);
+    if (fast.ok) return { content: fast.content };
+  }
+
+  throw new Error("AI unavailable");
+}
+
+// wrapper simplu pentru rutele non-chat
 async function groqJSON(apiKey: string, messages: GMsg[], maxTokens = 1024): Promise<string> {
-  const resp = await fetch(GROQ_API, {
-    method: "POST",
-    headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model: GROQ_MODEL, messages, max_tokens: maxTokens, stream: false }),
-  });
-  const data = await resp.json() as any;
-  return data?.choices?.[0]?.message?.content ?? "";
+  const r = await groqCall(apiKey, GROQ_MODEL_MAIN, messages, maxTokens);
+  if (r.ok) return r.content;
+  const r2 = await groqCall(apiKey, GROQ_MODEL_FAST, messages, maxTokens);
+  return r2.content;
 }
 
 // ─── Catalog builder (identic cu api-server) ─────────────────────────────────
