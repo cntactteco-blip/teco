@@ -311,6 +311,8 @@ export default function Home() {
                   src={heroProduct.imageUrl || "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=85&auto=format&fit=crop"}
                   alt={heroProduct.name}
                   className="hero-img-in hero-img-glow w-full object-cover aspect-[3/2] md:aspect-[4/3] cursor-pointer"
+                  fetchPriority="high"
+                  loading="eager"
                 />
               </Link>
 

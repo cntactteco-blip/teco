@@ -497,6 +497,9 @@ const _snapshotSettings: ModuleSettings | null = (() => {
   } catch { return null; }
 })();
 
+// Avem date reale din cache/snapshot → marcăm loaded:true imediat, fără să aşteptăm Supabase
+const _hasPreloadedProducts = !!(_cachedProducts ?? _snapshotProducts);
+
 let state: StoreState = {
   products: _cachedProducts ?? _snapshotProducts ?? _seedProducts,
   leads: [],
@@ -506,7 +509,7 @@ let state: StoreState = {
   userReviews: (() => {
     try { return JSON.parse(localStorage.getItem("teco_user_reviews") ?? "{}"); } catch { return {}; }
   })(),
-  loaded: false,
+  loaded: _hasPreloadedProducts,
 };
 
 const listeners = new Set<() => void>();
