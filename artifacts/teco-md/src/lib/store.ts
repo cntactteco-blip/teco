@@ -471,7 +471,9 @@ const _cachedProducts = (() => {
   try {
     const raw = localStorage.getItem("teco_products_cache");
     if (!raw) return null;
-    return JSON.parse(raw) as StoreProduct[];
+    const parsed = JSON.parse(raw) as StoreProduct[];
+    // Tratăm array-ul gol ca null → fallback pe snapshot
+    return parsed && parsed.length > 0 ? parsed : null;
   } catch { return null; }
 })();
 
@@ -756,10 +758,13 @@ export async function initStore() {
   try { localStorage.setItem("teco_settings_cache", JSON.stringify(mergedSettings)); } catch {}
 
   const mappedProducts = finalProds.map(dbProductToStore);
-  try { localStorage.setItem("teco_products_cache", JSON.stringify(mappedProducts)); } catch {}
+  // Nu suprascrie cache-ul sau state-ul cu array gol — păstrăm snapshot/cache existent
+  if (mappedProducts.length > 0) {
+    try { localStorage.setItem("teco_products_cache", JSON.stringify(mappedProducts)); } catch {}
+  }
 
   setState({
-    products: mappedProducts,
+    products: mappedProducts.length > 0 ? mappedProducts : state.products,
     leads: (leads ?? []).map(dbLeadToStore),
     orders: (orders ?? []).map(dbOrderToStore),
     blogPosts: (blogRows ?? []).map(dbBlogPostToStore),
