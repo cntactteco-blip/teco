@@ -53,13 +53,17 @@
          3. Înlocuiește META_PIXEL_ID de mai jos
     ══════════════════════════════════════════ -->
     <script>
-      !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-      n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
-      document,'script','https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init','META_PIXEL_ID');
-      fbq('track','PageView');
+      (function(){
+        var PIXEL_ID = 'META_PIXEL_ID';
+        if (!PIXEL_ID || PIXEL_ID === 'META_PIXEL_ID') return; // placeholder — skip
+        !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+        n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+        document,'script','https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', PIXEL_ID);
+        fbq('track','PageView');
+      })();
     </script>
 
     <!-- ── Fonts (non-blocking) ── -->
@@ -108,9 +112,9 @@
           { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Montaj Camere de Supraveghere", "description": "Instalare profesională camere IP exterior/interior, cablare, configurare NVR și aplicație mobilă" } },
           { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Seturi Complete Supraveghere Video", "description": "Kituri complete NVR + camere gata de instalat pentru casă sau afacere" } },
           { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Reparații Înregistratoare și Camere", "description": "Service și reparații NVR, DVR, camere IP cu garanție pe lucrare" } },
-          { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Camere IP WiFi", "category": "Security Cameras" } },
-          { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "NVR și DVR", "category": "Video Recorders" } },
-          { "@type": "Offer", "itemOffered": { "@type": "Product", "name": "Sisteme Alarmă Ajax", "category": "Alarm Systems" } }
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Camere IP WiFi", "description": "Camere de supraveghere WiFi fără cabluri pentru interior și exterior, cu vizualizare pe telefon" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "NVR și DVR — Înregistratoare Video", "description": "Înregistratoare video de rețea pentru stocare și gestionare camere IP de supraveghere" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Sisteme Alarmă", "description": "Sisteme de alarmă profesionale pentru casă și birou cu detectoare de mișcare și sirenă" } }
         ]
       },
       "sameAs": [
