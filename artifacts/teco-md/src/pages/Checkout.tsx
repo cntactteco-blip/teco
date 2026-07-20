@@ -92,6 +92,8 @@ export default function Checkout() {
 
     // Notificare Telegram — comandă nouă
     const { getSessionPayload } = await import("@/lib/session");
+    const shipping = getShippingCost(form.delivery, total);
+    const grandTotal = total + shipping;
     const API = import.meta.env.VITE_API_URL || "";
     fetch(API + "/api/notify/order", {
       method: "POST",
@@ -101,9 +103,11 @@ export default function Checkout() {
         name: form.name,
         phone: form.phone,
         address: form.address,
-        delivery: form.delivery,
+        delivery: SHIPPING_OPTIONS.find((o) => o.id === form.delivery)?.label ?? form.delivery,
         items: items.map((i) => ({ name: i.name, qty: i.qty, price: i.price })),
-        total,
+        subtotal: total,
+        shippingCost: shipping,
+        total: grandTotal,
         session: getSessionPayload(),
       }),
     }).catch(() => {});

@@ -51,6 +51,9 @@ export default function B2B() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     storeActions.addLead({ name: formName, phone: formPhone, source: "B2B", notes: `Sector: ${formSector}` });
+    import("@/lib/notify").then(({ notifyLead }) =>
+      notifyLead({ name: formName, phone: formPhone, source: "B2B — Soluții Business", notes: `Sector: ${formSector}` })
+    );
     const msg = ro
       ? `Bună ziua! Solicit deviz comercial B2B.\nCompanie/Nume: ${formName}\nTelefon: ${formPhone}\nSector: ${formSector}`
       : `Здравствуйте! Запрашиваю коммерческое предложение B2B.\nКомпания/Имя: ${formName}\nТелефон: ${formPhone}\nСектор: ${formSector}`;

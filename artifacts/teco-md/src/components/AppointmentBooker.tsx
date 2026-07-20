@@ -49,12 +49,16 @@ export function AppointmentBooker() {
   const handleBook = () => {
     if (!service || !day || !time || !contactName.trim() || !contactPhone.trim()) return;
     const label = ro ? day.labelRo : day.labelRu;
+    const apptNotes = `Serviciu: ${service} | Data: ${label} | Interval: ${time}`;
     storeActions.addLead({
       name: contactName.trim(),
       phone: contactPhone.trim(),
       source: "AppointmentBooker",
-      notes: `Serviciu: ${service} | Data: ${label} | Interval: ${time}`,
+      notes: apptNotes,
     });
+    import("@/lib/notify").then(({ notifyLead }) =>
+      notifyLead({ name: contactName.trim(), phone: contactPhone.trim(), source: "📅 Programare Serviciu", notes: apptNotes })
+    );
     setStep("done");
   };
 

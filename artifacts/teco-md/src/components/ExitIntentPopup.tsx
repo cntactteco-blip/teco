@@ -47,6 +47,9 @@ export function ExitIntentPopup() {
       source: "exit-intent",
       notes: "Captat prin popup exit-intent",
     });
+    import("@/lib/notify").then(({ notifyLead }) =>
+      notifyLead({ name: name.trim(), phone: phone.trim(), source: "Exit Intent Popup", notes: "Captat prin popup exit-intent" })
+    );
     trackLead("exit-intent");
     setSubmitted(true);
     localStorage.setItem(STORAGE_KEY, String(Date.now()));

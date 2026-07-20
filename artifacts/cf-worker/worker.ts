@@ -226,7 +226,7 @@ Returneaza DOAR array JSON valid, fara markdown, fara explicatii:
     }
 
     if (url.pathname === "/api/notify/order" && request.method === "POST") {
-      const { orderId = "", name = "", phone = "", address = "", delivery = "", items = [], total = 0, session = {} } = await request.json() as any;
+      const { orderId = "", name = "", phone = "", address = "", delivery = "", items = [], subtotal = 0, shippingCost = 0, total = 0, session = {} } = await request.json() as any;
       const cf = (request as any).cf ?? {};
       const enrichedSession = {
         ...session,
@@ -234,7 +234,20 @@ Returneaza DOAR array JSON valid, fara markdown, fara explicatii:
         city: session.city || cf.city || "",
         isp: session.isp || cf.asOrganization || "",
       };
-      ctx.waitUntil(sendTgOrder(env, { orderId, name, phone, address, delivery, items, total, session: enrichedSession }));
+      ctx.waitUntil(sendTgOrder(env, { orderId, name, phone, address, delivery, items, subtotal, shippingCost, total, session: enrichedSession }));
+      return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (url.pathname === "/api/notify/lead" && request.method === "POST") {
+      const { name = "", phone = "", source = "", notes = "", session = {} } = await request.json() as any;
+      const cf = (request as any).cf ?? {};
+      const enrichedSession = {
+        ...session,
+        country: session.country || cfCountryName(cf.country) || "",
+        city: session.city || cf.city || "",
+        isp: session.isp || cf.asOrganization || "",
+      };
+      ctx.waitUntil(sendTgLead(env, { name, phone, source, notes, session: enrichedSession }));
       return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -392,21 +405,48 @@ async function sendTgCalculator(env: any, p: { name: string; phone: string; sele
   ].join("\n"));
 }
 
-async function sendTgOrder(env: any, p: { orderId: string; name: string; phone: string; address: string; delivery: string; items: any[]; total: number; session: any }): Promise<void> {
-  const { orderId, name, phone, address, delivery, items, total, session: s } = p;
+async function sendTgLead(env: any, p: { name: string; phone: string; source: string; notes?: string; session: any }): Promise<void> {
+  const { name, phone, source, notes, session: s } = p;
   const loc = [s.city, s.country].filter(Boolean).join(", ");
   const src = tgSource(s.referrer || "", s.utmSource || "", s.utmMedium || "");
   const flagEmoji = tgFlag(s.country || "");
   const dev = s.deviceType === "mobile" ? "📱" : "💻";
+  const viberNum = phone.replace(/\D/g, "");
+  const lines = [
+    `🔔 <b>Lead Nou — ${tgEsc(source)}</b>`,
+    ``,
+    `👤 <b>${tgEsc(name)}</b>`,
+    `📞 <code>${tgEsc(phone)}</code>`,
+  ];
+  if (notes) lines.push(`📝 ${tgEsc(notes)}`);
+  lines.push(
+    ``,
+    `🕐 ${tgTime(s.startedAt || Date.now())}  ${flagEmoji} ${tgEsc(loc || "Locație necunoscută")}  ${dev}`,
+    `🌐 Sursă traffic: ${tgEsc(src)}  |  ⏱ ${tgDur(s.duration ?? 0)} pe site`,
+    ``,
+    `<a href="viber://chat?number=%2B${viberNum}">📲 Viber</a>  |  <a href="https://wa.me/${viberNum}">💬 WhatsApp</a>`,
+  );
+  await tgSend(env, lines.join("\n"));
+}
+
+async function sendTgOrder(env: any, p: { orderId: string; name: string; phone: string; address: string; delivery: string; items: any[]; subtotal: number; shippingCost: number; total: number; session: any }): Promise<void> {
+  const { orderId, name, phone, address, delivery, items, subtotal, shippingCost, total, session: s } = p;
+  const loc = [s.city, s.country].filter(Boolean).join(", ");
+  const src = tgSource(s.referrer || "", s.utmSource || "", s.utmMedium || "");
+  const flagEmoji = tgFlag(s.country || "");
+  const dev = s.deviceType === "mobile" ? "📱" : "💻";
+  const viberNum = phone.replace(/\D/g, "");
   const itemLines = items.slice(0, 10).map((i: any) =>
-    `• ${tgEsc(i.name)} × ${i.qty} — ${Number(i.price * i.qty).toLocaleString("ro-MD")} MDL`
+    `  • ${tgEsc(i.name)} × ${i.qty} — ${Number(i.price * i.qty).toLocaleString("ro-MD")} MDL`
   ).join("\n");
 
   await tgSend(env, [
     `🛒 <b>Comandă Nouă — #${tgEsc(orderId)}</b>`,
     ``,
-    `👤 <b>${tgEsc(name)}</b>  |  📞 <code>${tgEsc(phone)}</code>`,
-    `📍 ${tgEsc(address)}  |  🚚 ${tgEsc(delivery)}`,
+    `👤 <b>${tgEsc(name)}</b>`,
+    `📞 <code>${tgEsc(phone)}</code>`,
+    `📍 ${tgEsc(address)}`,
+    `🚚 ${tgEsc(delivery)}`,
     ``,
     `🕐 ${tgTime(s.startedAt || Date.now())}  ${flagEmoji} ${tgEsc(loc || "?")}  ${dev}`,
     `🌐 Sursă: ${tgEsc(src)}  |  ⏱ ${tgDur(s.duration ?? 0)} pe site`,
@@ -414,7 +454,11 @@ async function sendTgOrder(env: any, p: { orderId: string; name: string; phone: 
     `📦 <b>Produse:</b>`,
     itemLines,
     ``,
+    `  Subtotal: ${Number(subtotal).toLocaleString("ro-MD")} MDL`,
+    shippingCost > 0 ? `  🚚 Livrare: ${shippingCost} MDL` : `  🚚 Livrare: GRATUITĂ`,
     `💰 <b>Total: ${Number(total).toLocaleString("ro-MD")} MDL</b>`,
+    ``,
+    `<a href="viber://chat?number=%2B${viberNum}">📲 Viber</a>  |  <a href="https://wa.me/${viberNum}">💬 WhatsApp</a>`,
   ].join("\n"));
 }
 

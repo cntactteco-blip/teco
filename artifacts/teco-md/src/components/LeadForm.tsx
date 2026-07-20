@@ -10,6 +10,9 @@ export function LeadForm() {
     e.preventDefault();
     if (!name || !phone) return;
     storeActions.addLead({ name, phone, source: "LeadForm Banner" });
+    import("@/lib/notify").then(({ notifyLead }) =>
+      notifyLead({ name, phone, source: "Banner — Configurare Gratuită" })
+    );
     setSubmitted(true);
   };
 

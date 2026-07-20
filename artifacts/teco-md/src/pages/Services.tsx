@@ -111,6 +111,9 @@ const SERVICES = [
       source: "Services Page",
       notes: `Serviciu: ${modalService}`,
     });
+    import("@/lib/notify").then(({ notifyLead }) =>
+      notifyLead({ name: modalName.trim(), phone: modalPhone.trim(), source: "Pagina Servicii", notes: `Serviciu: ${modalService}` })
+    );
     setModalSubmitted(true);
     setTimeout(() => { setModalService(null); setModalSubmitted(false); setModalName(""); setModalPhone(""); }, 2500);
   };

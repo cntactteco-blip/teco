@@ -526,6 +526,9 @@ export default function ProductDetail() {
       source: "ProductDetail Install Request",
       notes: `Produs: ${product.name}`,
     });
+    import("@/lib/notify").then(({ notifyLead }) =>
+      notifyLead({ name: installName.trim(), phone: installPhone.trim(), source: "Instalare Produs", notes: `Produs: ${product.name}` })
+    );
     setInstallSubmitted(true);
     setTimeout(() => { setShowInstallModal(false); setInstallSubmitted(false); setInstallName(""); setInstallPhone(""); }, 2500);
   };

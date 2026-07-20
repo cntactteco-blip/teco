@@ -59,12 +59,16 @@ export default function RequestQuote() {
     setError("");
     setSubmitting(true);
     try {
+      const leadNotes = `${ro ? PROPERTY_LABELS_RO[property!] : PROPERTY_LABELS_RU[property!]}, ${cameras} ${ro ? "camere" : "камеры"}`;
       await storeActions.addLead({
         name: name.trim(),
         phone: phone.trim(),
         source: ro ? "Ofertă Mobilă" : "Мобильный запрос",
-        notes: `${ro ? PROPERTY_LABELS_RO[property!] : PROPERTY_LABELS_RU[property!]}, ${cameras} ${ro ? "camere" : "камеры"}`,
+        notes: leadNotes,
       });
+      import("@/lib/notify").then(({ notifyLead }) =>
+        notifyLead({ name: name.trim(), phone: phone.trim(), source: "Cerere Ofertă", notes: leadNotes })
+      );
       setStep("done");
     } catch {
       setError(ro ? "Eroare. Încearcă din nou." : "Ошибка. Попробуйте снова.");

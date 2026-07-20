@@ -154,6 +154,9 @@ export default function Home() {
     const interest = String(data.get("interest") || "");
     if (phone.trim()) {
       storeActions.addLead({ name, phone, source: "Homepage Contact", notes: interest ? `Interes: ${interest}` : undefined });
+      import("@/lib/notify").then(({ notifyLead }) =>
+        notifyLead({ name, phone, source: "Homepage Contact", notes: interest ? `Interes: ${interest}` : undefined })
+      );
     }
     toast({
       title: t("home.contact.toast_title"),
