@@ -195,7 +195,15 @@ Returneaza DOAR array JSON valid, fara markdown, fara explicatii:
       if (sid && notifiedSessions.has(sid)) return new Response(JSON.stringify({ ok: true, skipped: "dup" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       if (sid) notifiedSessions.add(sid);
       if (notifiedSessions.size > 5000) notifiedSessions.clear();
-      ctx.waitUntil(sendTgVisitor(env, session));
+      // Enriches geo with Cloudflare built-in data when browser geo is missing
+      const cf = (request as any).cf ?? {};
+      const enriched = {
+        ...session,
+        country: session.country || cfCountryName(cf.country) || "",
+        city: session.city || cf.city || "",
+        isp: session.isp || cf.asOrganization || "",
+      };
+      ctx.waitUntil(sendTgVisitor(env, enriched));
       return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -217,9 +225,38 @@ Returneaza DOAR array JSON valid, fara markdown, fara explicatii:
       return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    if (url.pathname === "/api/notify/order" && request.method === "POST") {
+      const { orderId = "", name = "", phone = "", address = "", delivery = "", items = [], total = 0, session = {} } = await request.json() as any;
+      const cf = (request as any).cf ?? {};
+      const enrichedSession = {
+        ...session,
+        country: session.country || cfCountryName(cf.country) || "",
+        city: session.city || cf.city || "",
+        isp: session.isp || cf.asOrganization || "",
+      };
+      ctx.waitUntil(sendTgOrder(env, { orderId, name, phone, address, delivery, items, total, session: enrichedSession }));
+      return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     return new Response("Not found", { status: 404, headers: corsHeaders });
   },
 };
+
+// ─── Cloudflare country code → name ──────────────────────────────────
+
+const CF_COUNTRY: Record<string, string> = {
+  MD: "Moldova", RO: "Romania", DE: "Germany", IT: "Italy", FR: "France",
+  GB: "United Kingdom", US: "United States", UA: "Ukraine", RU: "Russia",
+  IL: "Israel", ES: "Spain", PT: "Portugal", NL: "Netherlands", BE: "Belgium",
+  AT: "Austria", CH: "Switzerland", CA: "Canada", AU: "Australia",
+  PL: "Poland", CZ: "Czech Republic", SK: "Slovakia", HU: "Hungary",
+  BG: "Bulgaria", GR: "Greece", TR: "Turkey", AE: "UAE",
+};
+
+function cfCountryName(code?: string): string {
+  if (!code) return "";
+  return CF_COUNTRY[code] || code;
+}
 
 // ─── Telegram helpers ────────────────────────────────────────────────
 
@@ -232,10 +269,22 @@ function tgFlag(country: string): string {
   return m[country] || "🌍";
 }
 
+const OWN_DOMAINS = ["teco.md", "www.teco.md", "teco-md.pages.dev"];
+
 function tgSource(ref: string, utm: string, med: string): string {
   if (utm) return `${utm}${med ? ` (${med})` : ""}`;
   if (!ref) return "Direct";
-  try { const h = new URL(ref).hostname; if (h.includes("google")) return "Google"; if (h.includes("facebook") || h.includes("fb.com")) return "Facebook"; if (h.includes("instagram")) return "Instagram"; return h; } catch { return "Direct"; }
+  try {
+    const h = new URL(ref).hostname;
+    if (OWN_DOMAINS.includes(h)) return "Direct";
+    if (h.includes("google")) return "Google";
+    if (h.includes("facebook") || h.includes("fb.com")) return "Facebook";
+    if (h.includes("instagram")) return "Instagram";
+    if (h.includes("tiktok")) return "TikTok";
+    if (h.includes("youtube")) return "YouTube";
+    if (h.includes("whatsapp")) return "WhatsApp";
+    return h;
+  } catch { return "Direct"; }
 }
 
 function tgTime(ts: number): string {
@@ -340,6 +389,32 @@ async function sendTgCalculator(env: any, p: { name: string; phone: string; sele
     `• <b>Total: ~${Number(totalCost).toLocaleString("ro-MD")} MDL</b>`,
     ``,
     `📄 Pagini: <i>${tgEsc(pagesSum)}</i>`,
+  ].join("\n"));
+}
+
+async function sendTgOrder(env: any, p: { orderId: string; name: string; phone: string; address: string; delivery: string; items: any[]; total: number; session: any }): Promise<void> {
+  const { orderId, name, phone, address, delivery, items, total, session: s } = p;
+  const loc = [s.city, s.country].filter(Boolean).join(", ");
+  const src = tgSource(s.referrer || "", s.utmSource || "", s.utmMedium || "");
+  const flagEmoji = tgFlag(s.country || "");
+  const dev = s.deviceType === "mobile" ? "📱" : "💻";
+  const itemLines = items.slice(0, 10).map((i: any) =>
+    `• ${tgEsc(i.name)} × ${i.qty} — ${Number(i.price * i.qty).toLocaleString("ro-MD")} MDL`
+  ).join("\n");
+
+  await tgSend(env, [
+    `🛒 <b>Comandă Nouă — #${tgEsc(orderId)}</b>`,
+    ``,
+    `👤 <b>${tgEsc(name)}</b>  |  📞 <code>${tgEsc(phone)}</code>`,
+    `📍 ${tgEsc(address)}  |  🚚 ${tgEsc(delivery)}`,
+    ``,
+    `🕐 ${tgTime(s.startedAt || Date.now())}  ${flagEmoji} ${tgEsc(loc || "?")}  ${dev}`,
+    `🌐 Sursă: ${tgEsc(src)}  |  ⏱ ${tgDur(s.duration ?? 0)} pe site`,
+    ``,
+    `📦 <b>Produse:</b>`,
+    itemLines,
+    ``,
+    `💰 <b>Total: ${Number(total).toLocaleString("ro-MD")} MDL</b>`,
   ].join("\n"));
 }
 
