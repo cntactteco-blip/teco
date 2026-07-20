@@ -797,20 +797,22 @@ export async function refreshFromSupabase(): Promise<void> {
         ? settingsRows[0].data
         : null;
 
-    let mergedSettings = rawSettings ? mergeSettings(rawSettings) : null;
+    // ── Settings: localStorage are PRIORITATE absolută ────────────────────────
+    // Supabase poate fi pauzat, offline sau conține date mai vechi decât localStorage.
+    // Regula: categoriile din Supabase sunt acceptate NUMAI dacă sunt cel puțin la
+    // fel de multe ca cele locale. Orice categorie adăugată local și neajunsă în
+    // Supabase este păstrată și re-sincronizată.
+    let mergedSettings: ModuleSettings | null = null;
+    if (rawSettings) {
+      const fromSupabase = mergeSettings(rawSettings);
+      const localCats: CategoryDef[] = state.settings.categories ?? [];
+      const supabaseCats: CategoryDef[] = fromSupabase.categories ?? [];
+      const supabaseSlugs = new Set(supabaseCats.map((c: CategoryDef) => c.slug));
+      const extraLocal = localCats.filter((c: CategoryDef) => !supabaseSlugs.has(c.slug));
 
-    if (mergedSettings) {
-      // ── Merge categorii: păstrăm categoriile adăugate local care nu sunt în Supabase ──
-      // Problema: refreshFromSupabase poate suprascrie setările locale cu date Supabase vechi,
-      // ștergând categorii adăugate de admin înainte ca Supabase-ul să le fi primit.
-      const supabaseCategories = mergedSettings.categories ?? [];
-      const localCategories: CategoryDef[] = state.settings.categories ?? [];
-      const supabaseSlugs = new Set(supabaseCategories.map((c: CategoryDef) => c.slug));
-      const extraLocal = localCategories.filter((c: CategoryDef) => !supabaseSlugs.has(c.slug));
       if (extraLocal.length > 0) {
-        // Adăugăm categoriile locale care lipsesc din Supabase
-        mergedSettings = { ...mergedSettings, categories: [...supabaseCategories, ...extraLocal] };
-        // Sincronizăm înapoi la Supabase via api-server (cu merged categories)
+        // Local are categorii în plus față de Supabase → merge și re-sync
+        mergedSettings = { ...fromSupabase, categories: [...supabaseCats, ...extraLocal] };
         if (_API) {
           fetch(_API + "/api/settings", {
             method: "POST",
@@ -818,9 +820,15 @@ export async function refreshFromSupabase(): Promise<void> {
             body: JSON.stringify(mergedSettings),
           }).catch(() => {});
         }
+        supabase.from("settings").upsert({ id: 1, data: mergedSettings }).catch(() => {});
+      } else {
+        mergedSettings = fromSupabase;
       }
+      // Salvăm în localStorage NUMAI dacă Supabase a returnat date valide
       try { localStorage.setItem("teco_settings_cache", JSON.stringify({ ...mergedSettings, _v: SETTINGS_CACHE_VERSION })); } catch {}
     }
+    // Dacă rawSettings e null (Supabase offline/eroare) → mergedSettings rămâne null
+    // → setState va folosi state.settings (din localStorage, deja corect)
 
     const mappedProducts = finalProds.map(dbProductToStore);
     if (mappedProducts.length > 0) {
