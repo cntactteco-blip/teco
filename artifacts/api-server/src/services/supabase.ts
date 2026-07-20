@@ -32,6 +32,7 @@ function db(): ReturnType<typeof createClient> | null {
     const key =
       process.env.SUPABASE_SERVICE_KEY ??
       process.env.SUPABASE_SERVICE_ROLE_KEY ??
+      process.env.SUPABASE_SERVICE_ROLE_KEY_SECRET ??
       process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
     if (url && key) {
