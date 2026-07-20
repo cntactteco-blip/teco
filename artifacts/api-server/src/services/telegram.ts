@@ -189,6 +189,80 @@ export async function notifyLeadChat(payload: {
   await sendMessage(lines);
 }
 
+// ─── Daily report ────────────────────────────────────────────────────
+
+export interface DailyReportData {
+  date: string; // YYYY-MM-DD
+  today: {
+    visitors: number;
+    leads: number;
+    leadsChat: number;
+    leadsCalculator: number;
+    sales: number;
+    salesTotalMdl: number;
+    topPages: { path: string; count: number }[];
+    topSources: { source: string; count: number }[];
+  };
+  yesterday: {
+    visitors: number;
+    leads: number;
+    sales: number;
+  };
+}
+
+function pct(now: number, prev: number): string {
+  if (prev === 0 && now === 0) return "";
+  if (prev === 0) return " (nou 🆕)";
+  const diff = Math.round(((now - prev) / prev) * 100);
+  if (diff === 0) return " (=)";
+  return diff > 0 ? ` (+${diff}%)` : ` (${diff}%)`;
+}
+
+export async function sendDailyReport(data: DailyReportData): Promise<void> {
+  const { today, yesterday } = data;
+
+  const visitorsDiff = pct(today.visitors, yesterday.visitors);
+  const leadsDiff = pct(today.leads, yesterday.leads);
+  const salesDiff = pct(today.sales, yesterday.sales);
+
+  const pagesLines = today.topPages.length
+    ? today.topPages.map((p, i) => `  ${i + 1}. <code>${esc(p.path)}</code> — ${p.count} vizite`).join("\n")
+    : "  (fără date)";
+
+  const sourcesLines = today.topSources.length
+    ? today.topSources.map((s, i) => `  ${i + 1}. ${esc(s.source)} — ${s.count}`).join("\n")
+    : "  (fără date)";
+
+  const dateLabel = new Date(data.date + "T00:00:00").toLocaleDateString("ro-MD", {
+    weekday: "long", day: "numeric", month: "long",
+  });
+
+  const salesLine = today.sales > 0 && today.salesTotalMdl > 0
+    ? `💰 <b>Vânzări confirmate:</b> ${today.sales}${salesDiff} — <b>~${today.salesTotalMdl.toLocaleString("ro-MD")} MDL</b>`
+    : today.sales > 0
+      ? `💰 <b>Vânzări confirmate:</b> ${today.sales}${salesDiff}`
+      : `💰 <b>Vânzări confirmate:</b> 0`;
+
+  const lines = [
+    `📊 <b>Raport Zilnic Teco.md</b>`,
+    `<i>${esc(dateLabel)}</i>`,
+    ``,
+    `👥 <b>Vizitatori unici:</b> ${today.visitors}${visitorsDiff}`,
+    `🎯 <b>Leaduri noi:</b> ${today.leads}${leadsDiff}`,
+    today.leadsChat > 0 ? `   • 💬 Chat AI: ${today.leadsChat}` : "",
+    today.leadsCalculator > 0 ? `   • 🧮 Calculator: ${today.leadsCalculator}` : "",
+    salesLine,
+    ``,
+    `📄 <b>Top pagini vizitate:</b>`,
+    pagesLines,
+    ``,
+    `🌐 <b>Top surse de trafic:</b>`,
+    sourcesLines,
+  ].filter((l) => l !== "").join("\n");
+
+  await sendMessage(lines);
+}
+
 export async function notifyLeadCalculator(payload: {
   name: string;
   phone: string;
