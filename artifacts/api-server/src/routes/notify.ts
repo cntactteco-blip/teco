@@ -24,19 +24,47 @@ const router = Router();
 // ─── Throttle state ───────────────────────────────────────────────────────────
 
 // Fast in-memory dedup: sessionId → already notified (visitor).
-// Works across requests in the same process lifetime; Supabase handles cross-restart persistence.
 const notifiedSessions = new Set<string>();
 
-// In-memory fallback for visitor IP rate limiting when Supabase table is not yet created.
+// In-memory fallback for visitor IP rate limiting.
 // Map key: `${ip}:${date}`, value: count of notifications sent.
 const ipVisitorCounts = new Map<string, number>();
 
 // Per-session chat-notify counter (max 3 first-message notifications per session).
-// Sessions are naturally short-lived; no need for persistence here.
 const chatNotifyCounts = new Map<string, number>();
+
+// In-memory phone-lead dedup (backup to SQLite rate limit).
+// Key: phone+date, value: timestamp first notified.
+const notifiedPhones = new Map<string, number>();
 
 const CHAT_NOTIFY_LIMIT = 3;
 const VISITOR_IP_DAILY_LIMIT = 1;
+const LEAD_PHONE_DAILY_LIMIT = 1; // max 1 notificare Telegram per telefon pe zi
+
+/**
+ * Returnează true dacă notificarea este permisă (primul lead de la acest telefon azi).
+ * Folosește SQLite ca sursă de adevăr + in-memory ca fallback.
+ */
+async function canNotifyPhone(phone: string, today: string): Promise<boolean> {
+  if (!phone) return true; // fără telefon → permite, TecoBot va decide
+  const normalized = phone.replace(/\D/g, "");
+  if (!normalized) return true;
+
+  // 1. SQLite (persistent peste restartări)
+  const dbResult = await checkIpRateLimit(normalized, today, "lead-notify", LEAD_PHONE_DAILY_LIMIT);
+  if (dbResult !== null) return dbResult; // true = permis, false = blocat
+
+  // 2. Fallback in-memory dacă SQLite a eșuat
+  const key = `${normalized}:${today}`;
+  if (notifiedPhones.has(key)) return false;
+  notifiedPhones.set(key, Date.now());
+  if (notifiedPhones.size > 5000) {
+    for (const [k, ts] of notifiedPhones) {
+      if (Date.now() - ts > 24 * 3600 * 1000) notifiedPhones.delete(k);
+    }
+  }
+  return true;
+}
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
@@ -143,7 +171,15 @@ router.post("/chat-lead", async (req, res) => {
     session?: SessionInfo;
   };
 
-  // Marchează sesiunea ca lead în Supabase
+  const today = chisinauDate();
+
+  // ── Dedup: nu trimite dacă același telefon a primit notificare azi ──
+  const allowed = await canNotifyPhone(phone, today);
+  if (!allowed) {
+    return res.json({ ok: true, skipped: "duplicate phone today" });
+  }
+
+  // Marchează sesiunea ca lead în SQLite
   if ((session as SessionInfo).sessionId && isSupabaseConfigured()) {
     markSessionAsLead((session as SessionInfo).sessionId!, "chat").catch(() => {});
   }
@@ -174,7 +210,15 @@ router.post("/calculator", async (req, res) => {
     session?: SessionInfo;
   };
 
-  // Marchează sesiunea ca lead în Supabase
+  const today = chisinauDate();
+
+  // ── Dedup: nu trimite dacă același telefon a primit notificare azi ──
+  const allowed = await canNotifyPhone(phone, today);
+  if (!allowed) {
+    return res.json({ ok: true, skipped: "duplicate phone today" });
+  }
+
+  // Marchează sesiunea ca lead în SQLite
   if ((session as SessionInfo).sessionId && isSupabaseConfigured()) {
     markSessionAsLead((session as SessionInfo).sessionId!, "calculator").catch(() => {});
   }
