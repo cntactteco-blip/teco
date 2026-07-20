@@ -102,6 +102,7 @@ export default function SmartCostCalculator() {
   const getCalculations = () => {
     const cameraCount = parseInt(selections.cameras) || 2;
 
+    // ── 1. Încearcă să găsească un kit complet potrivit ──
     const extractCount = (p: { name: string; specs: string }) => {
       const text = `${p.name} ${p.specs}`.toLowerCase();
       let m = text.match(/(\d+)\s*(?:x|×)?\s*camer/);
@@ -118,22 +119,38 @@ export default function SmartCostCalculator() {
       .map((p) => ({ product: p, count: extractCount(p) }))
       .filter((s): s is { product: typeof allProducts[number]; count: number } => s.count !== null);
 
-    let equipmentCost: number;
     const potrivite = seturi
       .filter((s) => s.count >= cameraCount)
       .sort((a, b) => a.count - b.count || a.product.price - b.product.price);
 
     if (potrivite.length > 0) {
-      equipmentCost = potrivite[0].product.price;
-    } else if (seturi.length > 0) {
-      const celMaiMare = [...seturi].sort((a, b) => b.count - a.count)[0];
-      equipmentCost = Math.round((celMaiMare.product.price / celMaiMare.count) * cameraCount);
-    } else {
-      equipmentCost = 1600 * cameraCount;
+      const equipmentCost = potrivite[0].product.price;
+      const installCost = cameraCount === 1 ? 750 : 650 * cameraCount;
+      return { equipmentCost, installCost, totalCost: equipmentCost + installCost };
     }
 
-    const installCost = cameraCount === 1 ? 750 : 650 * cameraCount;
+    if (seturi.length > 0) {
+      const celMaiMare = [...seturi].sort((a, b) => b.count - a.count)[0];
+      const equipmentCost = Math.round((celMaiMare.product.price / celMaiMare.count) * cameraCount);
+      const installCost = cameraCount === 1 ? 750 : 650 * cameraCount;
+      return { equipmentCost, installCost, totalCost: equipmentCost + installCost };
+    }
 
+    // ── 2. Fallback: calculează din camere individuale + NVR ──
+    // Categoriile reale: "poe" = camere PoE (recomandate), "wifi" = camere WiFi, "nvr"
+    const poeCameras = allProducts.filter((p) => p.category === "poe" && p.inStock !== false).sort((a, b) => a.price - b.price);
+    const wifiCameras = allProducts.filter((p) => p.category === "wifi" && p.inStock !== false).sort((a, b) => a.price - b.price);
+    const nvrList = allProducts.filter((p) => p.category === "nvr" && p.inStock !== false).sort((a, b) => a.price - b.price);
+
+    // Alege camera cea mai accesibilă disponibilă (PoE > WiFi > default)
+    const bestCamera = poeCameras[0] ?? wifiCameras[0];
+    const bestNvr = nvrList[0];
+
+    const camPrice = bestCamera?.price ?? 1_600;
+    const nvrPrice = bestNvr?.price ?? 1_700;
+
+    const equipmentCost = camPrice * cameraCount + nvrPrice;
+    const installCost = cameraCount === 1 ? 750 : 650 * cameraCount;
     return { equipmentCost, installCost, totalCost: equipmentCost + installCost };
   };
 

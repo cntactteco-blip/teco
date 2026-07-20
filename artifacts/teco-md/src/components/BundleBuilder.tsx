@@ -31,37 +31,18 @@ export default function BundleBuilder({ onClose }: { onClose?: () => void } = {}
   const [withNvr, setWithNvr] = useState(true);
   const [withInstall, setWithInstall] = useState(false);
 
-  const cameras = useMemo(() => {
-    // First pass: strict category match
-    let found = products.filter((p) => {
-      if (p.inStock === false) return false;
-      const cat = (p.category ?? "").toLowerCase();
-      const haystack = `${p.name} ${p.specs ?? ""} ${p.description ?? ""}`.toLowerCase();
-      const isCamera = cat.includes("camer") || cat === "camere" || cat === "camera" || cat === "cameras";
-      if (!isCamera) return false;
-      if (camType === "wifi") return haystack.includes("wifi") || haystack.includes("wi-fi") || haystack.includes("wireless");
-      return !haystack.includes("wifi") && !haystack.includes("wi-fi") && !haystack.includes("wireless");
-    });
-    // Second pass: name-based match (catches "Cameră 4MP", "Camera IP" etc. in any category)
-    if (found.length === 0) {
-      found = products.filter((p) => {
-        if (p.inStock === false) return false;
-        const haystack = `${p.name} ${p.specs ?? ""} ${p.description ?? ""}`.toLowerCase();
-        const isCamera = haystack.includes("camer") && !haystack.includes("nvr") && !haystack.includes("recorder");
-        if (!isCamera) return false;
-        if (camType === "wifi") return haystack.includes("wifi") || haystack.includes("wi-fi") || haystack.includes("wireless");
-        return true;
-      });
-    }
-    return found.sort((a, b) => a.price - b.price);
-  }, [products, camType]);
+  // Categoriile reale din catalog: "wifi", "poe", "4g", "nvr", "kituri", "alarme"
+  const cameras = useMemo(() =>
+    products
+      .filter((p) => p.inStock !== false && p.category === camType)
+      .sort((a, b) => a.price - b.price),
+    [products, camType]
+  );
 
   const nvrs = useMemo(() =>
-    products.filter((p) => {
-      if (p.inStock === false) return false;
-      const cat = (p.category ?? "").toLowerCase();
-      return cat === "nvr" || cat === "nvr-uri" || cat.includes("recorder");
-    }).sort((a, b) => a.price - b.price),
+    products
+      .filter((p) => p.inStock !== false && p.category === "nvr")
+      .sort((a, b) => a.price - b.price),
     [products]
   );
 
