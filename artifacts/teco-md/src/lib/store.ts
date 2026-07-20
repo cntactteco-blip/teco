@@ -473,12 +473,6 @@ const _cachedSettings = (() => {
       localStorage.removeItem("teco_settings_cache");
       return null;
     }
-    // Invalidează dacă categoriile au URL-uri Unsplash default (headphones etc.)
-    const firstCatImg: string = parsed.categories?.[0]?.image ?? "";
-    if (firstCatImg.startsWith("https://images.unsplash.com")) {
-      localStorage.removeItem("teco_settings_cache");
-      return null;
-    }
     return parsed as ModuleSettings;
   } catch { return null; }
 })();
