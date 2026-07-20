@@ -89,6 +89,24 @@ export default function Checkout() {
     clearCart?.();
     setSubmitted(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
+
+    // Notificare Telegram — comandă nouă
+    const { getSessionPayload } = await import("@/lib/session");
+    const API = import.meta.env.VITE_API_URL || "";
+    fetch(API + "/api/notify/order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderId: shortId,
+        name: form.name,
+        phone: form.phone,
+        address: form.address,
+        delivery: form.delivery,
+        items: items.map((i) => ({ name: i.name, qty: i.qty, price: i.price })),
+        total,
+        session: getSessionPayload(),
+      }),
+    }).catch(() => {});
   };
 
   if (submitted) {
