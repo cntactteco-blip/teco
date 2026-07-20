@@ -839,43 +839,49 @@ async function saveSettings(s: ModuleSettings) {
 
 // ─── Actions ────────────────────────────────────────────────────────
 export const storeActions = {
-  // Products
+  // Products — actualizare optimistă: state + cache instant, Supabase în background
   async addProduct(p: Omit<StoreProduct, "id">) {
     const id = Math.max(0, ...state.products.map((x) => x.id)) + 1;
     const newProduct: StoreProduct = { ...p, id };
-    const { error } = await supabase.from("products").insert(storeProductToDb(newProduct));
-    if (error) { console.error("addProduct error:", error); return; }
+    // Actualizare imediată → UI responsive chiar dacă Supabase e offline
     setState((s) => {
       const products = [...s.products, newProduct];
       cacheProducts(products);
       return { ...s, products };
     });
+    // Sync Supabase în background (nu blochează UI)
+    supabase.from("products").insert(storeProductToDb(newProduct))
+      .then(({ error }: any) => { if (error) console.warn("[store] addProduct sync error:", error?.message); })
+      .catch((e: any) => console.warn("[store] addProduct sync failed:", e?.message));
   },
 
   async updateProduct(id: number, patch: Partial<StoreProduct>) {
     const existing = state.products.find((p) => p.id === id);
     if (!existing) return;
     const updated = { ...existing, ...patch };
-    const { error } = await supabase
-      .from("products")
-      .update(storeProductToDb(updated))
-      .eq("id", id);
-    if (error) { console.error("updateProduct error:", error); return; }
+    // Actualizare imediată
     setState((s) => {
       const products = s.products.map((p) => (p.id === id ? updated : p));
       cacheProducts(products);
       return { ...s, products };
     });
+    // Sync Supabase în background
+    supabase.from("products").update(storeProductToDb(updated)).eq("id", id)
+      .then(({ error }: any) => { if (error) console.warn("[store] updateProduct sync error:", error?.message); })
+      .catch((e: any) => console.warn("[store] updateProduct sync failed:", e?.message));
   },
 
   async deleteProduct(id: number) {
-    const { error } = await supabase.from("products").delete().eq("id", id);
-    if (error) { console.error("deleteProduct error:", error); return; }
+    // Actualizare imediată
     setState((s) => {
       const products = s.products.filter((p) => p.id !== id);
       cacheProducts(products);
       return { ...s, products };
     });
+    // Sync Supabase în background
+    supabase.from("products").delete().eq("id", id)
+      .then(({ error }: any) => { if (error) console.warn("[store] deleteProduct sync error:", error?.message); })
+      .catch((e: any) => console.warn("[store] deleteProduct sync failed:", e?.message));
   },
 
   async duplicateProduct(id: number) {
@@ -883,23 +889,33 @@ export const storeActions = {
     if (!original) return;
     const newId = Math.max(0, ...state.products.map((x) => x.id)) + 1;
     const copy: StoreProduct = { ...original, id: newId, name: `${original.name} (copie)` };
-    const { error } = await supabase.from("products").insert(storeProductToDb(copy));
-    if (error) { console.error("duplicateProduct error:", error); return; }
+    // Actualizare imediată
     setState((s) => {
       const products = [...s.products, copy];
       cacheProducts(products);
       return { ...s, products };
     });
+    // Sync Supabase în background
+    supabase.from("products").insert(storeProductToDb(copy))
+      .then(({ error }: any) => { if (error) console.warn("[store] duplicateProduct sync error:", error?.message); })
+      .catch((e: any) => console.warn("[store] duplicateProduct sync failed:", e?.message));
   },
 
   async bulkDeleteProducts(ids: number[]) {
-    const { error } = await supabase.from("products").delete().in("id", ids);
-    if (error) { console.error("bulkDeleteProducts error:", error); return; }
+    // Actualizare imediată
     setState((s) => {
       const products = s.products.filter((p) => !ids.includes(p.id));
       cacheProducts(products);
       return { ...s, products };
     });
+    // Sync Supabase în background — șterge câte unul dacă .in() nu e disponibil
+    Promise.all(
+      ids.map((id) =>
+        supabase.from("products").delete().eq("id", id)
+          .then(({ error }: any) => { if (error) console.warn("[store] bulkDelete sync error id=" + id + ":", error?.message); })
+          .catch((e: any) => console.warn("[store] bulkDelete sync failed id=" + id + ":", e?.message))
+      )
+    );
   },
 
   // Leads
