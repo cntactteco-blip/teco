@@ -12,8 +12,7 @@ const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 const empty = { products: [], settings: null, generatedAt: null };
 
 if (!url || !key) {
-  console.log("[snapshot] No Supabase credentials — skipping snapshot.");
-  writeFileSync(OUT, JSON.stringify(empty));
+  console.log("[snapshot] No Supabase credentials — keeping existing snapshot.");
   process.exit(0);
 }
 
@@ -26,8 +25,7 @@ try {
     ]);
 
   if (pe || se) {
-    console.warn("[snapshot] Fetch error:", pe || se);
-    writeFileSync(OUT, JSON.stringify(empty));
+    console.warn("[snapshot] Fetch error — keeping existing snapshot:", pe || se);
     process.exit(0);
   }
 
@@ -40,6 +38,5 @@ try {
   writeFileSync(OUT, JSON.stringify(snapshot));
   console.log(`[snapshot] OK — ${products?.length ?? 0} products, settings: ${snapshot.settings ? "yes" : "no"}`);
 } catch (err) {
-  console.warn("[snapshot] Exception:", err.message);
-  writeFileSync(OUT, JSON.stringify(empty));
+  console.warn("[snapshot] Exception — keeping existing snapshot:", err.message);
 }
