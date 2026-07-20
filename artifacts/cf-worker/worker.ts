@@ -247,9 +247,9 @@ function tgDur(s: number): string {
 }
 
 async function tgSend(env: any, text: string): Promise<void> {
-  const token = env.TELEGRAM_BOT_TOKEN as string | undefined;
-  const chatId = env.TELEGRAM_CHAT_ID as string | undefined;
-  if (!token || !chatId) return;
+  const token = (env.TELEGRAM_BOT_TOKEN as string | undefined)?.trim();
+  const chatId = (env.TELEGRAM_CHAT_ID as string | undefined)?.trim();
+  if (!token || !chatId) { console.error("Telegram: missing BOT_TOKEN or CHAT_ID"); return; }
   try {
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
@@ -257,8 +257,9 @@ async function tgSend(env: any, text: string): Promise<void> {
       body: JSON.stringify({ chat_id: chatId, text: text.slice(0, 4096), parse_mode: "HTML", disable_web_page_preview: true }),
     });
     const d = await res.json() as any;
-    if (!d.ok) console.error("Telegram:", d.description);
-  } catch (e) { console.error("tgSend:", e); }
+    if (!d.ok) console.error("Telegram error:", JSON.stringify(d));
+    else console.log("Telegram OK, message_id:", d.result?.message_id);
+  } catch (e) { console.error("tgSend exception:", e); }
 }
 
 async function sendTgVisitor(env: any, s: any): Promise<void> {
