@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect } from "react";
 import { Switch, Route, Router as WouterRouter, useRoute, useLocation } from "wouter";
+import { initSession, trackPage, getSessionPayload } from "@/lib/session";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/toaster";
@@ -44,6 +45,31 @@ function ScrollToTop() {
   return null;
 }
 
+const API = typeof import.meta !== "undefined" ? (import.meta.env.VITE_API_URL || "") : "";
+
+function SessionTracker() {
+  const [location] = useLocation();
+
+  // Inițializează sesiunea și trimite notificarea de vizitator nou (o singură dată)
+  useEffect(() => {
+    initSession().then((session) => {
+      trackPage(window.location.pathname, document.title);
+      fetch(API + "/api/notify/visitor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session: getSessionPayload() }),
+      }).catch(() => {});
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Trackează fiecare schimbare de pagină
+  useEffect(() => {
+    trackPage(location, document.title);
+  }, [location]);
+
+  return null;
+}
+
 function PageFallback() {
   return (
     <div className="flex-1 flex items-center justify-center min-h-[50vh]">
@@ -82,6 +108,7 @@ function ShopShell() {
   return (
     <div className="min-h-screen flex flex-col font-sans">
       <ScrollToTop />
+      <SessionTracker />
       <AnnouncementBar />
       <Header />
       <ShopRoutes />

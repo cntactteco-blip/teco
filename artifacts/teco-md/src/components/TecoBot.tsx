@@ -3,6 +3,7 @@ import { Bot, X, Send, Loader2, Sparkles, User, ShoppingCart } from "lucide-reac
 import { useLang } from "@/contexts/LangContext";
 import { storeActions, useStore } from "@/lib/store";
 import { useCart } from "@/hooks/useCart";
+import { getSessionPayload } from "@/lib/session";
 
 interface Message {
   role: "user" | "assistant";
@@ -53,6 +54,8 @@ export function TecoBot() {
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const [vpOffset, setVpOffset] = useState({ top: 0, left: 0 });
+  const messagesRef = useRef<Message[]>([]);
+  const API = import.meta.env.VITE_API_URL || "";
 
   useEffect(() => {
     const vv = window.visualViewport;
@@ -81,16 +84,33 @@ export function TecoBot() {
     if (open) { setTimeout(() => inputRef.current?.focus(), 100); setUnread(0); }
   }, [open]);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+  useEffect(() => {
+    messagesRef.current = messages;
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const extractLead = useCallback((text: string) => {
     const match = text.match(/LEAD_CAPTURED:name=([^,\n]+),phone=([^\n]+)/);
     if (match && !leadCaptured) {
       setLeadCaptured(true);
-      storeActions.addLead({ name: match[1].trim(), phone: match[2].trim(), notes: "TecoBot AI Chat", source: "tecobot" });
+      const name = match[1].trim();
+      const phone = match[2].trim();
+      storeActions.addLead({ name, phone, notes: "TecoBot AI Chat", source: "tecobot" });
+      // Trimite transcrierea completă la Telegram
+      const session = getSessionPayload();
+      fetch(API + "/api/notify/chat-lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          phone,
+          messages: messagesRef.current.map((m) => ({ role: m.role, content: m.content })),
+          session,
+        }),
+      }).catch(() => {});
     }
     return text.replace(/LEAD_CAPTURED:[^\n]*/g, "").trim();
-  }, [leadCaptured]);
+  }, [leadCaptured, API]);
 
   const send = useCallback(async () => {
     const text = input.trim();
@@ -99,10 +119,10 @@ export function TecoBot() {
     const userMsg: Message = { role: "user", content: text, ts: Date.now() };
     const allMessages = [...messages, userMsg];
     if (allMessages.length === 1) {
-      fetch((import.meta.env.VITE_API_URL || "") + "/api/chat-notify", {
+      fetch(API + "/api/notify/chat-notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, page: window.location.pathname }),
+        body: JSON.stringify({ message: text, page: window.location.pathname, session: getSessionPayload() }),
       }).catch(() => {});
     }
     setMessages(allMessages);

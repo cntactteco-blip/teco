@@ -3,6 +3,7 @@ import { Home, Building, Briefcase, MapPin, Cable, Zap, Star, Wifi, HelpCircle, 
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
 import { useStore, storeActions, getState } from "@/lib/store";
+import { getSessionPayload } from "@/lib/session";
 
 // ── Defined outside to keep stable identity across renders (prevents keyboard dismiss) ──
 function OptionButton({ icon: Icon, label, isActive, onClick, testId }: {
@@ -75,6 +76,24 @@ export default function SmartCostCalculator() {
       source: "Calculator Cost",
       selections,
     });
+
+    // Trimite la Telegram cu toate detaliile calculatorului
+    const { equipmentCost, installCost, totalCost } = getCalculations();
+    const session = getSessionPayload();
+    const API = import.meta.env.VITE_API_URL || "";
+    fetch(API + "/api/notify/calculator", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: formData.name,
+        phone: formData.phone,
+        selections,
+        equipmentCost,
+        installCost,
+        totalCost,
+        session,
+      }),
+    }).catch(() => {});
 
     setStep(7);
   };
