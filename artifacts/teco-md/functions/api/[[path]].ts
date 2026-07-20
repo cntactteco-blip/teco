@@ -870,7 +870,7 @@ app.post("/notify/daily-report", async (c) => {
 // ============================================
 
 const GROQ_API = "https://api.groq.com/openai/v1/chat/completions";
-const GROQ_MODEL = "llama-3.3-70b-versatile";
+const GROQ_MODEL = "llama-3.1-8b-instant";
 
 type GMsg = { role: "system" | "user" | "assistant"; content: string };
 
