@@ -21,11 +21,11 @@ export function Footer() {
         <div>
           <h4 className="font-medium text-white mb-5 text-sm uppercase tracking-wider">{t("footer.products")}</h4>
           <ul className="space-y-3 text-sm text-zinc-400">
-            <li><Link href="/produse" className="hover:text-[#FF4F00] transition-colors">{t("footer.p.wifi")}</Link></li>
-            <li><Link href="/produse" className="hover:text-[#FF4F00] transition-colors">{t("footer.p.poe")}</Link></li>
-            <li><Link href="/produse" className="hover:text-[#FF4F00] transition-colors">{t("footer.p.nvr")}</Link></li>
-            <li><Link href="/produse" className="hover:text-[#FF4F00] transition-colors">{t("footer.p.kits")}</Link></li>
-            <li><Link href="/produse" className="hover:text-[#FF4F00] transition-colors">{t("footer.p.alarm")}</Link></li>
+            <li><Link href="/produse?cat=wifi" className="hover:text-[#FF4F00] transition-colors">{t("footer.p.wifi")}</Link></li>
+            <li><Link href="/produse?cat=poe" className="hover:text-[#FF4F00] transition-colors">{t("footer.p.poe")}</Link></li>
+            <li><Link href="/produse?cat=nvr" className="hover:text-[#FF4F00] transition-colors">{t("footer.p.nvr")}</Link></li>
+            <li><Link href="/produse?cat=kituri" className="hover:text-[#FF4F00] transition-colors">{t("footer.p.kits")}</Link></li>
+            <li><Link href="/produse?cat=alarme" className="hover:text-[#FF4F00] transition-colors">{t("footer.p.alarm")}</Link></li>
           </ul>
         </div>
 

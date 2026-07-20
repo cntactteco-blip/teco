@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { Link, useRoute } from "wouter";
+import { Link, useRoute, useSearch } from "wouter";
 import { Search, ShoppingCart, SlidersHorizontal, X, ChevronDown, Check, ArrowUpDown, Heart, BarChart2 } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
@@ -201,10 +201,23 @@ function ProductCard({ product }: { product: StoreProduct }) {
 
 export default function Products() {
   const [isKitRoute] = useRoute("/seturi-camere-supraveghere");
+  const searchStr = useSearch();
   const { t, lang } = useLang();
   const products = useStore((s) => s.products);
 
-  const [activeCategory, setActiveCategory] = useState<string>(isKitRoute ? "kituri" : "all");
+  const [activeCategory, setActiveCategory] = useState<string>(() => {
+    if (isKitRoute) return "kituri";
+    const params = new URLSearchParams(searchStr);
+    return params.get("cat") ?? "all";
+  });
+
+  // Sincronizează categoria când URL-ul se schimbă (ex: navigare între /produse?cat=wifi și ?cat=poe)
+  useEffect(() => {
+    if (isKitRoute) return;
+    const params = new URLSearchParams(searchStr);
+    const cat = params.get("cat") ?? "all";
+    setActiveCategory(cat);
+  }, [searchStr, isKitRoute]);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<SortKey>("relevance");
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);

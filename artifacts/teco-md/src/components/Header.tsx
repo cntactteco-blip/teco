@@ -182,7 +182,7 @@ export function Header() {
                 {results.map((p) => (
                   <Link
                     key={p.id}
-                    href="/produse"
+                    href={`/product/${p.id}`}
                     onClick={handleSearchSelect}
                     className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-50 transition-colors border-b border-zinc-50 last:border-0"
                   >
