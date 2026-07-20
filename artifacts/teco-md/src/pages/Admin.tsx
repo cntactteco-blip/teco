@@ -2446,7 +2446,7 @@ function ImportTab() {
         await fetch(SUPA_URL + "/rest/v1/products", {
           method: "POST",
           headers: { "Content-Type": "application/json", "apikey": SUPA_KEY, "Authorization": "Bearer " + SUPA_KEY, "Prefer": "return=minimal" },
-          body: JSON.stringify({ name: p.name||p.model||"Produs", model: p.model||"", brand: p.brand||"", price: Math.round(p.price||0), old_price: p.oldPrice?Math.round(p.oldPrice):null, specs: p.specs||"", description: p.description||"", category: p.category||"Camere IP", image_url: p.imageUrl||"", images: p.imageUrl?[p.imageUrl]:[], in_stock: true, icon: "camera", long_description: "", tech_specs: p.specs||"", badge: null }),
+          body: JSON.stringify({ name: p.name||p.model||"Produs", model: p.model||"", brand: p.brand||"", price: Math.round(p.price||0), old_price: p.oldPrice?Math.round(p.oldPrice):null, specs: p.specs||"", description: p.description||"", category: p.category||"wifi", image_url: p.imageUrl||"", images: p.imageUrl?[p.imageUrl]:[], in_stock: true, icon: "camera", long_description: "", tech_specs: p.specs||"", badge: null }),
         });
         ok++; addLog("✅ " + (p.name||p.model));
       } catch(e: any) { addLog("❌ " + e.message); }

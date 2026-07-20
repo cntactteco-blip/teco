@@ -8,13 +8,13 @@ interface SidebarDrawerProps {
   onClose: () => void;
 }
 
-const categories = [
-  { href: "/produse?cat=wifi",   icon: Camera, label: "Camere WiFi",             count: 8 },
-  { href: "/produse?cat=poe",    icon: Camera, label: "Camere PoE",              count: 9 },
-  { href: "/produse?cat=4g",     icon: Camera, label: "Camere 4G / Solar",       count: 3 },
-  { href: "/produse?cat=nvr",    icon: Server, label: "Înregistratoare NVR",     count: 4 },
-  { href: "/seturi-camere-supraveghere", icon: Package, label: "Kituri Complete", count: 2 },
-  { href: "/produse?cat=alarme", icon: Shield, label: "Sisteme Alarmă",          count: 1 },
+const CAT_DEFS = [
+  { slug: "wifi",   icon: Camera,  label: "Camere WiFi" },
+  { slug: "poe",    icon: Camera,  label: "Camere PoE" },
+  { slug: "4g",     icon: Camera,  label: "Camere 4G / Solar" },
+  { slug: "nvr",    icon: Server,  label: "Înregistratoare NVR" },
+  { slug: "kituri", icon: Package, label: "Kituri Complete" },
+  { slug: "alarme", icon: Shield,  label: "Sisteme Alarmă" },
 ];
 
 const pages = [
@@ -24,15 +24,24 @@ const pages = [
 ];
 
 const legal = [
-  { href: "/termeni",      label: "Termeni și Condiții" },
-  { href: "/confidential", label: "Politica de Confidențialitate" },
-  { href: "/garantii",     label: "Garanții și Retur" },
+  { href: "/termeni",          label: "Termeni și Condiții" },
+  { href: "/confidential",     label: "Politica de Confidențialitate" },
+  { href: "/garantii",         label: "Garanții și Retur" },
 ];
 
 export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
   const [location] = useLocation();
+  const products = useStore((s) => s.products);
   const adminPhone = useStore((s) => s.settings.general?.adminPhone ?? "");
   const phone = (adminPhone || "37367200463").replace(/\D/g, "");
+
+  // Contoare calculate live din catalog
+  const catCounts = CAT_DEFS.map(({ slug, icon: Icon, label }) => ({
+    href: `/produse?cat=${slug}`,
+    icon: Icon,
+    label,
+    count: products.filter((p) => p.category === slug).length,
+  }));
 
   useEffect(() => {
     if (open) {
@@ -71,7 +80,7 @@ export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
           {/* Catalog */}
           <div className="px-4 py-3">
             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-2 mb-2">Catalog Produse</p>
-            {categories.map(({ href, icon: Icon, label, count }) => (
+            {catCounts.map(({ href, icon: Icon, label, count }) => (
               <Link
                 key={href}
                 href={href}
