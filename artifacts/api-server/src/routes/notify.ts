@@ -16,12 +16,29 @@ import {
   getStatsForDate,
   getSalesForDate,
   chisinauDate,
+  checkIpRateLimit,
 } from "../services/supabase";
 
 const router = Router();
 
-// Throttle: un singur mesaj per sessionId pentru vizitator nou
+// ─── Throttle state ───────────────────────────────────────────────────────────
+
+// Fast in-memory dedup: sessionId → already notified (visitor).
+// Works across requests in the same process lifetime; Supabase handles cross-restart persistence.
 const notifiedSessions = new Set<string>();
+
+// In-memory fallback for visitor IP rate limiting when Supabase table is not yet created.
+// Map key: `${ip}:${date}`, value: count of notifications sent.
+const ipVisitorCounts = new Map<string, number>();
+
+// Per-session chat-notify counter (max 3 first-message notifications per session).
+// Sessions are naturally short-lived; no need for persistence here.
+const chatNotifyCounts = new Map<string, number>();
+
+const CHAT_NOTIFY_LIMIT = 3;
+const VISITOR_IP_DAILY_LIMIT = 1;
+
+// ─── Routes ───────────────────────────────────────────────────────────────────
 
 // POST /api/notify/visitor — prima vizită pe site
 router.post("/visitor", async (req, res) => {
@@ -29,20 +46,51 @@ router.post("/visitor", async (req, res) => {
 
   const session: SessionInfo = req.body.session ?? req.body;
   const sessionId = session.sessionId;
+  // req.ip is resolved by Express using the trusted proxy chain (trust proxy 1 in app.ts).
+  // Do NOT read x-forwarded-for directly — that header is client-controlled and spoofable.
+  const ip = req.ip ?? "unknown";
+  const today = chisinauDate();
 
+  // Fast path: same session already notified this process lifetime
   if (sessionId && notifiedSessions.has(sessionId)) {
     return res.json({ ok: true, skipped: "already notified" });
   }
-  if (sessionId) notifiedSessions.add(sessionId);
 
-  // Curăță setul din memorie după 24h (evită memory leak)
-  if (notifiedSessions.size > 10000) notifiedSessions.clear();
+  // IP-based rate limit: max 1 notification per IP per day.
+  // Primary: atomic Supabase RPC (persistent across restarts).
+  // Fallback: in-memory Map — used when Supabase is unconfigured OR when the
+  //           RPC fails (table missing, transient error, etc.).
+  const dbResult = await checkIpRateLimit(ip, today, "visitor", VISITOR_IP_DAILY_LIMIT);
+  if (dbResult === null) {
+    // DB unavailable — use in-memory fallback
+    const key = `${ip}:${today}`;
+    const count = ipVisitorCounts.get(key) ?? 0;
+    if (count >= VISITOR_IP_DAILY_LIMIT) {
+      return res.status(429).json({ ok: false, skipped: "rate limited" });
+    }
+    ipVisitorCounts.set(key, count + 1);
+    // Evict stale keys to prevent memory leak
+    if (ipVisitorCounts.size > 50000) {
+      for (const [k] of ipVisitorCounts) {
+        if (!k.endsWith(today)) ipVisitorCounts.delete(k);
+      }
+    }
+  } else if (!dbResult) {
+    // DB confirmed rate limit exceeded
+    return res.status(429).json({ ok: false, skipped: "rate limited" });
+  }
+
+  // Mark session as notified for fast in-process dedup
+  if (sessionId) {
+    notifiedSessions.add(sessionId);
+    if (notifiedSessions.size > 10000) notifiedSessions.clear();
+  }
 
   // Persistă sesiunea în Supabase pentru raportul zilnic
   if (sessionId && isSupabaseConfigured()) {
     upsertSession({
       session_id: sessionId,
-      date: chisinauDate(),
+      date: today,
       referrer: session.referrer,
       utm_source: session.utmSource,
       utm_medium: session.utmMedium,
@@ -57,7 +105,8 @@ router.post("/visitor", async (req, res) => {
   return res.json({ ok: true });
 });
 
-// POST /api/chat-notify — primul mesaj în TecoBot (deja apelat din frontend)
+// POST /api/notify/chat-notify — primul mesaj în TecoBot (deja apelat din frontend)
+// Rate limit: max 3 notificări per sesiune (previne spam dacă utilizatorul trimite mesaje rapid)
 router.post("/chat-notify", async (req, res) => {
   if (!isTelegramConfigured()) return res.json({ ok: true, skipped: "not configured" });
 
@@ -66,6 +115,18 @@ router.post("/chat-notify", async (req, res) => {
     page: string;
     session?: SessionInfo;
   };
+
+  const sessionId = (session as SessionInfo).sessionId;
+
+  if (sessionId) {
+    const count = chatNotifyCounts.get(sessionId) ?? 0;
+    if (count >= CHAT_NOTIFY_LIMIT) {
+      return res.status(429).json({ ok: false, skipped: "rate limited" });
+    }
+    chatNotifyCounts.set(sessionId, count + 1);
+    // Evict old entries when map grows large
+    if (chatNotifyCounts.size > 10000) chatNotifyCounts.clear();
+  }
 
   notifyFirstMessage({ message, page, session }).catch(() => {});
   return res.json({ ok: true });
@@ -83,8 +144,8 @@ router.post("/chat-lead", async (req, res) => {
   };
 
   // Marchează sesiunea ca lead în Supabase
-  if (session.sessionId && isSupabaseConfigured()) {
-    markSessionAsLead(session.sessionId, "chat").catch(() => {});
+  if ((session as SessionInfo).sessionId && isSupabaseConfigured()) {
+    markSessionAsLead((session as SessionInfo).sessionId!, "chat").catch(() => {});
   }
 
   notifyLeadChat({ name, phone, messages, session }).catch(() => {});
@@ -114,8 +175,8 @@ router.post("/calculator", async (req, res) => {
   };
 
   // Marchează sesiunea ca lead în Supabase
-  if (session.sessionId && isSupabaseConfigured()) {
-    markSessionAsLead(session.sessionId, "calculator").catch(() => {});
+  if ((session as SessionInfo).sessionId && isSupabaseConfigured()) {
+    markSessionAsLead((session as SessionInfo).sessionId!, "calculator").catch(() => {});
   }
 
   notifyLeadCalculator({ name, phone, selections, equipmentCost, installCost, totalCost, session }).catch(() => {});

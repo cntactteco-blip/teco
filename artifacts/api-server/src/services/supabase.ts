@@ -165,6 +165,52 @@ export async function getSalesForDate(date: string): Promise<DailySales> {
   }
 }
 
+// ─── IP Rate Limiting ─────────────────────────────────────────────────────────
+
+/**
+ * Atomically increment the daily counter for (ip, date, type) via a Postgres RPC
+ * function and check the result against `limit`.
+ *
+ * Returns:
+ *   true  — request is ALLOWED (counter was below the limit before increment)
+ *   false — request is RATE LIMITED (counter already at or over limit)
+ *   null  — DB unavailable or table missing; caller must apply its own fallback
+ *
+ * The RPC `increment_ip_rate_limit` uses INSERT … ON CONFLICT DO UPDATE so the
+ * increment is atomic — no TOCTOU race between select and upsert.
+ */
+export async function checkIpRateLimit(
+  ip: string,
+  date: string,
+  type: string,
+  limit: number,
+): Promise<boolean | null> {
+  const client = db();
+  if (!client) return null; // Supabase not configured
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (client as any).rpc("increment_ip_rate_limit", {
+      p_ip: ip,
+      p_date: date,
+      p_type: type,
+    });
+
+    if (error) {
+      // Table or function probably doesn't exist yet — signal caller to use fallback
+      console.warn("ip_rate_limits RPC error:", (error as { message: string }).message);
+      return null;
+    }
+
+    // `data` is the new count after increment
+    const newCount = data as number;
+    return newCount <= limit; // true = allowed, false = rate limited
+  } catch (err) {
+    console.error("checkIpRateLimit failed:", err);
+    return null; // signal caller to use fallback
+  }
+}
+
 // ─── Write ────────────────────────────────────────────────────────────────────
 
 /** Upsert a session row (insert on first visit, update on revisit). */

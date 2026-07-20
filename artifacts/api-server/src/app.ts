@@ -6,6 +6,10 @@ import { logger } from "./lib/logger";
 
 const app: Express = express();
 
+// Trust the first proxy hop so req.ip reflects the real client IP
+// (Replit / Cloudflare forward X-Forwarded-For)
+app.set("trust proxy", 1);
+
 app.use(
   pinoHttp({
     logger,
