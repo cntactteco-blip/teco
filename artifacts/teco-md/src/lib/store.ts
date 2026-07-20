@@ -765,7 +765,7 @@ export async function initStore() {
     supabase.from("products").select("*").order("id"),
     supabase.from("leads").select("*").order("timestamp", { ascending: false }),
     supabase.from("orders").select("*").order("timestamp", { ascending: false }),
-    supabase.from("blog_posts").select("*").order("published_at", { ascending: false })
+    Promise.resolve(supabase.from("blog_posts").select("*").order("published_at", { ascending: false }))
       .catch(() => ({ data: null, error: null })),
     supabase.from("settings").select("*").eq("id", 1),
   ]);
