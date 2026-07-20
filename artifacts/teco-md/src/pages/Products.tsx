@@ -291,23 +291,92 @@ export default function Products() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const pageTitle = isKitRoute
-    ? (lang === "ru" ? "Комплекты Видеонаблюдения — Готовые Наборы Камер | Teco.md" : "Seturi Camere de Supraveghere — Cele Mai Bune Kituri din Moldova | Teco.md")
-    : (lang === "ru" ? "Каталог Продуктов — Камеры, NVR, Комплекты | Teco.md" : "Catalog Produse — Camere, NVR-uri, Kituri, Alarme | Teco.md");
-  const pageDesc = isKitRoute
-    ? (lang === "ru" ? "Готовые комплекты видеонаблюдения для дома и офиса. Установка под ключ, гарантия 12 месяцев." : "Seturi complete camere de supraveghere pentru casă și birou. Montaj profesional, garanție 12 luni, livrare în toată Moldova.")
-    : (lang === "ru" ? "Полный каталог оборудования для видеонаблюдения: камеры IP, WiFi, PoE, 4G, NVR, комплекты, сигнализации. Молдова." : "Catalog complet sisteme de supraveghere: camere IP, WiFi, PoE, 4G, NVR, kituri, alarme. Livrare în 24h.");
+  // ── SEO dinamic per categorie ─────────────────────────────────────────
+  type CatSeoEntry = { title: string; desc: string; keywords: string };
+  const CAT_SEO: Record<string, { ro: CatSeoEntry; ru: CatSeoEntry }> = {
+    wifi: {
+      ro: { title: `Camere WiFi Supraveghere — ${catCounts.wifi ?? 0} Modele | Teco.md Moldova`,
+            desc: "Camere de supraveghere WiFi fără cabluri pentru casă, grădină și birou. Configurare în 10 minute, vizualizare live pe telefon oriunde în lume. Livrare 24h în toată Moldova.",
+            keywords: "camere wifi supraveghere moldova, camere ip wireless, camera supraveghere fara cablu, IMOU, Reolink, TP-Link Tapo, dahua wifi, teco.md" },
+      ru: { title: `WiFi Камеры Видеонаблюдения — ${catCounts.wifi ?? 0} Моделей | Teco.md`,
+            desc: "Беспроводные WiFi камеры видеонаблюдения для дома и офиса. Без кабелей, настройка 10 минут, просмотр онлайн с телефона. Доставка 24ч по всей Молдове.",
+            keywords: "wifi камеры видеонаблюдения молдова, беспроводные камеры, IMOU, Reolink, TP-Link Tapo, teco.md" },
+    },
+    poe: {
+      ro: { title: `Camere PoE Supraveghere — ${catCounts.poe ?? 0} Modele | Teco.md Moldova`,
+            desc: "Camere IP PoE cu rezoluție 4K–8MP pentru sisteme profesionale. Alimentare prin cablu LAN, imagine HD, compatibile cu NVR-uri Dahua, Uniview, Uniarch. Livrare 24h.",
+            keywords: "camere poe supraveghere moldova, camere ip poe 4k, camere profesionale exterior, dahua poe, uniview poe, uniarch, teco.md" },
+      ru: { title: `PoE Камеры Видеонаблюдения — ${catCounts.poe ?? 0} Моделей | Teco.md`,
+            desc: "Профессиональные IP PoE камеры 4K–8MP для систем видеонаблюдения. Питание по LAN-кабелю, совместимы с NVR Dahua, Uniview, Uniarch. Доставка 24ч.",
+            keywords: "poe камеры видеонаблюдения молдова, ip камеры 4k, профессиональные камеры, dahua, uniview, teco.md" },
+    },
+    "4g": {
+      ro: { title: `Camere 4G Solar Supraveghere — ${catCounts["4g"] ?? 0} Modele | Teco.md Moldova`,
+            desc: "Camere de supraveghere 4G cu panou solar pentru locuri fără curent și internet. Funcționează autonom, transmit video direct pe telefon prin SIM card.",
+            keywords: "camere 4g solar supraveghere moldova, camera supraveghere autonoma fara curent, camera 4g sim, reolink 4g, teco.md" },
+      ru: { title: `4G Solar Камеры — ${catCounts["4g"] ?? 0} Моделей | Teco.md`,
+            desc: "Камеры видеонаблюдения 4G с солнечной батареей для мест без электричества. Работают автономно, передают видео через SIM-карту.",
+            keywords: "4g камеры видеонаблюдения молдова, камера без электричества, солнечная камера, 4g sim камера, reolink, teco.md" },
+    },
+    nvr: {
+      ro: { title: `Înregistratoare NVR — ${catCounts.nvr ?? 0} Modele | Teco.md Moldova`,
+            desc: "NVR-uri profesionale Dahua, Uniview, Uniarch pentru 4–16 camere IP. Înregistrare 24/7, stocare HDD, acces remote prin aplicație. Garanție 2–3 ani.",
+            keywords: "nvr inregistratoare supraveghere moldova, nvr dahua, nvr uniview, inregistrator ip poe, sistem supraveghere nvr, teco.md" },
+      ru: { title: `Видеорегистраторы NVR — ${catCounts.nvr ?? 0} Моделей | Teco.md`,
+            desc: "Профессиональные NVR Dahua, Uniview, Uniarch на 4–16 IP камер. Запись 24/7, хранение HDD, удалённый доступ через приложение. Гарантия 2–3 года.",
+            keywords: "nvr видеорегистраторы молдова, nvr dahua, nvr uniview, ip nvr система, teco.md" },
+    },
+    kituri: {
+      ro: { title: `Seturi Complete Supraveghere — ${catCounts.kituri ?? 0} Kituri | Teco.md Moldova`,
+            desc: "Seturi complete sisteme de supraveghere NVR + camere, gata de instalat. Prețuri de la 3.500 MDL. Montaj profesional inclus. Cel mai bun raport calitate-preț din Moldova.",
+            keywords: "seturi complete supraveghere moldova, kit supraveghere nvr camere, sistem supraveghere complet casa, kituri instalare, teco.md, seturi camere video" },
+      ru: { title: `Комплекты Видеонаблюдения — ${catCounts.kituri ?? 0} Наборов | Teco.md`,
+            desc: "Готовые комплекты систем видеонаблюдения NVR + камеры. Цены от 3500 MDL. Профессиональный монтаж. Лучшее соотношение цена-качество в Молдове.",
+            keywords: "комплекты видеонаблюдения молдова, набор камер nvr, система видеонаблюдения для дома, teco.md" },
+    },
+    alarme: {
+      ro: { title: `Sisteme Alarmă — ${catCounts.alarme ?? 0} Modele | Teco.md Moldova`,
+            desc: "Sisteme de alarmă Ajax și video pentru casă și birou. Detectoare motion, senzori, sirenă, monitorizare 24/7. Instalare profesională în toată Moldova.",
+            keywords: "sisteme alarma moldova, alarma ajax, sistem alarma casa, detectoare miscare, alarma profesionala, teco.md" },
+      ru: { title: `Системы Сигнализации — ${catCounts.alarme ?? 0} Моделей | Teco.md`,
+            desc: "Системы сигнализации Ajax для дома и офиса. Датчики движения, сирена, мониторинг 24/7. Профессиональная установка по всей Молдове.",
+            keywords: "системы сигнализации молдова, ajax сигнализация, охранная сигнализация дома, teco.md" },
+    },
+    all: {
+      ro: { title: "Catalog Camere Supraveghere, NVR, Kituri, Alarme | Teco.md Moldova",
+            desc: "Catalog complet sisteme de supraveghere Moldova: camere IP WiFi, PoE, 4G Solar, înregistratoare NVR, kituri complete și alarme. Stoc fizic în Chișinău. Livrare 24h.",
+            keywords: "camere supraveghere moldova, sisteme supraveghere chisinau, seturi complete supraveghere video, nvr dvr moldova, kituri camere, alarme, teco.md" },
+      ru: { title: "Каталог Камер, NVR, Комплектов, Сигнализаций | Teco.md Молдова",
+            desc: "Полный каталог систем видеонаблюдения: IP камеры WiFi, PoE, 4G, NVR, готовые комплекты и сигнализации. Физический склад в Кишинёве. Доставка 24ч.",
+            keywords: "камеры видеонаблюдения молдова, системы видеонаблюдения кишинев, nvr dvr молдова, комплекты камер, сигнализации, teco.md" },
+    },
+  };
+
+  const effectiveCat = isKitRoute ? "kituri" : (activeCategory in CAT_SEO ? activeCategory : "all");
+  const seo = CAT_SEO[effectiveCat][lang];
+  const canonicalUrl = isKitRoute
+    ? "/seturi-camere-supraveghere"
+    : activeCategory === "all" ? "/produse" : `/produse?cat=${activeCategory}`;
+
+  const breadcrumbItems = [
+    { name: lang === "ru" ? "Главная" : "Acasă", url: "https://teco.md/" },
+    { name: lang === "ru" ? "Каталог" : "Produse", url: "https://teco.md/produse" },
+    ...(activeCategory !== "all" && !isKitRoute ? [{ name: seo.title.split("—")[0].trim(), url: `https://teco.md/produse?cat=${activeCategory}` }] : []),
+  ];
+
   const jsonLd = [
     schemas.collectionPage(filtered.map(p => ({ id: p.id, name: p.name, imageUrl: p.imageUrl, price: p.price }))),
-    schemas.breadcrumb([
-      { name: lang === "ru" ? "Главная" : "Acasă", url: "https://teco.md/" },
-      { name: lang === "ru" ? "Продукты" : "Produse", url: "https://teco.md/produse" },
-    ]),
+    schemas.breadcrumb(breadcrumbItems),
+    ...(effectiveCat === "kituri" ? [schemas.faq([
+      { question: "Cât costă un set complet de supraveghere în Moldova?", answer: "Prețurile pentru seturi complete de supraveghere video în Moldova încep de la 3.500 MDL și pot ajunge la 30.000+ MDL, în funcție de numărul de camere și rezoluție. La Teco.md găsești kituri de 4, 8 și 16 camere, gata de instalat." },
+      { question: "Includeți montajul în prețul kitului?", answer: "Da, la Teco.md oferta poate include instalare profesională. Contactați-ne pentru un deviz gratuit de montaj, inclusiv cablare și configurare aplicație mobilă." },
+      { question: "Câte camere are nevoie o casă obișnuită?", answer: "Pentru o casă medie recomandăm un kit de 4 camere (față, spate, 2 laterale). Pentru curți mari sau case cu etaj, un kit de 8 camere acoperă complet perimetrul." },
+    ])] : []),
   ];
 
   return (
     <>
-      <SEO title={pageTitle} description={pageDesc} keywords={lang === "ru" ? "каталог, камеры, NVR, молдова" : "catalog, camere, NVR, Moldova"} canonical={isKitRoute ? "/seturi-camere-supraveghere" : "/produse"} lang={lang} jsonLd={jsonLd} />
+      <SEO title={seo.title} description={seo.desc} keywords={seo.keywords} canonical={canonicalUrl} lang={lang} jsonLd={jsonLd} />
 
       {/* ── Mobile Filter Bottom Sheet ── */}
       {showFilters && (

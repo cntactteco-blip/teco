@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { writeFileSync, mkdirSync } from "fs";
 import { fileURLToPath } from "url";
 import path from "path";
+import { execFileSync } from "child_process";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(__dirname, "../src/lib/catalog-snapshot.json");
@@ -80,6 +81,14 @@ try {
 
   writeFileSync(OUT, JSON.stringify(snapshot));
   console.log(`[snapshot] OK — ${prods.length} produse, ${extracted} imagini extrase, settings: ${snapshot.settings ? "yes" : "no"}`);
+
+  // Regenerează sitemap.xml cu produsele actualizate
+  try {
+    const sitemapScript = path.join(__dirname, "generate-sitemap.mjs");
+    execFileSync(process.execPath, [sitemapScript], { stdio: "inherit" });
+  } catch (sitemapErr) {
+    console.warn("[sitemap] Eroare la generare sitemap:", sitemapErr.message);
+  }
 } catch (err) {
   console.warn("[snapshot] Exception — keeping existing snapshot:", err.message);
 }

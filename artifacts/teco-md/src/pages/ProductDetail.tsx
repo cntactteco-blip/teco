@@ -1,4 +1,4 @@
-import { useParams, Link } from "wouter";
+import { useParams, Link, useLocation } from "wouter";
 import { useStore, storeActions } from "@/lib/store";
 import { useCart } from "@/hooks/useCart";
 import { ShoppingCart, Check, ChevronLeft, Star, Truck, ShieldCheck, Wrench, Eye, Flame, CircleCheck as CheckCircle2, Phone, ChevronRight, Package, ChevronDown, ThumbsUp, MapPin, MessageCircle, ZoomIn, X, ZoomOut, Maximize2 } from "lucide-react";
@@ -6,6 +6,38 @@ import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLang } from "@/contexts/LangContext";
 import { SEO, schemas } from "@/components/SEO";
+
+// ── Pagina "Produs negăsit" cu auto-redirect ─────────────────────────
+function ProductNotFound() {
+  const [, navigate] = useLocation();
+  const [sec, setSec] = useState(4);
+  useEffect(() => {
+    if (sec <= 0) { navigate("/produse"); return; }
+    const t = setTimeout(() => setSec(s => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [sec, navigate]);
+  return (
+    <>
+      <SEO title="Produs Negăsit — Teco.md" noIndex />
+      <main className="flex-1 flex items-center justify-center min-h-[60vh] bg-white px-6">
+        <div className="text-center max-w-sm">
+          <p className="text-6xl mb-5">🔍</p>
+          <h1 className="text-2xl font-black text-[#09090B] mb-2">Produsul nu a fost găsit</h1>
+          <p className="text-sm text-zinc-500 mb-6">
+            Acest produs a fost retras sau URL-ul este vechi.<br/>
+            Te redirecționăm la catalog în <span className="font-bold text-[#FF4F00]">{sec}s</span>…
+          </p>
+          <Link
+            href="/produse"
+            className="inline-flex items-center gap-2 bg-[#FF4F00] text-white font-bold px-6 py-3 rounded-xl hover:opacity-90 transition-all text-sm"
+          >
+            Mergi la Catalog
+          </Link>
+        </div>
+      </main>
+    </>
+  );
+}
 
 // ── Rating data (deterministic, varied per product) ──────────────────
 const RATING_DATA = [
@@ -453,19 +485,7 @@ export default function ProductDetail() {
   }, [id]);
 
   if (!product) {
-    return (
-      <main className="flex-1 flex items-center justify-center min-h-[60vh] bg-white">
-        <div className="text-center px-6">
-          <p className="text-5xl mb-4">🔍</p>
-          <h1 className="text-xl font-bold mb-3 text-[#09090B]">
-            {t("pd.breadcrumb_products")}
-          </h1>
-          <Link href="/produse" className="bg-[#FF4F00] text-white font-bold px-6 py-3 rounded-xl inline-block hover:opacity-90 transition-all">
-            {t("pd.breadcrumb_products")}
-          </Link>
-        </div>
-      </main>
-    );
+    return <ProductNotFound />;
   }
 
   // Image gallery helpers

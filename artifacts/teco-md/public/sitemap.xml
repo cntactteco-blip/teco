@@ -3,13 +3,12 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 
-  <!-- ── Homepage ── -->
   <url>
     <loc>https://teco.md/</loc>
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://teco.md/"/>
-    <lastmod>2026-06-18</lastmod>
+    <lastmod>2026-07-20</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -18,201 +17,556 @@
     </image:image>
   </url>
 
-  <!-- ── Catalog produse ── -->
   <url>
     <loc>https://teco.md/produse</loc>
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/produse"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/produse"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://teco.md/produse"/>
-    <lastmod>2026-06-18</lastmod>
+    <lastmod>2026-07-20</lastmod>
     <changefreq>daily</changefreq>
-    <priority>0.9</priority>
+    <priority>0.95</priority>
   </url>
 
-  <!-- ── Servicii ── -->
+  <url>
+    <loc>https://teco.md/produse?cat=wifi</loc>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/produse?cat=wifi"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/produse?cat=wifi"/>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <url>
+    <loc>https://teco.md/produse?cat=poe</loc>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/produse?cat=poe"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/produse?cat=poe"/>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <url>
+    <loc>https://teco.md/produse?cat=4g</loc>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/produse?cat=4g"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/produse?cat=4g"/>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+
+  <url>
+    <loc>https://teco.md/produse?cat=nvr</loc>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/produse?cat=nvr"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/produse?cat=nvr"/>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+
+  <url>
+    <loc>https://teco.md/produse?cat=kituri</loc>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/produse?cat=kituri"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/produse?cat=kituri"/>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <url>
+    <loc>https://teco.md/produse?cat=alarme</loc>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/produse?cat=alarme"/>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/produse?cat=alarme"/>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+
+  <url>
+    <loc>https://teco.md/seturi-camere-supraveghere</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+
   <url>
     <loc>https://teco.md/servicii</loc>
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/servicii"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/servicii"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://teco.md/servicii"/>
-    <lastmod>2026-06-18</lastmod>
+    <lastmod>2026-07-20</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.75</priority>
   </url>
 
-  <!-- ── Blog ── -->
   <url>
     <loc>https://teco.md/blog</loc>
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/blog"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/blog"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://teco.md/blog"/>
-    <lastmod>2026-06-18</lastmod>
+    <lastmod>2026-07-20</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.65</priority>
   </url>
 
-  <!-- ── Produse individuale ── -->
-  <url>
-    <loc>https://teco.md/product/1</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/2</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/3</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/4</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/5</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
   <url>
     <loc>https://teco.md/product/6</loc>
-    <lastmod>2026-06-18</lastmod>
+    <lastmod>2026-07-20</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/7</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/8</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/9</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/10</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/11</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/12</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/13</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/14</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/15</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/16</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/17</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/18</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/19</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/20</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/21</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/22</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/23</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/24</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/25</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/26</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://teco.md/product/27</loc>
-    <lastmod>2026-06-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/6.jpg</image:loc>
+      <image:title>Cameră Exterior 5MP WiFi Dual-Light — 1.130 MDL</image:title>
+    </image:image>
   </url>
 
+  <url>
+    <loc>https://teco.md/product/10</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/10.jpg</image:loc>
+      <image:title>Cameră Dome 4MP Full-Color PoE — 1.300 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/14</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/14.jpg</image:loc>
+      <image:title>Cameră 5MP AI Pro PoE StarLight — 2.754 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/15</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/15.jpg</image:loc>
+      <image:title>IP камера Uniview IPC2314LE-ADF28KM-WP, 4MP, 2.8mm, WL30m, Mic, mSD, PoE, IP67 — 2.199 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/17</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/17.jpg</image:loc>
+      <image:title>Cameră 4MP EasyStar 0.003Lux PoE — 1.800 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/18</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/18.jpg</image:loc>
+      <image:title>Cameră 4G LTE 4MP Acumulator Solar — 3.690 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/19</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/19.jpg</image:loc>
+      <image:title>IP камера Reolink Go Series G340, 8MP, IR10m, Mic, Speaker, mSD, 4G LTE, Battery, IP65 — 4.230 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/20</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/20.jpg</image:loc>
+      <image:title>Cameră 4G Dual-View Urmărire Automată — 6.200 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/21</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/21.jpg</image:loc>
+      <image:title>NVR 4 Canale Ultra 265 1× HDD — 1.700 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/22</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/22.jpg</image:loc>
+      <image:title>NVR 8 Canale Ultra 265 1× HDD — 1.930 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/23</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/23.jpg</image:loc>
+      <image:title>NVR Uniview NVR301-16S3, 16Ch, 8Mp, Ultra 265, 1xHDD — 2.680 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/24</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/24.jpg</image:loc>
+      <image:title>NVR Uniview NVR302-16B-IQ, 16Ch, 12Mp, Ultra 265, 2xHDD — 4.040 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/25</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/25.jpg</image:loc>
+      <image:title>Kit Complet 6 Camere Imou PoE + NVR 10ch  + HDD 1 TB + Switch 8 port + Cablu + Instalare  — 14.950 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/26</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/26.jpg</image:loc>
+      <image:title>Kit Complet Pro-Solar 4G 4 Camere Imou Cell 3C — 9.980 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/27</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/27.jpg</image:loc>
+      <image:title>Sistem Alarma Wireless Ajax Starter — 3.800 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/89</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/89.jpg</image:loc>
+      <image:title>Cameră de supraveghere indoor IMOU Ranger Dual 3K — 1.999 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/90</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/90.jpg</image:loc>
+      <image:title>Cameră de supraveghere indoor IMOU Ranger 2C Pro 3K — 1.149 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/94</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/94.jpg</image:loc>
+      <image:title>Camera de supraveghere IMOU Bullet 3 5MP — 1.499 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/95</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/95.jpg</image:loc>
+      <image:title>Camera de supraveghere outdoor IMOU Cruiser SE+ 2K 5MP — 1.599 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/96</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/96.jpg</image:loc>
+      <image:title>Camera de supraveghere outdoor IMOU Cruiser Dual 3K 5+5MP — 1.990 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/97</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/97.jpg</image:loc>
+      <image:title>Cameră de supraveghere outdoor Imou Titan PRO AURORA 6MP — 2.599 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/98</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/98.jpg</image:loc>
+      <image:title>Camera de supraveghere outdoor IMOU Cruiser Dual 2 PRO AURORA 8 MP — 3.199 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/99</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/99.jpg</image:loc>
+      <image:title>imou Outdoor PT Security Camera Cruiser Triple 3K 3+3+5MP — 3.690 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/100</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/100.jpg</image:loc>
+      <image:title>Camera de supraveghere outdoor IMOU Cruiser Z 3K 5MP — 2.089 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/101</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/101.jpg</image:loc>
+      <image:title>imou Outdoor PT Security Camera Cruiser SC Wi-Fi+4G 3K 5MP — 1.899 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/102</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/102.jpg</image:loc>
+      <image:title>Camera de Supraveghere pentru Exterior IMOU Cell 3C Senzor CMOS 3MP cu Panou Solar — 2.099 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/103</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/103.jpg</image:loc>
+      <image:title>Camera IP de Supraveghere pentru Exterior IMOU AOV PT 5MP Conectivitate WiFi 2.4GHz + 4G Panou Solar 5W IP66 — 3.499 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/104</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/104.jpg</image:loc>
+      <image:title>Camera IP de Supraveghere pentru Exterior IMOU AOV Dual 5MP+5MP Conectivitate Wi-Fi 2.4GHz + 4G LTE si Panou Solar 8W Alb/Negru — 4.799 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/105</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/105.jpg</image:loc>
+      <image:title>Set Sonerie Video Smart IMOU DS3 Camera Panoramica 4MP Wi-Fi Gri/Negru — 2.390 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/106</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/106.jpg</image:loc>
+      <image:title>Vizor de Usa cu Camera 5MP si cu Ecran Interior 4.3Inch Detectare Persoane Wi-Fi Negru — 1.980 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/107</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/107.jpg</image:loc>
+      <image:title>NVR IMOU N110W 10 Canale Wi-Fi 6 Microfon si Difuzor Incorporate HDMI / VGA Negru — 2.390 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/111</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/111.jpg</image:loc>
+      <image:title>Camera de supraveghere smart / inteligenta IMOU Bullet 3 IPC-S3EP-5M0WE, 5MP, Wi-Fi, microfon, difuzor, interior / exterior — 1.699 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/112</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/112.jpg</image:loc>
+      <image:title>Cameră de supraveghere outdoor smart Imou de 4K 8MP — 1.999 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/113</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/113.jpg</image:loc>
+      <image:title>Cameră de supraveghere outdoor inteligentă Imou PS7FP de 5MP — 1.999 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/115</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/115.jpg</image:loc>
+      <image:title>Înregistrator IP IMOU NVR-N110-8A0E-P, 10 canale UHD 4K — 2.390 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/116</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/116.jpg</image:loc>
+      <image:title> Set camere de supraveghere 8buc 4MP (1 NVR, 6 Bullet Camera, 2 Dome Camera) — 18.699 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/117</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/117.jpg</image:loc>
+      <image:title>IMOU Cruiser Dual 10MP (5MP + 5MP) IP camera set of 2 with 32GB memory cards — 7.400 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/118</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/118.jpg</image:loc>
+      <image:title>Sistem supraveghere IP Dahua, cu functii inteligente, 2 camere rotative, 5MP, Switch, Accesorii incluse, Hard Disk 1TB — 9.439 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/119</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/119.jpg</image:loc>
+      <image:title>Set Supraveghere 4 Camere Uniview 4MP ColorNoaptea, Card 64GB, Switch PoE și Instalare Inclusă — 12.795 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/120</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/120.jpg</image:loc>
+      <image:title>Set Complet Supraveghere 4 Camere Uniview 4MP ColorNoaptea, NVR 4K, HDD 1TB, Switch PoE și Instalare Inclusă — 15.723 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/121</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/121.jpg</image:loc>
+      <image:title>Set Supraveghere Video 4 Camere IP PoE 5MP, FullColor &amp; Smart AI — 13.977 MDL</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/product/122</loc>
+    <lastmod>2026-07-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://teco.md/product-images/122.jpg</image:loc>
+      <image:title>Set Complet Tiandy Tri-Light 4 Camere 2MP (IR50m + Color Night) + NVR 5 Canale + HDD 1TB — 9.990 MDL</image:title>
+    </image:image>
+  </url>
 </urlset>
