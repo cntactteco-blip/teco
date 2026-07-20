@@ -803,8 +803,28 @@ export async function refreshFromSupabase(): Promise<void> {
         ? settingsRows[0].data
         : null;
 
-    const mergedSettings = rawSettings ? mergeSettings(rawSettings) : null;
+    let mergedSettings = rawSettings ? mergeSettings(rawSettings) : null;
+
     if (mergedSettings) {
+      // ── Merge categorii: păstrăm categoriile adăugate local care nu sunt în Supabase ──
+      // Problema: refreshFromSupabase poate suprascrie setările locale cu date Supabase vechi,
+      // ștergând categorii adăugate de admin înainte ca Supabase-ul să le fi primit.
+      const supabaseCategories = mergedSettings.categories ?? [];
+      const localCategories: CategoryDef[] = state.settings.categories ?? [];
+      const supabaseSlugs = new Set(supabaseCategories.map((c: CategoryDef) => c.slug));
+      const extraLocal = localCategories.filter((c: CategoryDef) => !supabaseSlugs.has(c.slug));
+      if (extraLocal.length > 0) {
+        // Adăugăm categoriile locale care lipsesc din Supabase
+        mergedSettings = { ...mergedSettings, categories: [...supabaseCategories, ...extraLocal] };
+        // Sincronizăm înapoi la Supabase via api-server (cu merged categories)
+        if (_API) {
+          fetch(_API + "/api/settings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(mergedSettings),
+          }).catch(() => {});
+        }
+      }
       try { localStorage.setItem("teco_settings_cache", JSON.stringify({ ...mergedSettings, _v: SETTINGS_CACHE_VERSION })); } catch {}
     }
 
@@ -831,10 +851,27 @@ function cacheProducts(products: StoreProduct[]) {
   try { localStorage.setItem("teco_products_cache", JSON.stringify(products)); } catch {}
 }
 
-// ─── Salvare settings în Supabase ───────────────────────────────────
+// ─── URL api-server (VITE_API_URL sau same-origin) ──────────────────
+const _API = typeof import.meta !== "undefined"
+  ? ((import.meta as any).env?.VITE_API_URL ?? "")
+  : "";
+
+// ─── Salvare settings în Supabase + api-server (service role bypass RLS) ──────
 async function saveSettings(s: ModuleSettings) {
+  // 1. localStorage imediat — persistă chiar dacă totul eșuează
   try { localStorage.setItem("teco_settings_cache", JSON.stringify({ ...s, _v: SETTINGS_CACHE_VERSION })); } catch {}
-  await supabase.from("settings").upsert({ id: 1, data: s });
+  // 2. Supabase direct (anon key) — poate fi restricționat de RLS
+  supabase.from("settings").upsert({ id: 1, data: s })
+    .then(({ error }: any) => { if (error) console.warn("[store] settings direct supabase:", error?.message); })
+    .catch(() => {});
+  // 3. api-server (service role key) — mereu funcționează, bypass RLS
+  if (_API) {
+    fetch(_API + "/api/settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(s),
+    }).catch(() => {});
+  }
 }
 
 // ─── Actions ────────────────────────────────────────────────────────
