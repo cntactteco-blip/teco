@@ -772,8 +772,13 @@ export async function initStore() {
       ? settingsRows[0].data
       : null;
 
-  const mergedSettings = mergeSettings(rawSettings);
-  try { localStorage.setItem("teco_settings_cache", JSON.stringify(mergedSettings)); } catch {}
+  // ⚠️ CRITIC: suprascrie settings NUMAI dacă Supabase a returnat date reale.
+  // Când Supabase e pauzat/offline, rawSettings = null → păstrăm state curent
+  // (cache localStorage sau snapshot) în loc să resetăm cu DEFAULT_SETTINGS.
+  const mergedSettings = rawSettings ? mergeSettings(rawSettings) : null;
+  if (mergedSettings) {
+    try { localStorage.setItem("teco_settings_cache", JSON.stringify(mergedSettings)); } catch {}
+  }
 
   const mappedProducts = finalProds.map(dbProductToStore);
   // Nu suprascrie cache-ul sau state-ul cu array gol — păstrăm snapshot/cache existent
@@ -786,7 +791,8 @@ export async function initStore() {
     leads: (leads ?? []).map(dbLeadToStore),
     orders: (orders ?? []).map(dbOrderToStore),
     blogPosts: (blogRows ?? []).map(dbBlogPostToStore),
-    settings: mergedSettings,
+    // Păstrează settings curente dacă Supabase nu a returnat date
+    settings: mergedSettings ?? state.settings,
     loaded: true,
   });
 }
