@@ -32,12 +32,12 @@ function extractProductIds(text: string): number[] {
 export function TecoBot() {
   const { lang } = useLang();
   const allProducts = useStore((s) => s.products);
+  // Nu trimitem imageUrl la AI — crește request-ul inutil (URL-uri Cloudflare lungi)
   const products = allProducts.map((p) => ({
     id: p.id, name: p.name, brand: p.brand,
     price: p.price, oldPrice: p.oldPrice,
     specs: p.specs, category: p.category,
     badge: p.badge, inStock: p.inStock,
-    imageUrl: (p as any).imageUrl || (p as any).image_url || "",
   }));
   const cartAddItem = useCart((s) => s.addItem);
   const cartOpen = useCart((s) => s.openCart);
@@ -142,6 +142,8 @@ export function TecoBot() {
     const botMsg: Message = { role: "assistant", content: "", ts: Date.now() };
     setMessages([...allMessages, botMsg]);
     abortRef.current = new AbortController();
+    // Timeout 25s — dacă Groq nu răspunde, streaming se resetează automat
+    const timeoutId = setTimeout(() => abortRef.current?.abort(), 25000);
     try {
       const res = await fetch((import.meta.env.VITE_API_URL || "") + "/api/ai/chat", {
         method: "POST",
@@ -156,7 +158,8 @@ export function TecoBot() {
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let accumulated = "";
-      while (true) {
+      let finished = false;
+      while (!finished) {
         const { done, value } = await reader.read();
         if (done) break;
         const lines = decoder.decode(value, { stream: true }).split("\n");
@@ -164,8 +167,8 @@ export function TecoBot() {
           if (!line.startsWith("data: ")) continue;
           try {
             const data = JSON.parse(line.slice(6));
-            if (data.done) break;
-            if (data.error) { accumulated += "\n\n⚠️ Eroare. Sunați-ne: +373 67 200 463"; break; }
+            if (data.done) { finished = true; break; }
+            if (data.error) { accumulated += "\n\n⚠️ Eroare. Sunați-ne: +373 67 200 463"; finished = true; break; }
             if (data.content) {
               accumulated += data.content;
               const cleaned = extractLead(accumulated);
@@ -180,13 +183,21 @@ export function TecoBot() {
         }
       }
     } catch (err: unknown) {
-      if (err instanceof Error && err.name === "AbortError") return;
+      if (err instanceof Error && err.name === "AbortError") {
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = { ...botMsg, content: "Conexiunea a expirat. Sunați-ne: **+373 67 200 463**" };
+          return updated;
+        });
+        return;
+      }
       setMessages((prev) => {
         const updated = [...prev];
         updated[updated.length - 1] = { ...botMsg, content: "Eroare de conexiune. Sunați-ne: **+373 67 200 463**" };
         return updated;
       });
     } finally {
+      clearTimeout(timeoutId);
       setStreaming(false);
       if (!open) setUnread((n) => n + 1);
     }
