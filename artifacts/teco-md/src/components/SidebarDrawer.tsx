@@ -1,21 +1,24 @@
 import { useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { X, Camera, Shield, Server, Package, Wrench, FileText, Lock, Award, ChevronRight, Phone, Instagram, Facebook } from "lucide-react";
+import { X, Camera, Shield, Server, Package, Wrench, FileText, Lock, Award, ChevronRight, Phone, Instagram, Facebook, Tag } from "lucide-react";
 import { useStore } from "@/lib/store";
+import { useLang } from "@/contexts/LangContext";
 
 interface SidebarDrawerProps {
   open: boolean;
   onClose: () => void;
 }
 
-const CAT_DEFS = [
-  { slug: "wifi",   icon: Camera,  label: "Camere WiFi" },
-  { slug: "poe",    icon: Camera,  label: "Camere PoE" },
-  { slug: "4g",     icon: Camera,  label: "Camere 4G / Solar" },
-  { slug: "nvr",    icon: Server,  label: "Înregistratoare NVR" },
-  { slug: "kituri", icon: Package, label: "Kituri Complete" },
-  { slug: "alarme", icon: Shield,  label: "Sisteme Alarmă" },
-];
+// Alege iconița potrivită bazată pe slug-ul categoriei
+function catIcon(slug: string) {
+  const s = slug.toLowerCase();
+  if (s.includes("nvr") || s.includes("recorder") || s.includes("stocare") || s.includes("hdd")) return Server;
+  if (s.includes("kit") || s.includes("bundle") || s.includes("complet")) return Package;
+  if (s.includes("alarm") || s.includes("securit")) return Shield;
+  if (s.includes("interfon") || s.includes("intercom") || s.includes("videofon")) return Phone;
+  if (s.includes("camer") || s.includes("wifi") || s.includes("poe") || s.includes("4g") || s.includes("solar")) return Camera;
+  return Tag;
+}
 
 const pages = [
   { href: "/servicii#montaj",    icon: Wrench,   label: "Montaj & Instalare" },
@@ -31,16 +34,19 @@ const legal = [
 
 export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
   const [location] = useLocation();
+  const { lang } = useLang();
   const products = useStore((s) => s.products);
+  const categories = useStore((s) => s.settings.categories);
   const adminPhone = useStore((s) => s.settings.general?.adminPhone ?? "");
   const phone = (adminPhone || "37367200463").replace(/\D/g, "");
 
-  // Contoare calculate live din catalog
-  const catCounts = CAT_DEFS.map(({ slug, icon: Icon, label }) => ({
-    href: `/produse?cat=${slug}`,
-    icon: Icon,
-    label,
-    count: products.filter((p) => p.category === slug).length,
+  // Contoare calculate live din catalog — dinamic din categoriile admin
+  const catCounts = categories.map((cat) => ({
+    href: `/produse?cat=${cat.slug}`,
+    icon: catIcon(cat.slug),
+    label: lang === "ru" ? (cat.labelRu ?? cat.label) : cat.label,
+    slug: cat.slug,
+    count: products.filter((p) => p.category === cat.slug).length,
   }));
 
   useEffect(() => {

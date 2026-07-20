@@ -68,15 +68,7 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: "price_desc", label: "Preț: mare → mic" },
 ];
 
-const TABS = [
-  { key: "all",    label: "Toate" },
-  { key: "wifi",   label: "Camere WiFi" },
-  { key: "poe",    label: "Camere PoE" },
-  { key: "4g",     label: "4G / Solar" },
-  { key: "nvr",    label: "NVR-uri" },
-  { key: "kituri", label: "Kituri" },
-  { key: "alarme", label: "Alarme" },
-];
+// TABS se construiesc dinamic în componentă din store.settings.categories
 
 const PRICE_PRESETS = [
   { label: "Sub 500", min: 0,    max: 500  },
@@ -204,6 +196,16 @@ export default function Products() {
   const searchStr = useSearch();
   const { t, lang } = useLang();
   const products = useStore((s) => s.products);
+  const storeCategories = useStore((s) => s.settings.categories);
+
+  // TABS dinamic din store — se actualizează automat când adminul adaugă/șterge categorii
+  const TABS = [
+    { key: "all", label: lang === "ru" ? "Все" : "Toate" },
+    ...storeCategories.map((c) => ({
+      key: c.slug,
+      label: lang === "ru" ? (c.labelRu ?? c.label) : c.label,
+    })),
+  ];
 
   const [activeCategory, setActiveCategory] = useState<string>(() => {
     if (isKitRoute) return "kituri";
@@ -352,8 +354,23 @@ export default function Products() {
     },
   };
 
+  // Găsește numele categoriei active din store (pentru categorii noi din admin)
+  const activeCatDef = storeCategories.find((c) => c.slug === activeCategory);
+  const activeCatLabel = activeCatDef
+    ? (lang === "ru" ? (activeCatDef.labelRu ?? activeCatDef.label) : activeCatDef.label)
+    : "";
+
+  // SEO: folosește intrarea hardcodată dacă există, altfel generează dinamic
   const effectiveCat = isKitRoute ? "kituri" : (activeCategory in CAT_SEO ? activeCategory : "all");
-  const seo = CAT_SEO[effectiveCat][lang];
+  const baseSeo = CAT_SEO[effectiveCat][lang];
+  const seo = (activeCategory !== "all" && !(activeCategory in CAT_SEO) && activeCatLabel)
+    ? {
+        title: `${activeCatLabel} — ${catCounts[activeCategory] ?? 0} Modele | Teco.md Moldova`,
+        desc: `Catalog ${activeCatLabel} — ${catCounts[activeCategory] ?? 0} produse disponibile. Livrare 24h în toată Moldova. Garanție 2–3 ani.`,
+        keywords: `${activeCatLabel.toLowerCase()} moldova, teco.md, sisteme supraveghere`,
+      }
+    : baseSeo;
+
   const canonicalUrl = isKitRoute
     ? "/seturi-camere-supraveghere"
     : activeCategory === "all" ? "/produse" : `/produse?cat=${activeCategory}`;
@@ -361,7 +378,7 @@ export default function Products() {
   const breadcrumbItems = [
     { name: lang === "ru" ? "Главная" : "Acasă", url: "https://teco.md/" },
     { name: lang === "ru" ? "Каталог" : "Produse", url: "https://teco.md/produse" },
-    ...(activeCategory !== "all" && !isKitRoute ? [{ name: seo.title.split("—")[0].trim(), url: `https://teco.md/produse?cat=${activeCategory}` }] : []),
+    ...(activeCategory !== "all" && !isKitRoute ? [{ name: activeCatLabel || seo.title.split("—")[0].trim(), url: `https://teco.md/produse?cat=${activeCategory}` }] : []),
   ];
 
   const jsonLd = [
