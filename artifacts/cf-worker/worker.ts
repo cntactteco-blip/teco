@@ -182,9 +182,165 @@ Returneaza DOAR array JSON valid, fara markdown, fara explicatii:
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
+
+    // ─── Telegram Notify Routes ──────────────────────────────────────────────
+
+    // Throttle vizitatori unici (in-memory per Worker instance, suficient pentru trafic normal)
+    const notifiedSessions = (env as any).__notifiedSessions ??= new Set<string>();
+
+    if ((url.pathname === "/api/notify/visitor") && request.method === "POST") {
+      const body = await request.json() as any;
+      const session = body.session ?? body;
+      const sid = session.sessionId as string | undefined;
+      if (sid && notifiedSessions.has(sid)) return new Response(JSON.stringify({ ok: true, skipped: "dup" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (sid) notifiedSessions.add(sid);
+      if (notifiedSessions.size > 5000) notifiedSessions.clear();
+      sendTgVisitor(env, session).catch(() => {});
+      return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if ((url.pathname === "/api/notify/chat-notify" || url.pathname === "/api/chat-notify") && request.method === "POST") {
+      const { message = "", page = "/", session = {} } = await request.json() as any;
+      sendTgFirstMessage(env, { message, page, session }).catch(() => {});
+      return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (url.pathname === "/api/notify/chat-lead" && request.method === "POST") {
+      const { name = "", phone = "", messages = [], session = {} } = await request.json() as any;
+      sendTgLeadChat(env, { name, phone, messages, session }).catch(() => {});
+      return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (url.pathname === "/api/notify/calculator" && request.method === "POST") {
+      const { name = "", phone = "", selections = {}, equipmentCost = 0, installCost = 0, totalCost = 0, session = {} } = await request.json() as any;
+      sendTgCalculator(env, { name, phone, selections, equipmentCost, installCost, totalCost, session }).catch(() => {});
+      return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     return new Response("Not found", { status: 404, headers: corsHeaders });
   },
 };
+
+// ─── Telegram helpers ────────────────────────────────────────────────
+
+function tgEsc(s: string): string {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function tgFlag(country: string): string {
+  const m: Record<string, string> = { Moldova: "🇲🇩", Romania: "🇷🇴", Germany: "🇩🇪", Italy: "🇮🇹", France: "🇫🇷", "United Kingdom": "🇬🇧", "United States": "🇺🇸", Ukraine: "🇺🇦", Russia: "🇷🇺", Israel: "🇮🇱", Spain: "🇪🇸" };
+  return m[country] || "🌍";
+}
+
+function tgSource(ref: string, utm: string, med: string): string {
+  if (utm) return `${utm}${med ? ` (${med})` : ""}`;
+  if (!ref) return "Direct";
+  try { const h = new URL(ref).hostname; if (h.includes("google")) return "Google"; if (h.includes("facebook") || h.includes("fb.com")) return "Facebook"; if (h.includes("instagram")) return "Instagram"; return h; } catch { return "Direct"; }
+}
+
+function tgTime(ts: number): string {
+  return new Date(ts).toLocaleTimeString("ro-MD", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Chisinau" });
+}
+
+function tgDur(s: number): string {
+  if (s < 60) return `${s}s`; const m = Math.floor(s / 60); const r = s % 60; return r ? `${m}m ${r}s` : `${m}m`;
+}
+
+async function tgSend(env: any, text: string): Promise<void> {
+  const token = env.TELEGRAM_BOT_TOKEN as string | undefined;
+  const chatId = env.TELEGRAM_CHAT_ID as string | undefined;
+  if (!token || !chatId) return;
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, text: text.slice(0, 4096), parse_mode: "HTML", disable_web_page_preview: true }),
+    });
+    const d = await res.json() as any;
+    if (!d.ok) console.error("Telegram:", d.description);
+  } catch (e) { console.error("tgSend:", e); }
+}
+
+async function sendTgVisitor(env: any, s: any): Promise<void> {
+  const loc = [s.city, s.country].filter(Boolean).join(", ");
+  const src = tgSource(s.referrer || "", s.utmSource || "", s.utmMedium || "");
+  const dev = s.deviceType === "mobile" ? "📱 Mobil" : s.deviceType === "tablet" ? "📊 Tabletă" : "💻 Desktop";
+  const page = s.pages?.[0]?.path || "/";
+  await tgSend(env, [
+    `🔔 <b>Vizitator Nou pe Teco.md</b>`,
+    ``,
+    `🕐 ${tgTime(s.startedAt || Date.now())}  ${tgFlag(s.country || "")} <b>${tgEsc(loc || "Locație necunoscută")}</b>`,
+    `🌐 Sursă: <b>${tgEsc(src)}</b>`,
+    `📄 Pagină: <code>${tgEsc(page)}</code>`,
+    `${dev}  |  ${tgEsc(s.browser || "Browser")}`,
+    s.isp ? `🔌 ${tgEsc(s.isp)}` : "",
+  ].filter(Boolean).join("\n"));
+}
+
+async function sendTgFirstMessage(env: any, p: { message: string; page: string; session: any }): Promise<void> {
+  const s = p.session;
+  const loc = [s.city, s.country].filter(Boolean).join(", ");
+  await tgSend(env, [
+    `💬 <b>TecoBot — Mesaj Nou</b>`,
+    ``,
+    `🕐 ${tgTime(s.startedAt || Date.now())}  ${tgFlag(s.country || "")} <b>${tgEsc(loc || "?")}</b>`,
+    `🌐 Sursă: ${tgEsc(tgSource(s.referrer || "", s.utmSource || "", s.utmMedium || ""))}`,
+    `📄 Pagina: <code>${tgEsc(p.page)}</code>`,
+    ``,
+    `👤 <i>"${tgEsc(p.message)}"</i>`,
+  ].join("\n"));
+}
+
+async function sendTgLeadChat(env: any, p: { name: string; phone: string; messages: any[]; session: any }): Promise<void> {
+  const { name, phone, messages, session: s } = p;
+  const loc = [s.city, s.country].filter(Boolean).join(", ");
+  const pagesText = (s.pages || []).map((pg: any) => `• ${tgEsc(pg.path)}`).slice(0, 8).join("\n") || "• /";
+  const transcript = messages.filter((m: any) => !m.content.includes("LEAD_CAPTURED")).slice(-20)
+    .map((m: any) => `${m.role === "user" ? "👤" : "🤖"} ${tgEsc(m.content.replace(/LEAD_CAPTURED:[^\n]*/g, "").trim().slice(0, 300))}`).join("\n");
+  await tgSend(env, [
+    `🤖 <b>Lead Nou — TecoBot AI</b>`,
+    ``,
+    `👤 <b>${tgEsc(name)}</b>  |  📞 <code>${tgEsc(phone)}</code>`,
+    ``,
+    `🕐 ${tgTime(s.startedAt || Date.now())}  ${tgFlag(s.country || "")} ${tgEsc(loc || "?")}`,
+    `🌐 Sursă: ${tgEsc(tgSource(s.referrer || "", s.utmSource || "", s.utmMedium || ""))}  |  ⏱ ${tgDur(s.duration ?? 0)}`,
+    ``,
+    `📄 <b>Pagini vizitate:</b>`,
+    pagesText,
+    ``,
+    `💬 <b>Conversație:</b>`,
+    `─────────────────`,
+    transcript,
+    `─────────────────`,
+  ].join("\n"));
+}
+
+async function sendTgCalculator(env: any, p: { name: string; phone: string; selections: any; equipmentCost: number; installCost: number; totalCost: number; session: any }): Promise<void> {
+  const { name, phone, selections: sel, equipmentCost, installCost, totalCost, session: s } = p;
+  const loc = [s.city, s.country].filter(Boolean).join(", ");
+  const pagesSum = (s.pages || []).map((pg: any) => pg.path).slice(0, 5).join(" → ") || "/";
+  await tgSend(env, [
+    `🧮 <b>Lead Nou — Calculator Cost</b>`,
+    ``,
+    `👤 <b>${tgEsc(name || "Anonim")}</b>  |  📞 <code>${tgEsc(phone)}</code>`,
+    ``,
+    `🕐 ${tgTime(s.startedAt || Date.now())}  ${tgFlag(s.country || "")} ${tgEsc(loc || "?")}`,
+    `🌐 Sursă: ${tgEsc(tgSource(s.referrer || "", s.utmSource || "", s.utmMedium || ""))}  |  ⏱ ${tgDur(s.duration ?? 0)}`,
+    ``,
+    `🎯 <b>Ce vrea clientul:</b>`,
+    `• Obiectiv: ${tgEsc(sel.objective || "—")}`,
+    `• Camere: ${tgEsc(sel.cameras || "—")}`,
+    `• Stocare: ${tgEsc(sel.storage || "—")}`,
+    `• Instalare: ${tgEsc(sel.installation || "—")}`,
+    ``,
+    `💰 <b>Estimare calculată:</b>`,
+    `• Echipament: ~${Number(equipmentCost).toLocaleString("ro-MD")} MDL`,
+    `• Instalare: ~${Number(installCost).toLocaleString("ro-MD")} MDL`,
+    `• <b>Total: ~${Number(totalCost).toLocaleString("ro-MD")} MDL</b>`,
+    ``,
+    `📄 Pagini: <i>${tgEsc(pagesSum)}</i>`,
+  ].join("\n"));
+}
 
 function buildSystemPrompt(products: any[], lang?: string): string {
   const catalog = buildCatalog(products);
