@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import { useLang } from "@/contexts/LangContext";
 import { useStore } from "@/lib/store";
+import { ReopenConsentButton } from "@/components/CookieConsent";
 
 export function Footer() {
   const { t, lang } = useLang();
@@ -58,10 +59,11 @@ export function Footer() {
 
       <div className="max-w-7xl mx-auto px-6 pt-8 border-t border-zinc-800 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-zinc-500">
         <div>© 2026 Teco.md. {lang === "ru" ? "Все права защищены." : "Toate drepturile rezervate."}</div>
-        <div className="flex items-center gap-6">
-          <a href="#" className="hover:text-zinc-300 transition-colors">{t("footer.terms")}</a>
-          <a href="#" className="hover:text-zinc-300 transition-colors">{t("footer.privacy")}</a>
-          <a href="#" className="hover:text-zinc-300 transition-colors">{t("footer.warranty_link")}</a>
+        <div className="flex items-center gap-4 flex-wrap justify-center">
+          <Link href="/termeni" className="hover:text-zinc-300 transition-colors">{t("footer.terms")}</Link>
+          <Link href="/confidentialitate" className="hover:text-zinc-300 transition-colors">{t("footer.privacy")}</Link>
+          <Link href="/garantii" className="hover:text-zinc-300 transition-colors">{t("footer.warranty_link")}</Link>
+          <ReopenConsentButton />
           <Link href="/admin" className="text-zinc-800 hover:text-zinc-600 transition-colors text-[10px] font-mono select-none" title="Admin">·</Link>
         </div>
       </div>

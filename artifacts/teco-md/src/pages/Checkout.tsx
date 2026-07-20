@@ -4,6 +4,7 @@ import { CheckCircle, ShoppingCart, Truck, CreditCard, Phone, Mail, MapPin, User
 import { useCart } from "@/hooks/useCart";
 import { storeActions, getState } from "@/lib/store";
 import { SEO } from "@/components/SEO";
+import { ConsentCheckbox } from "@/components/ConsentCheckbox";
 
 // ── Shipping config ─────────────────────────────────────────────────────────
 export const SHIPPING_OPTIONS = [
@@ -55,6 +56,7 @@ export default function Checkout() {
   const [submitted, setSubmitted] = useState(false);
   const [orderId, setOrderId] = useState("");
   const [errors, setErrors] = useState<Partial<FormData>>({});
+  const [consentGiven, setConsentGiven] = useState(false);
 
   const items = useCart((s) => s.items);
   const total = useCart((s) => s.total);
@@ -76,6 +78,7 @@ export default function Checkout() {
 
   const handleSubmit = async (ev: React.FormEvent) => {
     ev.preventDefault();
+    if (!consentGiven) return;
     const e = validate();
     if (Object.keys(e).length > 0) { setErrors(e); return; }
 
@@ -251,9 +254,13 @@ export default function Checkout() {
               />
             </div>
 
+            <div className="bg-white rounded-2xl border border-zinc-200 p-4">
+              <ConsentCheckbox checked={consentGiven} onChange={setConsentGiven} />
+            </div>
             <button
               type="submit"
-              className="w-full bg-[#FF4F00] text-white font-black py-4 rounded-2xl text-lg hover:opacity-90 active:scale-[0.99] transition-all shadow-[0_4px_14px_rgba(255,79,0,0.35)] flex items-center justify-center gap-3"
+              disabled={!consentGiven}
+              className="w-full bg-[#FF4F00] text-white font-black py-4 rounded-2xl text-lg hover:opacity-90 active:scale-[0.99] transition-all shadow-[0_4px_14px_rgba(255,79,0,0.35)] flex items-center justify-center gap-3 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
             >
               <CreditCard className="w-5 h-5" /> Plasează Comanda
             </button>

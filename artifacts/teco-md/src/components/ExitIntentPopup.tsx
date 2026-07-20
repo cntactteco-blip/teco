@@ -3,6 +3,7 @@ import { useCart } from "@/hooks/useCart";
 import { X, Shield, Phone, User } from "lucide-react";
 import { storeActions } from "@/lib/store";
 import { trackLead } from "@/lib/analytics";
+import { ConsentCheckbox } from "@/components/ConsentCheckbox";
 
 const STORAGE_KEY = "teco_exit_shown_at";
 const COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
@@ -12,6 +13,7 @@ export function ExitIntentPopup() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [consent, setConsent] = useState(false);
   const cartItems = useCart((s) => s.items);
 
   const tryShow = useCallback(() => {
@@ -40,7 +42,7 @@ export function ExitIntentPopup() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !phone.trim()) return;
+    if (!name.trim() || !phone.trim() || !consent) return;
     storeActions.addLead({
       name: name.trim(),
       phone: phone.trim(),
@@ -123,9 +125,11 @@ export function ExitIntentPopup() {
                   />
                 </div>
               </div>
+              <ConsentCheckbox checked={consent} onChange={setConsent} className="mb-1" />
               <button
                 type="submit"
-                className="w-full bg-[#FF4F00] text-white font-black py-4 rounded-2xl text-[15px] hover:opacity-90 active:scale-[0.99] transition-all shadow-[0_6px_20px_rgba(255,79,0,0.35)]"
+                disabled={!consent}
+                className="w-full bg-[#FF4F00] text-white font-black py-4 rounded-2xl text-[15px] hover:opacity-90 active:scale-[0.99] transition-all shadow-[0_6px_20px_rgba(255,79,0,0.35)] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
               >
                 Vreau Oferta Gratuită →
               </button>

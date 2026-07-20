@@ -15,6 +15,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { FloatingContact } from "@/components/FloatingContact";
 import { TecoBot } from "@/components/TecoBot";
 import { ExitIntentPopup } from "@/components/ExitIntentPopup";
+import { CookieConsent } from "@/components/CookieConsent";
 
 import Home from "@/pages/Home";
 import ProductDetail from "@/pages/ProductDetail";
@@ -120,6 +121,7 @@ function ShopShell() {
       <FloatingContact />
       <TecoBot />
       <ExitIntentPopup />
+      <CookieConsent />
     </div>
   );
 }

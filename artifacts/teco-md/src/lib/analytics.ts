@@ -1,3 +1,7 @@
+// ─── Analytics — gated by cookie consent (GDPR / Legea 133/2011 Moldova) ────
+// Niciun pixel nu se declanșează fără consimțământul explicit al utilizatorului.
+import { isAnalyticsAllowed, isMarketingAllowed } from "@/lib/consent";
+
 declare global {
   interface Window {
     gtag?: (...args: unknown[]) => void;
@@ -7,9 +11,12 @@ declare global {
 }
 
 function gtag(...args: unknown[]) {
+  if (!isAnalyticsAllowed()) return;
   if (typeof window.gtag === "function") window.gtag(...args);
 }
+
 function fbq(event: string, name: string, params?: Record<string, unknown>) {
+  if (!isMarketingAllowed()) return;
   if (typeof window.fbq === "function") window.fbq(event, name, params);
 }
 

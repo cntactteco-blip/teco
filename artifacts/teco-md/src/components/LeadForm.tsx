@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { storeActions } from "@/lib/store";
+import { ConsentCheckbox } from "@/components/ConsentCheckbox";
 
 export function LeadForm() {
   const [submitted, setSubmitted] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [consent, setConsent] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !phone) return;
+    if (!name || !phone || !consent) return;
     storeActions.addLead({ name, phone, source: "LeadForm Banner" });
     import("@/lib/notify").then(({ notifyLead }) =>
       notifyLead({ name, phone, source: "Banner — Configurare Gratuită" })
@@ -35,30 +37,36 @@ export function LeadForm() {
             </p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4">
-            <input
-              type="text"
-              placeholder="Nume"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="flex-1 h-14 px-4 bg-white border border-zinc-200 font-mono text-sm focus:outline-none focus:border-zinc-400 focus:ring-0"
-              required
-            />
-            <input
-              type="tel"
-              placeholder="Telefon"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="flex-1 h-14 px-4 bg-white border border-zinc-200 font-mono text-sm focus:outline-none focus:border-zinc-400 focus:ring-0"
-              required
-            />
-            <button
-              type="submit"
-              className="h-14 px-8 bg-primary hover:bg-[#E64600] text-white font-bold transition-colors whitespace-nowrap"
-            >
-              Cere Audit Gratuit in 15 minute
-            </button>
-          </form>
+          <>
+            <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4">
+              <input
+                type="text"
+                placeholder="Nume"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="flex-1 h-14 px-4 bg-white border border-zinc-200 font-mono text-sm focus:outline-none focus:border-zinc-400 focus:ring-0"
+                required
+              />
+              <input
+                type="tel"
+                placeholder="Telefon"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="flex-1 h-14 px-4 bg-white border border-zinc-200 font-mono text-sm focus:outline-none focus:border-zinc-400 focus:ring-0"
+                required
+              />
+              <button
+                type="submit"
+                disabled={!consent}
+                className="h-14 px-8 bg-primary hover:bg-[#E64600] text-white font-bold transition-colors whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Cere Audit Gratuit in 15 minute
+              </button>
+            </form>
+            <div className="mt-3 max-w-xl mx-auto text-left">
+              <ConsentCheckbox checked={consent} onChange={setConsent} />
+            </div>
+          </>
         )}
       </div>
     </section>
