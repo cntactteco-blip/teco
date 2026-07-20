@@ -15,6 +15,7 @@ interface Env {
   TELEGRAM_CHAT_ID?: string;
   SESSION_SECRET?: string;
   GROQ_API_KEY?: string;
+  GOOGLE_API_KEY?: string;
 }
 
 interface SessionInfo {
@@ -866,14 +867,60 @@ app.post("/notify/daily-report", async (c) => {
 });
 
 // ============================================
-// ─── AI — Groq helpers ────────────────────────────────────────────────────────
+// ─── AI — Groq + Gemini fallback ─────────────────────────────────────────────
 // ============================================
 
-const GROQ_API = "https://api.groq.com/openai/v1/chat/completions";
+const GROQ_API   = "https://api.groq.com/openai/v1/chat/completions";
 const GROQ_MODEL = "llama-3.1-8b-instant";
+// Gemini OpenAI-compat endpoint — același format de mesaje ca Groq
+const GEMINI_API   = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+const GEMINI_MODEL = "gemini-2.0-flash";
 
 type GMsg = { role: "system" | "user" | "assistant"; content: string };
 
+async function callAI(
+  groqKey: string | undefined,
+  geminiKey: string | undefined,
+  messages: GMsg[],
+  maxTokens = 1024
+): Promise<{ content: string; provider: string }> {
+
+  // --- încearcă Groq ---
+  if (groqKey) {
+    const resp = await fetch(GROQ_API, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${groqKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: GROQ_MODEL, messages, max_tokens: maxTokens, stream: false }),
+    });
+    if (resp.ok) {
+      const data = await resp.json() as any;
+      return { content: data?.choices?.[0]?.message?.content ?? "", provider: "groq" };
+    }
+    if (resp.status !== 429) {
+      // altă eroare Groq non-rate-limit — nu mai încearcăm Gemini
+      throw new Error(`Groq ${resp.status}`);
+    }
+    // 429 → fallback la Gemini
+  }
+
+  // --- fallback Gemini ---
+  if (geminiKey) {
+    const resp = await fetch(GEMINI_API, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${geminiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: GEMINI_MODEL, messages, max_tokens: maxTokens }),
+    });
+    if (resp.ok) {
+      const data = await resp.json() as any;
+      return { content: data?.choices?.[0]?.message?.content ?? "", provider: "gemini" };
+    }
+    throw new Error(`Gemini ${resp.status}`);
+  }
+
+  throw new Error("No AI key available");
+}
+
+// wrapper simplu pentru rutele non-chat (lead-analyze, whatsapp etc.)
 async function groqJSON(apiKey: string, messages: GMsg[], maxTokens = 1024): Promise<string> {
   const resp = await fetch(GROQ_API, {
     method: "POST",
@@ -1002,27 +1049,15 @@ app.post("/ai/chat", async (c) => {
   ];
 
   try {
-    const groqResp = await fetch(GROQ_API, {
-      method: "POST",
-      headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: GROQ_MODEL, messages: groqMessages, max_tokens: 1024, stream: false }),
-    });
-
-    if (!groqResp.ok) {
-      const errText = await groqResp.text().catch(() => "");
-      const is429 = groqResp.status === 429 || errText.includes("rate_limit");
-      if (is429) {
-        // Returnăm 200 cu mesaj prietenos — frontend-ul nu va arunca eroare
-        return c.json({ content: "Sunt un pic ocupat acum — prea multe conversații deodată. Încearcă din nou în câteva minute sau sună direct: **+373 67 200 463**." });
-      }
-      return c.json({ content: "A apărut o eroare tehnică. Sună-ne direct: **+373 67 200 463**." });
-    }
-
-    const data = await groqResp.json() as { choices?: { message?: { content?: string } }[] };
-    const content = data.choices?.[0]?.message?.content ?? "";
+    const { content } = await callAI(
+      c.env.GROQ_API_KEY,
+      c.env.GOOGLE_API_KEY,
+      groqMessages,
+      1024
+    );
     return c.json({ content });
   } catch (err) {
-    return c.json({ content: "A apărut o eroare. Sună-ne direct: **+373 67 200 463**." });
+    return c.json({ content: "A apărut o eroare tehnică. Sună-ne direct: **+373 67 200 463**." });
   }
 });
 
