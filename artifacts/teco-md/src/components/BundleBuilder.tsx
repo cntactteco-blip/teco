@@ -15,6 +15,10 @@ const CAMERA_OPTIONS = [
 
 const NVR_MAP: Record<number, string> = { 2: "4ch", 4: "4ch", 6: "8ch", 8: "8ch", 16: "16ch" };
 
+// Fallback unit prices (MDL) when no matching products exist in the store
+const DEFAULT_CAM_PRICE: Record<"wifi" | "poe", number> = { wifi: 1_200, poe: 1_650 };
+const DEFAULT_NVR_PRICE = 1_700;
+
 export default function BundleBuilder({ onClose }: { onClose?: () => void } = {}) {
   const { lang } = useLang();
   const ro = lang === "ro";
@@ -27,46 +31,75 @@ export default function BundleBuilder({ onClose }: { onClose?: () => void } = {}
   const [withNvr, setWithNvr] = useState(true);
   const [withInstall, setWithInstall] = useState(false);
 
-  const cameras = useMemo(() =>
-    products.filter((p) => {
+  const cameras = useMemo(() => {
+    // First pass: strict category match
+    let found = products.filter((p) => {
       if (p.inStock === false) return false;
       const cat = (p.category ?? "").toLowerCase();
       const haystack = `${p.name} ${p.specs ?? ""} ${p.description ?? ""}`.toLowerCase();
-      const isCamera = cat.includes("camer") || cat === "camere" || cat === "camera";
+      const isCamera = cat.includes("camer") || cat === "camere" || cat === "camera" || cat === "cameras";
       if (!isCamera) return false;
       if (camType === "wifi") return haystack.includes("wifi") || haystack.includes("wi-fi") || haystack.includes("wireless");
       return !haystack.includes("wifi") && !haystack.includes("wi-fi") && !haystack.includes("wireless");
-    }).sort((a, b) => a.price - b.price),
-    [products, camType]
-  );
+    });
+    // Second pass: name-based match (catches "Cameră 4MP", "Camera IP" etc. in any category)
+    if (found.length === 0) {
+      found = products.filter((p) => {
+        if (p.inStock === false) return false;
+        const haystack = `${p.name} ${p.specs ?? ""} ${p.description ?? ""}`.toLowerCase();
+        const isCamera = haystack.includes("camer") && !haystack.includes("nvr") && !haystack.includes("recorder");
+        if (!isCamera) return false;
+        if (camType === "wifi") return haystack.includes("wifi") || haystack.includes("wi-fi") || haystack.includes("wireless");
+        return true;
+      });
+    }
+    return found.sort((a, b) => a.price - b.price);
+  }, [products, camType]);
+
   const nvrs = useMemo(() =>
-    products.filter((p) => p.category === "nvr" && p.inStock !== false)
-      .sort((a, b) => a.price - b.price),
+    products.filter((p) => {
+      if (p.inStock === false) return false;
+      const cat = (p.category ?? "").toLowerCase();
+      return cat === "nvr" || cat === "nvr-uri" || cat.includes("recorder");
+    }).sort((a, b) => a.price - b.price),
     [products]
   );
 
   const [selCamera, setSelCamera] = useState<number | null>(null);
   const [selNvr, setSelNvr] = useState<number | null>(null);
 
-  const camera = products.find((p) => p.id === selCamera) ?? cameras[0];
-  const nvr = products.find((p) => p.id === selNvr) ?? nvrs[0];
+  const camera = products.find((p) => p.id === selCamera) ?? cameras[0] ?? null;
+  const nvr = products.find((p) => p.id === selNvr) ?? nvrs[0] ?? null;
 
-  const camTotal = camera ? camera.price * camQty : 0;
-  const nvrTotal = withNvr && nvr ? nvr.price : 0;
+  // Use real product prices when available, fall back to sensible defaults
+  const camUnitPrice = camera?.price ?? DEFAULT_CAM_PRICE[camType];
+  const nvrUnitPrice = nvr?.price ?? DEFAULT_NVR_PRICE;
+
+  const camTotal = camUnitPrice * camQty;
+  const nvrTotal = withNvr ? nvrUnitPrice : 0;
   const installTotal = withInstall ? camQty * 300 : 0;
   const total = camTotal + nvrTotal + installTotal;
 
   const addAll = () => {
+    let added = false;
     if (camera) {
       for (let i = 0; i < camQty; i++) addItem(camera);
+      added = true;
     }
-    if (withNvr && nvr) addItem(nvr);
-    toast({
-      title: ro ? "Sistem adăugat în coș!" : "Система добавлена в корзину!",
-      description: ro
-        ? `${camQty} camere ${withNvr ? "+ NVR" : ""} • Total: ${total.toLocaleString()} MDL`
-        : `${camQty} камер ${withNvr ? "+ NVR" : ""} • Итого: ${total.toLocaleString()} MDL`,
-    });
+    if (withNvr && nvr) { addItem(nvr); added = true; }
+    if (added) {
+      toast({
+        title: ro ? "Sistem adăugat în coș!" : "Система добавлена в корзину!",
+        description: ro
+          ? `${camQty} camere ${withNvr ? "+ NVR" : ""} • Total: ${total.toLocaleString()} MDL`
+          : `${camQty} камер ${withNvr ? "+ NVR" : ""} • Итого: ${total.toLocaleString()} MDL`,
+      });
+    } else {
+      toast({
+        title: ro ? "Contactați-ne pentru ofertă" : "Свяжитесь с нами для предложения",
+        description: ro ? "Vom pregăti devizul personalizat." : "Подготовим индивидуальное предложение.",
+      });
+    }
   };
 
   return (
@@ -188,7 +221,9 @@ export default function BundleBuilder({ onClose }: { onClose?: () => void } = {}
                     <Server className="w-4 h-4 text-[#FF4F00]" />
                     <div>
                       <p className="text-white text-sm font-semibold">{ro ? "Include NVR recomandat" : "Включить рекомендованный NVR"}</p>
-                      {nvrs[0] && <p className="text-[10px] text-zinc-400">{nvrs[0].name} • {nvrs[0].price.toLocaleString()} MDL</p>}
+                      <p className="text-[10px] text-zinc-400">
+                        {nvr ? `${nvr.name} • ${nvr.price.toLocaleString()} MDL` : `NVR ${NVR_MAP[camQty] ?? "4ch"} • ${DEFAULT_NVR_PRICE.toLocaleString()} MDL`}
+                      </p>
                     </div>
                   </div>
                 </label>
