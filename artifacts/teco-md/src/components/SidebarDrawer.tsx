@@ -25,7 +25,7 @@ const pages = [
 
 const legal = [
   { href: "/termeni",          label: "Termeni și Condiții" },
-  { href: "/confidential",     label: "Politica de Confidențialitate" },
+  { href: "/confidentialitate", label: "Politica de Confidențialitate" },
   { href: "/garantii",         label: "Garanții și Retur" },
 ];
 
