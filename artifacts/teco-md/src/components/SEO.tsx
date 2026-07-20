@@ -177,7 +177,7 @@ export const schemas = {
       url: "https://teco.md",
       telephone: "+37367200463",
       email: "info@teco.md",
-      image: "https://teco.md/og-image.jpg",
+      image: "https://teco.md/opengraph.jpg",
       priceRange: "MDL 500–50000",
       currenciesAccepted: "MDL",
       paymentAccepted: "Cash, Card, Transfer bancar",

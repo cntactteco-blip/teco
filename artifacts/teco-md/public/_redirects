@@ -89,6 +89,18 @@
 /product/87   /produse  301
 /product/88   /produse  301
 
+# ── Rute vechi indexate de Google de pe site-ul precedent ──────────────
+/camere-supraveghere-moldova/   /produse?cat=wifi   301
+/camere-supraveghere-moldova    /produse?cat=wifi   301
+/sisteme-supraveghere/          /produse            301
+/sisteme-supraveghere           /produse            301
+/seturi-supraveghere/           /produse?cat=kituri 301
+/seturi-supraveghere            /produse?cat=kituri 301
+/camere-exterior/               /produse?cat=poe    301
+/camere-exterior                /produse?cat=poe    301
+/camere-interior/               /produse?cat=wifi   301
+/camere-interior                /produse?cat=wifi   301
+
 # ── Rute vechi cu alte denumiri ────────────────────────────────────────
 /cameras               /produse?cat=wifi   301
 /camere                /produse?cat=wifi   301
