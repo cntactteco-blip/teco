@@ -1009,15 +1009,20 @@ app.post("/ai/chat", async (c) => {
     });
 
     if (!groqResp.ok) {
-      const errText = await groqResp.text().catch(() => "unknown");
-      return c.json({ error: `Groq error ${groqResp.status}: ${errText}` }, 502);
+      const errText = await groqResp.text().catch(() => "");
+      const is429 = groqResp.status === 429 || errText.includes("rate_limit");
+      if (is429) {
+        // Returnăm 200 cu mesaj prietenos — frontend-ul nu va arunca eroare
+        return c.json({ content: "Sunt un pic ocupat acum — prea multe conversații deodată. Încearcă din nou în câteva minute sau sună direct: **+373 67 200 463**." });
+      }
+      return c.json({ content: "A apărut o eroare tehnică. Sună-ne direct: **+373 67 200 463**." });
     }
 
     const data = await groqResp.json() as { choices?: { message?: { content?: string } }[] };
     const content = data.choices?.[0]?.message?.content ?? "";
     return c.json({ content });
   } catch (err) {
-    return c.json({ error: String(err) }, 500);
+    return c.json({ content: "A apărut o eroare. Sună-ne direct: **+373 67 200 463**." });
   }
 });
 
