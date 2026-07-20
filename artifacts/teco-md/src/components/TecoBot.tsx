@@ -142,8 +142,7 @@ export function TecoBot() {
     const botMsg: Message = { role: "assistant", content: "", ts: Date.now() };
     setMessages([...allMessages, botMsg]);
     abortRef.current = new AbortController();
-    // Timeout 25s — dacă Groq nu răspunde, streaming se resetează automat
-    const timeoutId = setTimeout(() => abortRef.current?.abort(), 25000);
+    const timeoutId = setTimeout(() => abortRef.current?.abort(), 30000);
     try {
       const res = await fetch((import.meta.env.VITE_API_URL || "") + "/api/ai/chat", {
         method: "POST",
@@ -154,46 +153,23 @@ export function TecoBot() {
         }),
         signal: abortRef.current.signal,
       });
-      if (!res.ok || !res.body) throw new Error("Network error");
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let accumulated = "";
-      let finished = false;
-      while (!finished) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const lines = decoder.decode(value, { stream: true }).split("\n");
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          try {
-            const data = JSON.parse(line.slice(6));
-            if (data.done) { finished = true; break; }
-            if (data.error) { accumulated += "\n\n⚠️ Eroare. Sunați-ne: +373 67 200 463"; finished = true; break; }
-            if (data.content) {
-              accumulated += data.content;
-              const cleaned = extractLead(accumulated);
-              const pids = extractProductIds(cleaned);
-              setMessages((prev) => {
-                const updated = [...prev];
-                updated[updated.length - 1] = { ...botMsg, content: cleaned, products: pids };
-                return updated;
-              });
-            }
-          } catch {}
-        }
-      }
-    } catch (err: unknown) {
-      if (err instanceof Error && err.name === "AbortError") {
-        setMessages((prev) => {
-          const updated = [...prev];
-          updated[updated.length - 1] = { ...botMsg, content: "Conexiunea a expirat. Sunați-ne: **+373 67 200 463**" };
-          return updated;
-        });
-        return;
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json() as { content?: string; error?: string };
+      const raw = data.error ? "⚠️ Eroare. Sunați-ne: **+373 67 200 463**" : (data.content ?? "");
+      const cleaned = extractLead(raw);
+      const pids = extractProductIds(cleaned);
       setMessages((prev) => {
         const updated = [...prev];
-        updated[updated.length - 1] = { ...botMsg, content: "Eroare de conexiune. Sunați-ne: **+373 67 200 463**" };
+        updated[updated.length - 1] = { ...botMsg, content: cleaned, products: pids };
+        return updated;
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error && err.name === "AbortError"
+        ? "Conexiunea a expirat. Sunați-ne: **+373 67 200 463**"
+        : "Eroare de conexiune. Sunați-ne: **+373 67 200 463**";
+      setMessages((prev) => {
+        const updated = [...prev];
+        updated[updated.length - 1] = { ...botMsg, content: msg };
         return updated;
       });
     } finally {

@@ -979,7 +979,7 @@ function buildTecoBotPrompt(catalog: string, s: StoreSettings, lang?: string): s
   return prompt;
 }
 
-// ─── AI: chat streaming (SSE) ─────────────────────────────────────────────────
+// ─── AI: chat (JSON, fără streaming — mai fiabil în CF Workers) ───────────────
 
 app.post("/ai/chat", async (c) => {
   const key = c.env.GROQ_API_KEY;
@@ -1001,58 +1001,24 @@ app.post("/ai/chat", async (c) => {
     ...messages.map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
   ];
 
-  // Stream via TransformStream — funcționează nativ în CF Workers
-  const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
-  const writer = writable.getWriter();
-  const enc = new TextEncoder();
+  try {
+    const groqResp = await fetch(GROQ_API, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: GROQ_MODEL, messages: groqMessages, max_tokens: 1024, stream: false }),
+    });
 
-  (async () => {
-    try {
-      const groqResp = await fetch(GROQ_API, {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ model: GROQ_MODEL, messages: groqMessages, max_tokens: 1024, stream: true }),
-      });
-
-      if (!groqResp.body) throw new Error("no body");
-      const reader = groqResp.body.getReader();
-      const dec = new TextDecoder();
-      let buf = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += dec.decode(value, { stream: true });
-        const parts = buf.split("\n\n");
-        buf = parts.pop() ?? "";
-        for (const part of parts) {
-          for (const line of part.split("\n")) {
-            if (!line.startsWith("data: ")) continue;
-            const raw = line.slice(6).trim();
-            if (raw === "[DONE]") continue;
-            try {
-              const chunk = JSON.parse(raw);
-              const text = chunk.choices?.[0]?.delta?.content ?? "";
-              if (text) await writer.write(enc.encode(`data: ${JSON.stringify({ content: text })}\n\n`));
-            } catch {}
-          }
-        }
-      }
-      await writer.write(enc.encode(`data: ${JSON.stringify({ done: true })}\n\n`));
-    } catch (err) {
-      await writer.write(enc.encode(`data: ${JSON.stringify({ error: String(err) })}\n\n`));
-    } finally {
-      await writer.close();
+    if (!groqResp.ok) {
+      const errText = await groqResp.text().catch(() => "unknown");
+      return c.json({ error: `Groq error ${groqResp.status}: ${errText}` }, 502);
     }
-  })();
 
-  return new Response(readable, {
-    headers: {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      "X-Accel-Buffering": "no",
-    },
-  });
+    const data = await groqResp.json() as { choices?: { message?: { content?: string } }[] };
+    const content = data.choices?.[0]?.message?.content ?? "";
+    return c.json({ content });
+  } catch (err) {
+    return c.json({ error: String(err) }, 500);
+  }
 });
 
 // ─── AI: lead-analyze ─────────────────────────────────────────────────────────
