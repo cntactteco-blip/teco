@@ -459,11 +459,27 @@ Acoperim toată Moldova: Chișinău, Bălți, Orhei, Cahul, Soroca, Ungheni, Str
   },
 ];
 
+// Versiune cache settings — incrementează oricând DEFAULT_CATEGORIES se schimbă
+// sau când vrei să forțezi invalidarea cache-ului corupt la toți utilizatorii.
+const SETTINGS_CACHE_VERSION = 2;
+
 const _cachedSettings = (() => {
   try {
     const raw = localStorage.getItem("teco_settings_cache");
     if (!raw) return null;
-    return JSON.parse(raw) as ModuleSettings;
+    const parsed = JSON.parse(raw) as ModuleSettings & { _v?: number };
+    // Invalidează cache-ul dacă versiunea e veche sau lipsă (cache corupt cu DEFAULT)
+    if (!parsed._v || parsed._v < SETTINGS_CACHE_VERSION) {
+      localStorage.removeItem("teco_settings_cache");
+      return null;
+    }
+    // Invalidează dacă categoriile au URL-uri Unsplash default (headphones etc.)
+    const firstCatImg: string = parsed.categories?.[0]?.image ?? "";
+    if (firstCatImg.startsWith("https://images.unsplash.com")) {
+      localStorage.removeItem("teco_settings_cache");
+      return null;
+    }
+    return parsed as ModuleSettings;
   } catch { return null; }
 })();
 
@@ -777,7 +793,7 @@ export async function initStore() {
   // (cache localStorage sau snapshot) în loc să resetăm cu DEFAULT_SETTINGS.
   const mergedSettings = rawSettings ? mergeSettings(rawSettings) : null;
   if (mergedSettings) {
-    try { localStorage.setItem("teco_settings_cache", JSON.stringify(mergedSettings)); } catch {}
+    try { localStorage.setItem("teco_settings_cache", JSON.stringify({ ...mergedSettings, _v: SETTINGS_CACHE_VERSION })); } catch {}
   }
 
   const mappedProducts = finalProds.map(dbProductToStore);
@@ -803,7 +819,7 @@ function cacheProducts(products: StoreProduct[]) {
 
 // ─── Salvare settings în Supabase ───────────────────────────────────
 async function saveSettings(s: ModuleSettings) {
-  try { localStorage.setItem("teco_settings_cache", JSON.stringify(s)); } catch {}
+  try { localStorage.setItem("teco_settings_cache", JSON.stringify({ ...s, _v: SETTINGS_CACHE_VERSION })); } catch {}
   await supabase.from("settings").upsert({ id: 1, data: s });
 }
 
