@@ -1,9 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { X, Send, Loader2, User, ShoppingCart, Sparkles } from "lucide-react";
+import { Bot, X, Send, Loader2, Sparkles, User, ShoppingCart } from "lucide-react";
 import { useLang } from "@/contexts/LangContext";
 import { storeActions, useStore } from "@/lib/store";
 import { useCart } from "@/hooks/useCart";
-import { getSessionPayload } from "@/lib/session";
 
 interface Message {
   role: "user" | "assistant";
@@ -13,16 +12,9 @@ interface Message {
 }
 
 const GREET: Record<string, string> = {
-  ro: "Bună ziua! 👋 Sunt Ana, consultantul Teco.md. Cu ce te pot ajuta azi?",
-  ru: "Добрый день! 👋 Меня зовут Анна, консультант Teco.md. Чем могу помочь?",
+  ro: "Salut! Cu ce te pot ajuta azi?",
+  ru: "Привет! Чем могу помочь?",
 };
-
-const PROACTIVE: Record<string, string> = {
-  ro: "Bună! 👋 Te pot ajuta să alegi sistemul potrivit.",
-  ru: "Привет! 👋 Помогу подобрать нужную систему.",
-};
-
-const BUBBLE_KEY = "teco_bubble_v4";
 
 function renderMarkdown(text: string) {
   return text
@@ -44,62 +36,23 @@ export function TecoBot() {
     price: p.price, oldPrice: p.oldPrice,
     specs: p.specs, category: p.category,
     badge: p.badge, inStock: p.inStock,
+    imageUrl: (p as any).imageUrl || (p as any).image_url || "",
   }));
   const cartAddItem = useCart((s) => s.addItem);
   const cartOpen = useCart((s) => s.openCart);
-  const settings = useStore((s) => s.settings);
-  const adminPhone = settings.general?.adminPhone ?? "";
+  const adminPhone = useStore((s) => s.settings.general?.adminPhone ?? "");
   const phone = (adminPhone || "37367200463").replace(/\D/g, "");
-  const storeSettings = {
-    phone: "+" + phone,
-    workingHours: settings.storeInfo?.workingHours || "Lun–Sâm 09:00–19:00",
-    city: settings.storeInfo?.city || "Chișinău, Moldova",
-    address: settings.storeInfo?.address || "",
-    deliveryPrice: settings.delivery?.price ?? 150,
-    deliveryFreeAt: settings.delivery?.freeThreshold ?? 5000,
-    montaj: settings.servicePrices?.montaj || "de la 750 MDL/cameră",
-    diagnosticare: settings.servicePrices?.diagnosticare || "de la 350 MDL/vizită",
-  };
-
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [leadCaptured, setLeadCaptured] = useState(false);
   const [unread, setUnread] = useState(0);
-  const [showBubble, setShowBubble] = useState(false);
   const [vpHeight, setVpHeight] = useState<number>(() => window.visualViewport?.height ?? window.innerHeight);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const [vpOffset, setVpOffset] = useState({ top: 0, left: 0 });
-  const messagesRef = useRef<Message[]>([]);
-  const API = import.meta.env.VITE_API_URL || "";
-
-  // Bubble smart: apare după 35s ȘI scroll ≥40%
-  useEffect(() => {
-    if (sessionStorage.getItem(BUBBLE_KEY)) return;
-    let timeOk = false;
-    let scrollOk = false;
-    let shown = false;
-    const tryShow = () => {
-      if (!shown && timeOk && scrollOk && !open) { shown = true; setShowBubble(true); }
-    };
-    const t = setTimeout(() => { timeOk = true; tryShow(); }, 35000);
-    const onScroll = () => {
-      const el = document.documentElement;
-      if (el.scrollTop / (el.scrollHeight - el.clientHeight || 1) >= 0.4) {
-        scrollOk = true;
-        window.removeEventListener("scroll", onScroll);
-        tryShow();
-      }
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => { clearTimeout(t); window.removeEventListener("scroll", onScroll); };
-  }, []);
-
-  const dismissBubble = () => { setShowBubble(false); sessionStorage.setItem(BUBBLE_KEY, "1"); };
-  const openChat = () => { setOpen(true); setShowBubble(false); sessionStorage.setItem(BUBBLE_KEY, "1"); };
 
   useEffect(() => {
     const vv = window.visualViewport;
@@ -128,26 +81,16 @@ export function TecoBot() {
     if (open) { setTimeout(() => inputRef.current?.focus(), 100); setUnread(0); }
   }, [open]);
 
-  useEffect(() => {
-    messagesRef.current = messages;
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
   const extractLead = useCallback((text: string) => {
     const match = text.match(/LEAD_CAPTURED:name=([^,\n]+),phone=([^\n]+)/);
     if (match && !leadCaptured) {
       setLeadCaptured(true);
-      const name = match[1].trim();
-      const phone = match[2].trim();
-      storeActions.addLead({ name, phone, notes: "TecoBot Chat", source: "tecobot" });
-      fetch(API + "/api/notify/chat-lead", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone, messages: messagesRef.current.map((m) => ({ role: m.role, content: m.content })), session: getSessionPayload() }),
-      }).catch(() => {});
+      storeActions.addLead({ name: match[1].trim(), phone: match[2].trim(), notes: "TecoBot AI Chat", source: "tecobot" });
     }
     return text.replace(/LEAD_CAPTURED:[^\n]*/g, "").trim();
-  }, [leadCaptured, API]);
+  }, [leadCaptured]);
 
   const send = useCallback(async () => {
     const text = input.trim();
@@ -155,50 +98,56 @@ export function TecoBot() {
     setInput("");
     const userMsg: Message = { role: "user", content: text, ts: Date.now() };
     const allMessages = [...messages, userMsg];
-    if (allMessages.filter(m => m.role === "user").length === 1) {
-      fetch(API + "/api/notify/chat-notify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, page: window.location.pathname, session: getSessionPayload() }),
-      }).catch(() => {});
-    }
     setMessages(allMessages);
     setStreaming(true);
     const botMsg: Message = { role: "assistant", content: "", ts: Date.now() };
     setMessages([...allMessages, botMsg]);
     abortRef.current = new AbortController();
-    const timeoutId = setTimeout(() => abortRef.current?.abort(), 30000);
     try {
       const res = await fetch((import.meta.env.VITE_API_URL || "") + "/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: allMessages.filter((m, i) => !(i === 0 && m.role === "assistant")).map((m) => ({ role: m.role, content: m.content })),
-          lang, products, storeSettings,
+          lang, products,
         }),
         signal: abortRef.current.signal,
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json() as { content?: string; error?: string };
-      const raw = data.error ? "Eroare de conexiune. Sunați-ne: **+373 67 200 463**" : (data.content ?? "");
-      const cleaned = extractLead(raw);
-      const pids = extractProductIds(cleaned);
-      setMessages((prev) => {
-        const updated = [...prev];
-        updated[updated.length - 1] = { ...botMsg, content: cleaned, products: pids };
-        return updated;
-      });
+      if (!res.ok || !res.body) throw new Error("Network error");
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulated = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const lines = decoder.decode(value, { stream: true }).split("\n");
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          try {
+            const data = JSON.parse(line.slice(6));
+            if (data.done) break;
+            if (data.error) { accumulated += "\n\n⚠️ Eroare. Sunați-ne: +373 67 200 463"; break; }
+            if (data.content) {
+              accumulated += data.content;
+              const cleaned = extractLead(accumulated);
+              const pids = extractProductIds(cleaned);
+              setMessages((prev) => {
+                const updated = [...prev];
+                updated[updated.length - 1] = { ...botMsg, content: cleaned, products: pids };
+                return updated;
+              });
+            }
+          } catch {}
+        }
+      }
     } catch (err: unknown) {
-      const msg = err instanceof Error && err.name === "AbortError"
-        ? "Conexiunea a expirat. Sunați-ne: **+373 67 200 463**"
-        : "Eroare de conexiune. Sunați-ne: **+373 67 200 463**";
+      if (err instanceof Error && err.name === "AbortError") return;
       setMessages((prev) => {
         const updated = [...prev];
-        updated[updated.length - 1] = { ...botMsg, content: msg };
+        updated[updated.length - 1] = { ...botMsg, content: "Eroare de conexiune. Sunați-ne: **+373 67 200 463**" };
         return updated;
       });
     } finally {
-      clearTimeout(timeoutId);
       setStreaming(false);
       if (!open) setUnread((n) => n + 1);
     }
@@ -212,45 +161,19 @@ export function TecoBot() {
 
   return (
     <>
-      {/* ── Proactive bubble ── */}
-      {showBubble && !open && (
-        <div className="fixed bottom-44 left-16 z-40">
-          <div className="relative bg-white rounded-2xl shadow-lg border border-zinc-100 px-3.5 py-3 w-[180px]">
-            <button onClick={dismissBubble} className="absolute top-2 right-2 text-zinc-300 hover:text-zinc-500">
-              <X className="w-3 h-3" />
-            </button>
-            <div className="flex items-center gap-1.5 mb-1.5 pr-4">
-              <span className="text-[11px] font-bold text-zinc-800">Ana M.</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
-            </div>
-            <p className="text-[12px] text-zinc-600 leading-snug mb-2">{PROACTIVE[lang] ?? PROACTIVE.ro}</p>
-            <button onClick={openChat} className="text-[11px] font-bold text-[#FF4F00] flex items-center gap-0.5">
-              {lang === "ru" ? "Написать" : "Scrie-mi"} →
-            </button>
-            <div className="absolute top-3.5 -left-1.5 w-3 h-3 bg-white border-l border-b border-zinc-100 rotate-45" />
-          </div>
-        </div>
-      )}
-
-      {/* ── Floating button — același stil ca originalul, siluetă umană în loc de robot ── */}
       <button
-        onClick={openChat}
-        aria-label="Ana M. — Consultant Teco.md"
-        className="fixed bottom-33 left-4 md:bottom-6 md:left-6 z-40 flex items-center gap-2 bg-gradient-to-br from-[#FF4F00] to-orange-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 px-3.5 py-2.5 md:px-4 md:py-3"
+        onClick={() => setOpen((v) => !v)}
+        aria-label="TecoBot AI"
+        className="fixed bottom-28 left-4 md:bottom-6 md:left-6 z-40 flex items-center gap-2 bg-gradient-to-br from-[#FF4F00] to-orange-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 px-3.5 py-2.5 md:px-4 md:py-3"
       >
-        {/* Siluetă umană SVG */}
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
-          <circle cx="12" cy="8" r="4" fill="white" fillOpacity="0.97"/>
-          <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7" stroke="white" strokeWidth="2" strokeLinecap="round" fillOpacity="0.97"/>
-        </svg>
-        {/* Online dot */}
-        <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
+        <Bot className="w-5 h-5 flex-shrink-0" />
+        <span className="text-sm font-bold hidden sm:inline">TecoBot AI</span>
+        <span className="text-sm font-bold sm:hidden">AI</span>
         {unread > 0 && (
           <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">{unread}</span>
         )}
       </button>
 
-      {/* ── Chat window ── */}
       {open && (
         <div
           className="fixed z-50 flex items-end justify-start pointer-events-none"
@@ -260,17 +183,13 @@ export function TecoBot() {
             className="pointer-events-auto w-full md:w-[400px] md:ml-6 md:mb-24 bg-white rounded-t-2xl md:rounded-2xl shadow-2xl border border-[#E4E4E7] flex flex-col overflow-hidden"
             style={{ height: window.innerWidth >= 768 ? "min(640px, calc(100vh - 80px))" : `${vpHeight}px` }}
           >
-            {/* Header */}
             <div className="bg-gradient-to-r from-[#FF4F00] to-orange-500 px-4 py-3 flex items-center gap-3 flex-shrink-0">
               <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="8" r="4" fill="white" fillOpacity="0.97"/>
-                  <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
+                <Bot className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-white font-bold text-sm">Ana M.</span>
+                  <span className="text-white font-bold text-sm">TecoBot AI</span>
                   <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
                 </div>
                 <div className="flex items-center gap-1">
@@ -283,17 +202,13 @@ export function TecoBot() {
               </button>
             </div>
 
-            {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#FAFAFA]">
               {messages.map((msg, i) => (
                 <div key={i} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
                   <div className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} w-full`}>
                     {msg.role === "assistant" && (
                       <div className="w-7 h-7 rounded-full bg-[#FF4F00] flex items-center justify-center flex-shrink-0 mr-2 mt-0.5">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                          <circle cx="12" cy="8" r="4" fill="white" fillOpacity="0.97"/>
-                          <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
-                        </svg>
+                        <Bot className="w-3.5 h-3.5 text-white" />
                       </div>
                     )}
                     <div className={`max-w-[82%] px-3 py-2.5 rounded-2xl text-sm leading-relaxed ${
@@ -313,15 +228,20 @@ export function TecoBot() {
                       )}
                     </div>
                   </div>
+
                   {msg.role === "assistant" && msg.products && msg.products.length > 0 && (
-                    <div className="ml-9 mt-2 flex gap-2 overflow-x-auto pb-1 w-full">
+                    <div className="ml-9 mt-2 flex gap-2 overflow-x-auto pb-1 w-full scrollbar-hide">
                       {msg.products.map(pid => {
-                        const p = allProducts.find(x => x.id === pid);
+                        const p = products.find(x => x.id === pid);
                         if (!p) return null;
                         return (
                           <div key={pid} className="flex-shrink-0 w-44 bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden">
                             <div className="h-28 bg-zinc-50 flex items-center justify-center overflow-hidden">
-                              {p.imageUrl ? <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" /> : <User className="w-10 h-10 text-zinc-300" />}
+                              {p.imageUrl ? (
+                                <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                              ) : (
+                                <Bot className="w-10 h-10 text-zinc-300" />
+                              )}
                             </div>
                             <div className="p-2">
                               <p className="text-[11px] font-semibold text-zinc-800 line-clamp-2 leading-tight mb-1">{p.brand} {p.name}</p>
@@ -347,7 +267,8 @@ export function TecoBot() {
               {leadCaptured && (
                 <div className="flex justify-center">
                   <div className="bg-green-50 border border-green-200 rounded-xl px-3 py-2 text-xs text-green-700 font-medium flex items-center gap-1.5">
-                    ✓ {lang === "ru" ? "Запрос сохранён — вам перезвонят" : "Cerere salvată — vă vom contacta"}
+                    <span>✓</span>
+                    <span>{lang === "ru" ? "Запрос сохранён — вам перезвонят" : "Cerere salvată — vă vom contacta"}</span>
                   </div>
                 </div>
               )}
@@ -358,7 +279,8 @@ export function TecoBot() {
               <div className="px-3 py-2 flex-shrink-0 bg-white border-t border-zinc-100">
                 <a
                   href={`https://wa.me/${phone}?text=${encodeURIComponent(lang === "ru" ? "Здравствуйте! Хочу поговорить с менеджером." : "Bună ziua! Vreau să vorbesc cu un consultant.")}`}
-                  target="_blank" rel="noopener noreferrer"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-full flex items-center justify-center gap-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-semibold py-2 rounded-xl text-xs transition-all"
                 >
                   <User className="w-3.5 h-3.5" />
@@ -388,7 +310,7 @@ export function TecoBot() {
                   {streaming ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 </button>
               </div>
-              <p className="text-[10px] text-zinc-400 text-center mt-1.5">Teco.md · {lang === "ru" ? "Răspuns rapid garantat" : "Răspuns rapid garantat"}</p>
+              <p className="text-[10px] text-zinc-400 text-center mt-1.5">Powered by Groq · Teco.md</p>
             </div>
           </div>
         </div>
