@@ -699,6 +699,30 @@ function mergeSettings(loaded: any): ModuleSettings {
   };
 }
 
+// ─── Restaurare imagini base64 din localStorage după load din D1 ─────────────
+// D1 stochează settings FĂRĂ base64 (prea mari); le restaurăm din cache local.
+function restoreBase64FromCache(fromD1: ModuleSettings, cached: ModuleSettings): ModuleSettings {
+  function merge(d1Val: unknown, cacheVal: unknown): unknown {
+    if (typeof d1Val === "string" && typeof cacheVal === "string") {
+      // Dacă D1 are '' (stripped) dar cache-ul are base64, restaurăm din cache
+      return d1Val === "" && cacheVal.startsWith("data:") ? cacheVal : d1Val;
+    }
+    if (Array.isArray(d1Val) && Array.isArray(cacheVal)) {
+      return d1Val.map((item, i) => merge(item, cacheVal[i] ?? item));
+    }
+    if (d1Val && cacheVal && typeof d1Val === "object" && typeof cacheVal === "object") {
+      const out: Record<string, unknown> = { ...(d1Val as Record<string, unknown>) };
+      for (const k of Object.keys(cacheVal as Record<string, unknown>)) {
+        if (k in out) out[k] = merge(out[k], (cacheVal as Record<string, unknown>)[k]);
+        else out[k] = (cacheVal as Record<string, unknown>)[k]; // câmp nou din cache
+      }
+      return out;
+    }
+    return d1Val;
+  }
+  return merge(fromD1, cached) as ModuleSettings;
+}
+
 // ─── Refresh produse + setări din D1 în background (SWR) ──────────────────────
 // Apelat din initStore când cache-ul e vechi; actualizează starea fără să blocheze UI.
 async function _backgroundRefreshFromD1(): Promise<void> {
@@ -711,14 +735,16 @@ async function _backgroundRefreshFromD1(): Promise<void> {
     const products: any[] = prodsRes?.data ?? [];
     if (products.length > 0) {
       const mapped = products.map(dbProductToStore);
-      cacheProducts(mapped); // actualizează și timestamp-ul
+      cacheProducts(mapped);
       setState((s) => ({ ...s, products: mapped }));
     }
 
     if (settingsRes?.data) {
-      const fromServer = mergeSettings(settingsRes.data);
-      try { localStorage.setItem("teco_settings_cache", JSON.stringify({ ...fromServer, _v: SETTINGS_CACHE_VERSION })); } catch {}
-      setState((s) => ({ ...s, settings: fromServer }));
+      const fromD1 = mergeSettings(settingsRes.data);
+      // Restaurează imaginile base64 din localStorage (nu sunt salvate în D1)
+      const merged = _cachedSettings ? restoreBase64FromCache(fromD1, _cachedSettings) : fromD1;
+      try { localStorage.setItem("teco_settings_cache", JSON.stringify({ ...merged, _v: SETTINGS_CACHE_VERSION })); } catch {}
+      setState((s) => ({ ...s, settings: merged }));
     }
   } catch { /* silent — nu blocăm pagina */ }
 }
@@ -757,11 +783,16 @@ export async function refreshFromApiServer(): Promise<void> {
     const rawSettings = settingsRes?.data ?? null;
     const blogRows: any[] = blogRes?.data ?? null;
 
-    // ── Settings: D1 este sursa de adevăr — nu mergem cu snapshot-ul local ──────
-    // (Merge-ul vechi reinjecta categorii șterse din admin dacă snapshotul le mai avea)
+    // ── Settings: D1 este sursa de adevăr pentru config text ────────────────────
+    // Imaginile base64 (>10KB) nu sunt în D1 (prea mari); le restaurăm din localStorage.
     let mergedSettings: ModuleSettings | null = null;
     if (rawSettings) {
-      mergedSettings = mergeSettings(rawSettings);
+      const fromD1 = mergeSettings(rawSettings);
+      // Restaurează imaginile base64 din localStorage care nu au putut fi salvate în D1
+      const cached = _cachedSettings;
+      if (cached) mergedSettings = restoreBase64FromCache(fromD1, cached);
+      else mergedSettings = fromD1;
+      // Actualizăm localStorage cu setările complete (D1 text + localStorage images)
       try { localStorage.setItem("teco_settings_cache", JSON.stringify({ ...mergedSettings, _v: SETTINGS_CACHE_VERSION })); } catch {}
     }
 
@@ -808,15 +839,35 @@ const _API = typeof import.meta !== "undefined"
   ? ((import.meta as any).env?.VITE_API_URL ?? "")
   : "";
 
-// ─── Salvare settings — localStorage imediat + api-server în background ───────
+// ─── Strip base64 din settings înainte de D1 (D1 are limita ~1MB per row) ─────
+// Imaginile base64 rămân în localStorage; D1 stochează doar configurația text.
+function stripBase64ForD1(obj: unknown): unknown {
+  if (typeof obj === "string") {
+    // Elimină base64 mari (>10KB) — imagini category, module, comparator
+    return (obj.startsWith("data:image") || obj.startsWith("data:application")) && obj.length > 10_000
+      ? "" : obj;
+  }
+  if (Array.isArray(obj)) return obj.map(stripBase64ForD1);
+  if (obj && typeof obj === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
+      out[k] = stripBase64ForD1(v);
+    }
+    return out;
+  }
+  return obj;
+}
+
+// ─── Salvare settings — localStorage imediat (complet) + D1 fără base64 ───────
 async function saveSettings(s: ModuleSettings) {
-  // 1. localStorage imediat — persistă chiar dacă api-server e offline
+  // 1. localStorage imediat — păstrează TOATE datele inclusiv imagini base64
   try { localStorage.setItem("teco_settings_cache", JSON.stringify({ ...s, _v: SETTINGS_CACHE_VERSION })); } catch {}
-  // 2. CF Pages Function sau api-server — funcționează pe același domeniu
+  // 2. D1 — FĂRĂ base64 (limita D1 ~1MB; imaginile rămân în localStorage)
+  const d1Safe = stripBase64ForD1(s);
   fetch(_API + "/api/settings", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(s),
+    body: JSON.stringify(d1Safe),
   }).catch(() => {});
 }
 
