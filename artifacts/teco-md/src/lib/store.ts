@@ -48,6 +48,7 @@ export interface CategoryDef {
   label: string;
   labelRu?: string;
   image?: string;
+  iconKey?: string; // cheie iconița din CatIcons (ex: "cctv-wifi", "nvr", "alarm")
 }
 
 export interface GalleryItem {

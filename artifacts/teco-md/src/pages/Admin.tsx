@@ -17,6 +17,7 @@ import {
 } from "@/lib/store";
 import { ImportModal } from "@/components/ImportModal";
 import { SEO } from "@/components/SEO";
+import { CatIconBadge, CatIconPicker, getCatIconDef } from "@/components/CatIcons";
 
 const ADMIN_PIN_FALLBACK = "teco2025";
 const brands = ["TAPO", "REOLINK", "UNIARCH", "DAHUA", "UNIVIEW", "TIANDY"] as const;
@@ -1757,10 +1758,12 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
   const [catEditLabelRu, setCatEditLabelRu] = useState("");
   const [catEditSlug, setCatEditSlug] = useState("");
   const [catEditImage, setCatEditImage] = useState("");
+  const [catEditIcon, setCatEditIcon] = useState("");
   const [catNewLabel, setCatNewLabel] = useState("");
   const [catNewLabelRu, setCatNewLabelRu] = useState("");
   const [catNewSlug, setCatNewSlug] = useState("");
   const [catNewImage, setCatNewImage] = useState("");
+  const [catNewIcon, setCatNewIcon] = useState("");
   const [showAddCat, setShowAddCat] = useState(false);
 
   const moveCat = (idx: number, dir: -1 | 1) => {
@@ -1779,7 +1782,7 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
 
   const saveEditCat = (id: string) => {
     storeActions.updateCategories(categories.map((c) =>
-      c.id === id ? { ...c, label: catEditLabel, labelRu: catEditLabelRu || c.labelRu, slug: catEditSlug || c.slug, image: catEditImage || c.image } : c
+      c.id === id ? { ...c, label: catEditLabel, labelRu: catEditLabelRu || c.labelRu, slug: catEditSlug || c.slug, image: catEditImage || c.image, iconKey: catEditIcon || c.iconKey } : c
     ));
     setCatEditId(null);
   };
@@ -1788,8 +1791,8 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
     if (!catNewLabel.trim()) return;
     const slug = catNewSlug.trim() || catNewLabel.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
     const id = slug + "-" + Date.now().toString(36);
-    storeActions.updateCategories([...categories, { id, slug, label: catNewLabel.trim(), labelRu: catNewLabelRu.trim() || undefined, image: catNewImage || undefined }]);
-    setCatNewLabel(""); setCatNewLabelRu(""); setCatNewSlug(""); setCatNewImage(""); setShowAddCat(false);
+    storeActions.updateCategories([...categories, { id, slug, label: catNewLabel.trim(), labelRu: catNewLabelRu.trim() || undefined, image: catNewImage || undefined, iconKey: catNewIcon || undefined }]);
+    setCatNewLabel(""); setCatNewLabelRu(""); setCatNewSlug(""); setCatNewImage(""); setCatNewIcon(""); setShowAddCat(false);
   };
 
   // --- PIN change state ---
@@ -2003,6 +2006,7 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
                     <button onClick={() => saveEditCat(cat.id)} className="bg-[#FF4F00] text-white px-4 py-1.5 rounded-lg text-xs font-bold hover:opacity-90 whitespace-nowrap">Salvează</button>
                     <button onClick={() => setCatEditId(null)} className="bg-zinc-700 text-zinc-400 px-2 py-1.5 rounded-lg text-xs hover:bg-zinc-600">✕</button>
                   </div>
+                  <CatIconPicker value={catEditIcon} onChange={setCatEditIcon} />
                   <MediaUploadSlot
                     label="Imagine categorie (afișată pe homepage)"
                     value={catEditImage}
@@ -2020,8 +2024,11 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
                       <ArrowDown className="w-3 h-3" />
                     </button>
                   </div>
+                  <div className="w-8 h-8 bg-zinc-700 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <CatIconBadge slug={cat.slug} iconKey={cat.iconKey} className="w-4 h-4" />
+                  </div>
                   {cat.image && (
-                    <img src={cat.image} alt={cat.label} className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-zinc-600" />
+                    <img src={cat.image} alt={cat.label} className="w-8 h-8 rounded-lg object-cover flex-shrink-0 border border-zinc-600" />
                   )}
                   <div className="flex-1 min-w-0">
                     <span className="text-sm font-semibold text-white">{cat.label}</span>
@@ -2030,7 +2037,7 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
                   <span className="text-[10px] text-zinc-600 bg-zinc-700 px-1.5 py-0.5 rounded">
                     {products.filter((p) => p.category === cat.slug).length} prod.
                   </span>
-                  <button onClick={() => { setCatEditId(cat.id); setCatEditLabel(cat.label); setCatEditLabelRu(cat.labelRu ?? ""); setCatEditSlug(cat.slug); setCatEditImage(cat.image ?? ""); }}
+                  <button onClick={() => { setCatEditId(cat.id); setCatEditLabel(cat.label); setCatEditLabelRu(cat.labelRu ?? ""); setCatEditSlug(cat.slug); setCatEditImage(cat.image ?? ""); setCatEditIcon(cat.iconKey ?? ""); }}
                     className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-500 hover:text-white transition-colors">
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
@@ -2066,6 +2073,7 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
               <button onClick={() => { setShowAddCat(false); setCatNewLabel(""); setCatNewLabelRu(""); setCatNewSlug(""); setCatNewImage(""); }}
                 className="bg-zinc-700 text-zinc-400 px-2 py-1.5 rounded-lg text-xs hover:bg-zinc-600">✕</button>
             </div>
+            <CatIconPicker value={catNewIcon} onChange={setCatNewIcon} />
             <MediaUploadSlot
               label="Imagine categorie (opțional)"
               value={catNewImage}

@@ -1,41 +1,13 @@
 import { useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { X, Cctv, Wifi, Signal, Plug, Boxes, HardDrive, BellElectric, DoorClosed, Wrench, FileText, Lock, Award, ChevronRight, Phone, Instagram, Facebook, Tag, type LucideIcon } from "lucide-react";
+import { X, Wrench, FileText, Lock, Award, ChevronRight, Phone, Instagram, Facebook } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useLang } from "@/contexts/LangContext";
+import { CatIconBadge } from "@/components/CatIcons";
 
 interface SidebarDrawerProps {
   open: boolean;
   onClose: () => void;
-}
-
-/** Iconița principală + badge opțional în colț jos-dreapta */
-function CatIconBadge({ main: Main, badge: Badge }: { main: LucideIcon; badge?: LucideIcon }) {
-  return (
-    <div className="relative w-4 h-4">
-      <Main className="w-4 h-4 text-[#FF4F00]" />
-      {Badge && (
-        <Badge
-          className="absolute -bottom-1 -right-1 w-2.5 h-2.5 text-[#FF4F00]"
-          strokeWidth={2.5}
-        />
-      )}
-    </div>
-  );
-}
-
-function catIconBadge(slug: string): { main: LucideIcon; badge?: LucideIcon } {
-  const s = slug.toLowerCase();
-  if (s.includes("wifi"))                                              return { main: Cctv, badge: Wifi };
-  if (s.includes("4g") || s.includes("lte"))                          return { main: Cctv, badge: Signal };
-  if (s.includes("poe") || s.includes("bulevar") || s.includes("exterior")) return { main: Cctv, badge: Plug };
-  if (s.includes("camer"))                                             return { main: Cctv };
-  if (s.includes("kit") || s.includes("bundle") || s.includes("complet")) return { main: Boxes };
-  if (s.includes("nvr") || s.includes("recorder") || s.includes("dvr"))   return { main: HardDrive };
-  if (s.includes("alarm") || s.includes("securit"))                   return { main: BellElectric };
-  if (s.includes("stocare") || s.includes("hdd") || s.includes("storage")) return { main: HardDrive };
-  if (s.includes("interfon") || s.includes("intercom") || s.includes("videofon")) return { main: DoorClosed };
-  return { main: Tag };
 }
 
 const pages = [
@@ -61,9 +33,9 @@ export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
   // Contoare calculate live din catalog — dinamic din categoriile admin
   const catCounts = categories.map((cat) => ({
     href: `/produse?cat=${cat.slug}`,
-    iconBadge: catIconBadge(cat.slug),
-    label: lang === "ru" ? (cat.labelRu ?? cat.label) : cat.label,
     slug: cat.slug,
+    iconKey: cat.iconKey,
+    label: lang === "ru" ? (cat.labelRu ?? cat.label) : cat.label,
     count: products.filter((p) => p.category === cat.slug).length,
   }));
 
@@ -104,7 +76,7 @@ export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
           {/* Catalog */}
           <div className="px-4 py-3">
             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-2 mb-2">Catalog Produse</p>
-            {catCounts.map(({ href, iconBadge, label, count }) => (
+            {catCounts.map(({ href, slug, iconKey, label, count }) => (
               <Link
                 key={href}
                 href={href}
@@ -112,7 +84,7 @@ export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
                 className="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-zinc-50 transition-colors group"
               >
                 <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <CatIconBadge main={iconBadge.main} badge={iconBadge.badge} />
+                  <CatIconBadge slug={slug} iconKey={iconKey} className="w-4 h-4" />
                 </div>
                 <span className="flex-1 text-sm font-medium text-zinc-700 group-hover:text-[#09090B]">{label}</span>
                 <span className="text-[10px] text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded-full font-medium">{count}</span>
