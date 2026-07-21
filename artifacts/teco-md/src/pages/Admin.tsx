@@ -111,12 +111,24 @@ function PinGate({ onAuth, effectivePin }: { onAuth: () => void; effectivePin: s
 // ─── Product Modal ────────────────────────────────────────────────────
 interface ProductFormData {
   name: string; model: string; brand: string; category: string;
-  price: string; oldPrice: string; specs: string; badge: string;
+  price: string; oldPrice: string; specs: string; badge: string; badgeColor: string;
   imageUrl: string; description: string; longDescription: string; techSpecs: string; inStock: boolean;
 }
+const BADGE_COLORS = [
+  { label: "Negru",      hex: "#09090B" },
+  { label: "Portocaliu", hex: "#FF4F00" },
+  { label: "Teal",       hex: "#0D9488" },
+  { label: "Albastru",   hex: "#2563EB" },
+  { label: "Verde",      hex: "#16A34A" },
+  { label: "Violet",     hex: "#7C3AED" },
+  { label: "Roșu",       hex: "#DC2626" },
+  { label: "Indigo",     hex: "#4F46E5" },
+  { label: "Amber",      hex: "#D97706" },
+  { label: "Rose",       hex: "#E11D48" },
+];
 const EMPTY_FORM: ProductFormData = {
   name: "", model: "", brand: brands[0], category: "wifi",
-  price: "", oldPrice: "", specs: "", badge: "",
+  price: "", oldPrice: "", specs: "", badge: "", badgeColor: "#09090B",
   imageUrl: "", description: "", longDescription: "", techSpecs: "", inStock: true,
 };
 
@@ -341,7 +353,10 @@ function ProductModal({ product, onClose, categories }: { product: StoreProduct 
     product
       ? { name: product.name, model: product.model, brand: product.brand, category: product.category,
           price: String(product.price), oldPrice: product.oldPrice ? String(product.oldPrice) : "",
-          specs: product.specs, badge: product.badge ?? "", imageUrl: product.imageUrl,
+          specs: product.specs,
+          badge: product.badge ? product.badge.split("|")[0].trim() : "",
+          badgeColor: product.badge?.includes("|") ? product.badge.split("|")[1].trim() : "#09090B",
+          imageUrl: product.imageUrl,
           description: product.description, longDescription: product.longDescription ?? "",
           techSpecs: product.techSpecs ?? "", inStock: product.inStock }
       : { ...EMPTY_FORM, category: categories[0]?.slug ?? "wifi" }
@@ -391,7 +406,8 @@ function ProductModal({ product, onClose, categories }: { product: StoreProduct 
       name: form.name, model: form.model, brand: form.brand, category: form.category,
       price: parseFloat(form.price) || 0,
       oldPrice: form.oldPrice ? parseFloat(form.oldPrice) : null,
-      specs: form.specs, badge: form.badge || null,
+      specs: form.specs,
+      badge: form.badge ? `${form.badge.trim()}|${form.badgeColor}` : null,
       imageUrl: form.imageUrl || allImages[0] || "",
       images: allImages,
       description: form.description, longDescription: form.longDescription || undefined,
@@ -468,7 +484,39 @@ function ProductModal({ product, onClose, categories }: { product: StoreProduct 
             <ProductField label="Preț (MDL) *" field="price" type="number" placeholder="0" form={form} set={set} />
             <ProductField label="Preț Vechi (MDL)" field="oldPrice" type="number" placeholder="opțional" form={form} set={set} />
             <ProductField label="Specificații scurte" field="specs" placeholder="ex: 4MP · WiFi · IR 30m" form={form} set={set} />
-            <ProductField label="Badge promo" field="badge" placeholder="ex: NOU, -20%, TOP" form={form} set={set} />
+            {/* Badge cu color picker */}
+            <div>
+              <label className="block text-[11px] font-semibold text-zinc-400 mb-2 uppercase tracking-wider">Etichetă produs</label>
+              <input
+                type="text"
+                value={form.badge}
+                onChange={(e) => set("badge", e.target.value)}
+                placeholder="ex: NOU, 4K, LOW LIGHT, PROMO"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#FF4F00] mb-2"
+              />
+              <div className="flex flex-wrap gap-2 items-center">
+                {BADGE_COLORS.map((c) => (
+                  <button
+                    key={c.hex}
+                    type="button"
+                    title={c.label}
+                    onClick={() => set("badgeColor", c.hex)}
+                    className="w-7 h-7 rounded-full border-2 transition-all"
+                    style={{
+                      backgroundColor: c.hex,
+                      borderColor: form.badgeColor === c.hex ? "#ffffff" : "transparent",
+                      transform: form.badgeColor === c.hex ? "scale(1.25)" : "scale(1)",
+                    }}
+                  />
+                ))}
+                {form.badge && (
+                  <span className="ml-2 text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wide"
+                    style={{ backgroundColor: form.badgeColor }}>
+                    {form.badge}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
 
           <div>

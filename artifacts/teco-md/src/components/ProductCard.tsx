@@ -64,11 +64,17 @@ export function ProductCard({ product }: { product: StoreProduct }) {
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
-        {product.badge && (
-          <div className={`absolute top-3 left-3 text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wide ${product.badge === "PROMO" ? "bg-[#FF4F00]" : product.badge.includes("COLOR") ? "bg-violet-600" : "bg-zinc-900"}`}>
-            {product.badge}
-          </div>
-        )}
+        {product.badge && (() => {
+          const parts = product.badge.split("|");
+          const badgeText = parts[0].trim();
+          const badgeColor = parts[1]?.trim() || (product.badge === "PROMO" ? "#FF4F00" : "#09090B");
+          return (
+            <div className="absolute top-3 left-3 text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wide"
+              style={{ backgroundColor: badgeColor }}>
+              {badgeText}
+            </div>
+          );
+        })()}
         {discount && (
           <div className="absolute top-3 right-3 bg-emerald-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
             -{discount}%

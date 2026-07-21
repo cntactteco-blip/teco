@@ -536,7 +536,7 @@ export default function ProductDetail() {
   const savings = product.oldPrice ? product.oldPrice - product.price : 0;
   const discountPct = product.oldPrice ? Math.round((1 - product.price / product.oldPrice) * 100) : 0;
   const warranty = WARRANTY[product.brand] ?? "24 luni";
-  const badgeClass = product.badge ? (BADGE_COLORS[product.badge] ?? "bg-zinc-900 text-white") : "";
+  const parsedBadge = product.badge ? { text: product.badge.split("|")[0].trim(), color: product.badge.includes("|") ? product.badge.split("|")[1].trim() : "#09090B" } : null;
   const brandClass = BRAND_COLORS[product.brand] ?? "text-zinc-600 bg-zinc-100 border-zinc-200";
   const specChips = product.specs.split(" | ");
   const { r: rating, n: reviewCount } = ratingFor(product.id);
@@ -672,9 +672,10 @@ export default function ProductDetail() {
               </Link>
 
               {/* Badge */}
-              {product.badge && (
-                <span className={`absolute top-4 right-4 z-10 text-xs font-black px-3 py-1 rounded-full ${badgeClass}`}>
-                  {product.badge}
+              {parsedBadge && (
+                <span className="absolute top-4 right-4 z-10 text-xs font-black px-3 py-1 rounded-full text-white"
+                  style={{ backgroundColor: parsedBadge.color }}>
+                  {parsedBadge.text}
                 </span>
               )}
 
@@ -721,7 +722,7 @@ export default function ProductDetail() {
               )}
 
               {/* Promo countdown */}
-              {product.badge === "PROMO" && (
+              {parsedBadge?.text?.toUpperCase() === "PROMO" && (
                 <div className="absolute bottom-0 left-0 right-0 z-10 bg-black/70 backdrop-blur-sm px-4 py-3 flex items-center justify-between">
                   <div className="flex items-center gap-2 text-white">
                     <Flame className="w-4 h-4 text-[#FF4F00] animate-pulse" />
@@ -1112,11 +1113,11 @@ export default function ProductDetail() {
                           alt={p.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
-                        {p.badge && (
-                          <span className={`absolute top-1.5 left-1.5 text-[9px] font-black px-2 py-0.5 rounded-full ${BADGE_COLORS[p.badge] ?? "bg-zinc-900 text-white"}`}>
-                            {p.badge}
-                          </span>
-                        )}
+                        {p.badge && (() => {
+                          const bt = p.badge.split("|")[0].trim();
+                          const bc = p.badge.includes("|") ? p.badge.split("|")[1].trim() : "#09090B";
+                          return <span className="absolute top-1.5 left-1.5 text-[9px] font-black px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: bc }}>{bt}</span>;
+                        })()}
                       </div>
                       <div className="p-2.5">
                         <p className="text-xs font-bold text-[#09090B] leading-tight line-clamp-2 mb-1">{p.name}</p>
