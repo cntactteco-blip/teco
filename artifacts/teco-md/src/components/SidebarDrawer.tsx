@@ -90,6 +90,7 @@ export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
               <Link
                 key={href}
                 href={href}
+                onClick={onClose}
                 className="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-zinc-50 transition-colors group"
               >
                 <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -110,6 +111,7 @@ export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
               <Link
                 key={href}
                 href={href}
+                onClick={onClose}
                 className="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-zinc-50 transition-colors group"
               >
                 <div className="w-8 h-8 bg-zinc-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -130,6 +132,7 @@ export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
               <Link
                 key={href}
                 href={href}
+                onClick={onClose}
                 className="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-zinc-50 transition-colors"
               >
                 <Lock className="w-3.5 h-3.5 text-zinc-300 ml-1.5" />
