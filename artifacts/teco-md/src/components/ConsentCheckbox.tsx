@@ -1,3 +1,5 @@
+import { useLang } from "@/contexts/LangContext";
+
 // ─── ConsentCheckbox — checkbox GDPR refolosibil, touch-friendly ──────────────
 
 interface Props {
@@ -9,6 +11,7 @@ interface Props {
 }
 
 export function ConsentCheckbox({ checked, onChange, required = true, className = "", dark = false }: Props) {
+  const { t } = useLang();
   const toggle = () => onChange(!checked);
 
   return (
@@ -41,9 +44,9 @@ export function ConsentCheckbox({ checked, onChange, required = true, className 
 
       {/* Text */}
       <span className={`text-xs leading-relaxed pt-0.5 ${dark ? "text-zinc-400" : "text-zinc-500"}`}>
-        Sunt de acord cu prelucrarea datelor mele cu caracter personal (nume și telefon) de către{" "}
-        <span className={`font-semibold ${dark ? "text-zinc-200" : "text-zinc-700"}`}>TECO.MD</span> în scopul
-        contactării comerciale, conform{" "}
+        {t("consent.pre")}{" "}
+        <span className={`font-semibold ${dark ? "text-zinc-200" : "text-zinc-700"}`}>TECO.MD</span>{" "}
+        {t("consent.purpose")}{" "}
         <a
           href="/confidentialitate"
           className="text-[#FF4F00] underline underline-offset-2 hover:opacity-80 transition-opacity"
@@ -51,10 +54,10 @@ export function ConsentCheckbox({ checked, onChange, required = true, className 
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
         >
-          Politicii de Confidențialitate
+          {t("consent.privacy_link")}
         </a>{" "}
-        și{" "}
-        <span className={`font-medium ${dark ? "text-zinc-300" : "text-zinc-600"}`}>Legii nr. 133/2011</span> (Republica Moldova).
+        {t("consent.and")}{" "}
+        <span className={`font-medium ${dark ? "text-zinc-300" : "text-zinc-600"}`}>{t("consent.law")}</span>.
         {required && <span className="text-red-500 ml-0.5">*</span>}
       </span>
     </div>

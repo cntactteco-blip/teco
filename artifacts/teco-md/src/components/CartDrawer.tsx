@@ -1,5 +1,6 @@
 import { useCart } from "@/hooks/useCart";
 import { useStore } from "@/lib/store";
+import { useLang } from "@/contexts/LangContext";
 import { X, Plus, Minus, ShoppingBag, ArrowRight, Zap } from "lucide-react";
 import { Link } from "wouter";
 import { trackBeginCheckout, trackAddToCart } from "@/lib/analytics";
@@ -9,6 +10,7 @@ const NVR_CATS    = new Set(["nvr"]);
 const KIT_CATS    = new Set(["kituri"]);
 
 export function CartDrawer() {
+  const { t } = useLang();
   const isOpen    = useCart((s) => s.isOpen);
   const items     = useCart((s) => s.items);
   const total     = useCart((s) => s.total);
@@ -43,6 +45,12 @@ export function CartDrawer() {
     return suggestions.slice(0, 2);
   })();
 
+  const upsellLabel = hasCamera && !hasNvr
+    ? t("cart.upsell_nvr")
+    : hasNvr && !hasCamera
+      ? t("cart.upsell_cam")
+      : t("cart.upsell_kit");
+
   if (!isOpen) return null;
 
   return (
@@ -53,7 +61,7 @@ export function CartDrawer() {
         <div className="flex items-center justify-between px-6 py-5 border-b border-zinc-100">
           <div className="flex items-center gap-2">
             <ShoppingBag className="w-5 h-5 text-[#FF4F00]" />
-            <h2 className="text-lg font-black text-[#09090B]">Coșul tău</h2>
+            <h2 className="text-lg font-black text-[#09090B]">{t("cart.title")}</h2>
             {items.length > 0 && (
               <span className="text-xs bg-[#FF4F00] text-white font-bold px-2 py-0.5 rounded-full">{items.length}</span>
             )}
@@ -68,8 +76,8 @@ export function CartDrawer() {
           {items.length === 0 ? (
             <div className="text-center py-16">
               <ShoppingBag className="w-12 h-12 text-zinc-200 mx-auto mb-3" />
-              <p className="font-medium text-zinc-400">Coșul este gol</p>
-              <p className="text-xs text-zinc-300 mt-1">Adaugă produse pentru a continua</p>
+              <p className="font-medium text-zinc-400">{t("cart.empty")}</p>
+              <p className="text-xs text-zinc-300 mt-1">{t("cart.empty_sub")}</p>
             </div>
           ) : (
             <>
@@ -98,7 +106,7 @@ export function CartDrawer() {
                         </button>
                       </div>
                       <button onClick={() => removeItem(item.id)} className="text-[10px] text-zinc-400 hover:text-red-500 transition-colors underline">
-                        Șterge
+                        {t("cart.remove")}
                       </button>
                     </div>
                   </div>
@@ -114,9 +122,7 @@ export function CartDrawer() {
                 <div className="border border-amber-200 bg-amber-50 rounded-2xl p-3 space-y-2">
                   <div className="flex items-center gap-1.5 mb-1">
                     <Zap className="w-3.5 h-3.5 text-amber-500" />
-                    <p className="text-[11px] font-black text-amber-700 uppercase tracking-wide">
-                      {hasCamera && !hasNvr ? "Completează sistemul cu un înregistrator" : hasNvr && !hasCamera ? "Adaugă camere compatibile" : "Kit complet recomandat"}
-                    </p>
+                    <p className="text-[11px] font-black text-amber-700 uppercase tracking-wide">{upsellLabel}</p>
                   </div>
                   {upsellProducts.map((p) => (
                     <div key={p.id} className="flex items-center gap-2.5 bg-white rounded-xl p-2.5 border border-amber-100">
@@ -138,7 +144,7 @@ export function CartDrawer() {
                         }}
                         className="flex-shrink-0 bg-[#FF4F00] text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg hover:opacity-90 transition-opacity"
                       >
-                        + Adaugă
+                        {t("cart.upsell_add")}
                       </button>
                     </div>
                   ))}
@@ -155,8 +161,8 @@ export function CartDrawer() {
             {total < 5000 && (
               <div className="mb-3">
                 <div className="flex justify-between text-xs mb-1">
-                  <span className="text-zinc-500">Mai adaugă produse de</span>
-                  <span className="font-bold text-[#FF4F00]">{(5000 - total).toLocaleString()} MDL pentru LIVRARE GRATUITĂ!</span>
+                  <span className="text-zinc-500">{t("cart.progress_pre")}</span>
+                  <span className="font-bold text-[#FF4F00]">{(5000 - total).toLocaleString()} {t("cart.progress_suf")}</span>
                 </div>
                 <div className="h-1.5 bg-zinc-100 rounded-full overflow-hidden">
                   <div className="h-full bg-[#FF4F00] rounded-full transition-all duration-500" style={{ width: `${Math.min((total / 5000) * 100, 100)}%` }} />
@@ -165,12 +171,12 @@ export function CartDrawer() {
             )}
             {total >= 5000 && (
               <div className="flex items-center gap-2 mb-3 bg-green-50 border border-green-100 rounded-xl px-3 py-2">
-                <span className="text-green-600 text-xs font-bold">✓ Livrare GRATUITĂ inclusă!</span>
+                <span className="text-green-600 text-xs font-bold">{t("cart.free_shipping")}</span>
               </div>
             )}
 
             <div className="flex justify-between items-center mb-4">
-              <span className="text-sm text-zinc-500">Total</span>
+              <span className="text-sm text-zinc-500">{t("cart.total")}</span>
               <span className="text-2xl font-black font-mono text-[#09090B]">{total.toLocaleString()} MDL</span>
             </div>
 
@@ -182,10 +188,10 @@ export function CartDrawer() {
               }}
               className="flex items-center justify-center gap-2 w-full bg-[#FF4F00] text-white py-4 rounded-2xl font-bold text-base hover:opacity-90 active:scale-[0.99] transition-all shadow-[0_4px_14px_rgba(255,79,0,0.3)] mb-3"
             >
-              Finalizează Comanda <ArrowRight className="w-4 h-4" />
+              {t("cart.checkout")} <ArrowRight className="w-4 h-4" />
             </Link>
             <button onClick={closeCart} className="w-full text-center text-sm font-medium text-zinc-500 hover:text-zinc-700 transition-colors">
-              Continuă Cumpărăturile
+              {t("cart.continue")}
             </button>
           </div>
         )}

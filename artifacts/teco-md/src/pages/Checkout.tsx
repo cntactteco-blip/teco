@@ -3,14 +3,15 @@ import { Link, useLocation } from "wouter";
 import { CheckCircle, ShoppingCart, Truck, CreditCard, Phone, Mail, MapPin, User, ArrowLeft, Package, MessageCircle } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { storeActions, getState } from "@/lib/store";
+import { useLang } from "@/contexts/LangContext";
 import { SEO } from "@/components/SEO";
 import { ConsentCheckbox } from "@/components/ConsentCheckbox";
 
-// ── Shipping config ─────────────────────────────────────────────────────────
+// ── Shipping config (prices only — labels from translations) ────────────────
 export const SHIPPING_OPTIONS = [
-  { id: "chisinau",  label: "Livrare prin Curier Rapid",           hint: "Chișinău (Oraș)",                                                          price: 95  },
-  { id: "suburbii",  label: "Livrare Suburbii - Curier Rapid",     hint: "Codru, Durlești, Stăuceni, Bubuieci etc.",                                  price: 125 },
-  { id: "national",  label: "Livrare Națională - Curier Rapid",    hint: "Restul raioanelor Republicii Moldova",                                      price: 145 },
+  { id: "chisinau",  price: 95  },
+  { id: "suburbii",  price: 125 },
+  { id: "national",  price: 145 },
 ] as const;
 
 export const FREE_SHIPPING_THRESHOLD = 5000;
@@ -52,6 +53,7 @@ function FormField({ label, field, type = "text", placeholder = "", icon: Icon, 
 }
 
 export default function Checkout() {
+  const { t, lang } = useLang();
   const [form, setForm] = useState<FormData>(EMPTY);
   const [submitted, setSubmitted] = useState(false);
   const [orderId, setOrderId] = useState("");
@@ -63,6 +65,13 @@ export default function Checkout() {
   const clearCart = useCart((s) => s.clearCart);
   const [, navigate] = useLocation();
 
+  // Translated shipping options — computed at render time with current lang
+  const shippingOptions = [
+    { id: "chisinau", label: t("checkout.ship.chisinau"),  hint: t("checkout.ship.chisinau_hint"),  price: 95  },
+    { id: "suburbii", label: t("checkout.ship.suburbii"),  hint: t("checkout.ship.suburbii_hint"),  price: 125 },
+    { id: "national", label: t("checkout.ship.national"),  hint: t("checkout.ship.national_hint"),  price: 145 },
+  ];
+
   const set = (key: keyof FormData, val: string) => {
     setForm((f) => ({ ...f, [key]: val }));
     setErrors((e) => ({ ...e, [key]: "" }));
@@ -70,10 +79,10 @@ export default function Checkout() {
 
   const validate = () => {
     const e: Partial<FormData> = {};
-    if (!form.name.trim()) e.name = "Câmp obligatoriu";
-    if (!form.phone.trim()) e.phone = "Câmp obligatoriu";
-    else if (!/^[\d\s\+\-\(\)]{7,15}$/.test(form.phone.trim())) e.phone = "Număr de telefon invalid";
-    if (!form.address.trim()) e.address = "Câmp obligatoriu";
+    if (!form.name.trim()) e.name = t("checkout.required");
+    if (!form.phone.trim()) e.phone = t("checkout.required");
+    else if (!/^[\d\s\+\-\(\)]{7,15}$/.test(form.phone.trim())) e.phone = t("checkout.invalid_phone");
+    if (!form.address.trim()) e.address = t("checkout.required");
     return e;
   };
 
@@ -99,6 +108,10 @@ export default function Checkout() {
     const shipping = getShippingCost(form.delivery, total);
     const grandTotal = total + shipping;
     const API = import.meta.env.VITE_API_URL || "";
+    // Label pentru Telegram mereu în RO (comunicare internă)
+    const deliveryLabel = ["Livrare Chișinău", "Livrare Suburbii", "Livrare Națională"][
+      ["chisinau", "suburbii", "national"].indexOf(form.delivery)
+    ] ?? form.delivery;
     fetch(API + "/api/notify/order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -107,7 +120,7 @@ export default function Checkout() {
         name: form.name,
         phone: form.phone,
         address: form.address,
-        delivery: SHIPPING_OPTIONS.find((o) => o.id === form.delivery)?.label ?? form.delivery,
+        delivery: deliveryLabel,
         items: items.map((i) => ({ name: i.name, qty: i.qty, price: i.price })),
         subtotal: total,
         shippingCost: shipping,
@@ -125,30 +138,28 @@ export default function Checkout() {
           <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-green-600" />
           </div>
-          <h1 className="font-black text-2xl text-[#09090B] mb-2">Comandă Plasată!</h1>
-          <p className="text-zinc-500 mb-2">Număr comandă: <span className="font-mono font-bold text-[#09090B]">#{orderId}</span></p>
-          <p className="text-zinc-500 text-sm mb-8">
-            Vei fi contactat(ă) de echipa noastră în cel mult <strong>2 ore</strong> pentru confirmare și detalii livrare.
-          </p>
+          <h1 className="font-black text-2xl text-[#09090B] mb-2">{t("checkout.success_title")}</h1>
+          <p className="text-zinc-500 mb-2">{t("checkout.success_order_no")} <span className="font-mono font-bold text-[#09090B]">#{orderId}</span></p>
+          <p className="text-zinc-500 text-sm mb-8">{t("checkout.success_desc")}</p>
           <div className="bg-white rounded-2xl border border-zinc-200 p-5 mb-6 text-left">
-            <p className="font-semibold text-sm mb-3 text-[#09090B] flex items-center gap-1.5"><Package className="w-4 h-4 text-[#FF4F00]" /> Ce urmează:</p>
+            <p className="font-semibold text-sm mb-3 text-[#09090B] flex items-center gap-1.5"><Package className="w-4 h-4 text-[#FF4F00]" /> {t("checkout.next_title")}</p>
             <div className="space-y-2 text-sm text-zinc-600">
-              <p>✓ Confirmare telefonică la {form.phone}</p>
-              <p>✓ Pregătire și ambalare comandă (1-2 ore)</p>
-              <p>✓ Livrare {form.delivery.toLowerCase()} în 24h</p>
-              <p>✓ Testare și pornire sistem la locație (dacă ai ales instalare)</p>
+              <p>✓ {t("checkout.confirmation_at")} {form.phone}</p>
+              <p>✓ {t("checkout.next_2")}</p>
+              <p>✓ {t("checkout.next_3")}</p>
+              <p>✓ {t("checkout.next_4")}</p>
             </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/" className="inline-flex items-center justify-center gap-2 bg-[#FF4F00] text-white font-bold px-6 py-3 rounded-xl hover:opacity-90 active:scale-95 transition-all">
-              <ArrowLeft className="w-4 h-4" /> Înapoi la magazin
+              <ArrowLeft className="w-4 h-4" /> {t("checkout.back")}
             </Link>
             {viberPhone && (
               <a
                 href={`viber://chat?number=${viberPhone.replace(/\D/g, "")}`}
                 className="inline-flex items-center justify-center gap-2 bg-[#7360F2] text-white font-bold px-6 py-3 rounded-xl hover:opacity-90 active:scale-95 transition-all"
               >
-                <MessageCircle className="w-4 h-4" /> Contactați pe Viber
+                <MessageCircle className="w-4 h-4" /> {t("checkout.viber")}
               </a>
             )}
             {viberPhone && (
@@ -158,7 +169,7 @@ export default function Checkout() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 bg-[#25D366] text-white font-bold px-6 py-3 rounded-xl hover:opacity-90 active:scale-95 transition-all"
               >
-                <MessageCircle className="w-4 h-4" /> Contactați pe WhatsApp
+                <MessageCircle className="w-4 h-4" /> {t("checkout.whatsapp_contact")}
               </a>
             )}
           </div>
@@ -172,26 +183,30 @@ export default function Checkout() {
       <div className="flex-1 bg-[#FAFAFA] flex items-center justify-center px-4 py-16 pb-[64px] md:pb-8">
         <div className="text-center">
           <ShoppingCart className="w-12 h-12 text-zinc-300 mx-auto mb-4" />
-          <h2 className="font-bold text-lg text-[#09090B] mb-2">Coșul tău este gol</h2>
-          <p className="text-zinc-500 text-sm mb-6">Adaugă produse înainte de a plasa o comandă.</p>
+          <h2 className="font-bold text-lg text-[#09090B] mb-2">{t("checkout.empty_title")}</h2>
+          <p className="text-zinc-500 text-sm mb-6">{t("checkout.empty_desc")}</p>
           <Link href="/produse" className="bg-[#FF4F00] text-white font-bold px-6 py-3 rounded-xl hover:opacity-90 transition-all">
-            Explorează Produsele
+            {t("checkout.explore")}
           </Link>
         </div>
       </div>
     );
   }
 
+  const seoProps = lang === "ru"
+    ? { title: "Оформление заказа — Teco.md", description: "Оформите заказ на системы видеонаблюдения. Доставка за 24ч, оплата при получении, гарантия 2–3 года.", keywords: "заказ, оплата, доставка, системы безопасности, Молдова" }
+    : { title: "Finalizare Comandă — Teco.md", description: "Completează comanda pentru sisteme de supraveghere. Livrare în 24h, plată la livrare, garanție 2–3 ani.", keywords: "comandă, checkout, plată, livrare, sisteme securitate, Moldova" };
+
   return (
     <>
-      <SEO title="Finalizare Comandă — Teco.md" description="Completează comanda pentru sisteme de supraveghere. Livrare în 24h, plată la livrare, garanție 2–3 ani." keywords="comandă, checkout, plată, livrare, sisteme securitate, Moldova" noIndex canonical="/checkout" lang="ro" />
+      <SEO {...seoProps} noIndex canonical="/checkout" lang={lang} />
       <main className="flex-1 bg-[#FAFAFA] pb-[64px] md:pb-0 min-h-screen" role="main">
       <div className="max-w-5xl mx-auto px-4 md:px-6 py-6 md:py-8">
         <div className="flex items-center gap-3 mb-6">
           <button onClick={() => navigate("/")} className="p-2 hover:bg-white rounded-xl transition-colors">
             <ArrowLeft className="w-5 h-5 text-zinc-500" />
           </button>
-          <h1 className="font-black text-2xl text-[#09090B]">Finalizare Comandă</h1>
+          <h1 className="font-black text-2xl text-[#09090B]">{t("checkout.title")}</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
@@ -199,29 +214,29 @@ export default function Checkout() {
             <div className="bg-white rounded-2xl border border-zinc-200 p-5 md:p-6">
               <div className="flex items-center gap-2 mb-5">
                 <User className="w-4 h-4 text-[#FF4F00]" />
-                <h2 className="font-bold text-[#09090B]">Date Contact</h2>
+                <h2 className="font-bold text-[#09090B]">{t("checkout.contact_section")}</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
-                  <FormField label="Nume și Prenume *" field="name" icon={User} placeholder="Ion Popescu" form={form} errors={errors} onChange={set} />
+                  <FormField label={t("checkout.name_label")} field="name" icon={User} placeholder={t("checkout.name_placeholder")} form={form} errors={errors} onChange={set} />
                 </div>
-                <FormField label="Telefon *" field="phone" type="tel" icon={Phone} placeholder="+373 69 XXX XXX" form={form} errors={errors} onChange={set} />
-                <FormField label="Email (opțional)" field="email" type="email" icon={Mail} placeholder="email@exemplu.md" form={form} errors={errors} onChange={set} />
+                <FormField label={t("checkout.phone_label")} field="phone" type="tel" icon={Phone} placeholder="+373 69 XXX XXX" form={form} errors={errors} onChange={set} />
+                <FormField label={t("checkout.email_label")} field="email" type="email" icon={Mail} placeholder="email@exemplu.md" form={form} errors={errors} onChange={set} />
               </div>
             </div>
 
             <div className="bg-white rounded-2xl border border-zinc-200 p-5 md:p-6">
               <div className="flex items-center gap-2 mb-5">
                 <Truck className="w-4 h-4 text-[#FF4F00]" />
-                <h2 className="font-bold text-[#09090B]">Livrare</h2>
+                <h2 className="font-bold text-[#09090B]">{t("checkout.delivery_section")}</h2>
               </div>
               {total >= FREE_SHIPPING_THRESHOLD && (
                 <div className="flex items-center gap-2 mb-4 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
-                  <span className="text-green-700 text-sm font-bold">✓ Comandă peste 5.000 MDL — Livrare GRATUITĂ oriunde în Moldova!</span>
+                  <span className="text-green-700 text-sm font-bold">{t("checkout.free_delivery_banner")}</span>
                 </div>
               )}
               <div className="flex flex-col gap-3 mb-4">
-                {SHIPPING_OPTIONS.map((opt) => {
+                {shippingOptions.map((opt) => {
                   const cost = getShippingCost(opt.id, total);
                   return (
                     <button
@@ -235,22 +250,22 @@ export default function Checkout() {
                         <p className="text-xs text-zinc-400 mt-0.5">{opt.hint}</p>
                       </div>
                       <span className={`font-black text-base shrink-0 ml-4 ${cost === 0 ? "text-green-600" : form.delivery === opt.id ? "text-[#FF4F00]" : "text-[#09090B]"}`}>
-                        {cost === 0 ? "GRATUIT" : `${cost} MDL`}
+                        {cost === 0 ? t("checkout.free_badge") : `${cost} MDL`}
                       </span>
                     </button>
                   );
                 })}
               </div>
-              <FormField label="Adresa de livrare *" field="address" icon={MapPin} placeholder="Str. Exemplu 12, ap. 5, Chișinău" form={form} errors={errors} onChange={set} />
+              <FormField label={t("checkout.address_label")} field="address" icon={MapPin} placeholder={t("checkout.address_placeholder")} form={form} errors={errors} onChange={set} />
             </div>
 
             <div className="bg-white rounded-2xl border border-zinc-200 p-5 md:p-6">
-              <label className="block text-xs font-semibold text-zinc-500 mb-1.5">Note pentru comandă (opțional)</label>
+              <label className="block text-xs font-semibold text-zinc-500 mb-1.5">{t("checkout.notes_label")}</label>
               <textarea
                 value={form.notes}
                 onChange={(e) => set("notes", e.target.value)}
                 rows={3}
-                placeholder="Informații suplimentare, preferințe de livrare..."
+                placeholder={t("checkout.notes_placeholder")}
                 className="w-full bg-[#FAFAFA] border border-zinc-200 rounded-xl px-4 py-3 text-sm text-[#09090B] placeholder:text-zinc-400 focus:outline-none focus:border-[#FF4F00] focus:ring-2 focus:ring-[#FF4F00]/20 transition-all resize-none"
               />
             </div>
@@ -263,15 +278,15 @@ export default function Checkout() {
               disabled={!consentGiven}
               className="w-full bg-[#FF4F00] text-white font-black py-4 rounded-2xl text-lg hover:opacity-90 active:scale-[0.99] transition-all shadow-[0_4px_14px_rgba(255,79,0,0.35)] flex items-center justify-center gap-3 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
             >
-              <CreditCard className="w-5 h-5" /> Plasează Comanda
+              <CreditCard className="w-5 h-5" /> {t("checkout.submit")}
             </button>
-            <p className="text-center text-xs text-zinc-400">Plata se face la livrare. Fără taxe ascunse.</p>
+            <p className="text-center text-xs text-zinc-400">{t("checkout.pay_info")}</p>
           </form>
 
           <div className="lg:sticky lg:top-24 h-fit">
             <div className="bg-white rounded-2xl border border-zinc-200 p-5 md:p-6">
               <h2 className="font-bold text-[#09090B] mb-4 flex items-center gap-2">
-                <ShoppingCart className="w-4 h-4 text-[#FF4F00]" /> Sumar Comandă
+                <ShoppingCart className="w-4 h-4 text-[#FF4F00]" /> {t("checkout.summary_title")}
               </h2>
 
               <div className="space-y-3 mb-4">
@@ -291,26 +306,26 @@ export default function Checkout() {
 
               <div className="border-t border-zinc-100 pt-4 space-y-2">
                 <div className="flex justify-between text-sm text-zinc-500">
-                  <span>Subtotal</span>
+                  <span>{t("checkout.subtotal")}</span>
                   <span className="font-mono">{total.toLocaleString()} MDL</span>
                 </div>
                 <div className="flex justify-between text-sm text-zinc-500">
-                  <span>Livrare</span>
+                  <span>{t("checkout.delivery_cost")}</span>
                   {getShippingCost(form.delivery, total) === 0
-                    ? <span className="text-green-600 font-bold">GRATUITĂ</span>
+                    ? <span className="text-green-600 font-bold">{t("checkout.free")}</span>
                     : <span className="font-semibold text-[#09090B]">{getShippingCost(form.delivery, total)} MDL</span>
                   }
                 </div>
                 <div className="flex justify-between font-black text-base text-[#09090B] pt-2 border-t border-zinc-100">
-                  <span>Total</span>
+                  <span>{t("checkout.total_label")}</span>
                   <span className="font-mono text-[#FF4F00]">{(total + getShippingCost(form.delivery, total)).toLocaleString()} MDL</span>
                 </div>
               </div>
 
               <div className="mt-4 bg-zinc-50 rounded-xl p-3 text-xs text-zinc-500 space-y-1">
-                <p>✓ Garanție 2–3 ani pe echipamente</p>
-                <p>✓ Plată la livrare — fără risc</p>
-                <p>✓ Suport tehnic inclus 1 an</p>
+                <p>{t("checkout.g1")}</p>
+                <p>{t("checkout.g2")}</p>
+                <p>{t("checkout.g3")}</p>
               </div>
             </div>
           </div>

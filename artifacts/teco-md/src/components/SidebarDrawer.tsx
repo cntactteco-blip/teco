@@ -10,25 +10,25 @@ interface SidebarDrawerProps {
   onClose: () => void;
 }
 
-const pages = [
-  { href: "/servicii#montaj",    icon: Wrench,   label: "Montaj & Instalare" },
-  { href: "/servicii#reparatii", icon: FileText, label: "Diagnosticare & Reparații" },
-  { href: "/blog",               icon: FileText, label: "Blog Securitate" },
-];
-
-const legal = [
-  { href: "/termeni",          label: "Termeni și Condiții" },
-  { href: "/confidentialitate", label: "Politica de Confidențialitate" },
-  { href: "/garantii",         label: "Garanții și Retur" },
-];
-
 export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
   const [location] = useLocation();
-  const { lang } = useLang();
+  const { lang, t } = useLang();
   const products = useStore((s) => s.products);
   const categories = useStore((s) => s.settings.categories);
   const adminPhone = useStore((s) => s.settings.general?.adminPhone ?? "");
   const phone = (adminPhone || "37367200463").replace(/\D/g, "");
+
+  const pages = [
+    { href: "/servicii#montaj",    icon: Wrench,   label: t("sidebar.install") },
+    { href: "/servicii#reparatii", icon: FileText, label: t("sidebar.repair") },
+    { href: "/blog",               icon: FileText, label: t("sidebar.blog") },
+  ];
+
+  const legal = [
+    { href: "/termeni",           label: t("sidebar.terms") },
+    { href: "/confidentialitate", label: t("sidebar.privacy_policy") },
+    { href: "/garantii",          label: t("sidebar.returns") },
+  ];
 
   // Contoare calculate live din catalog — dinamic din categoriile admin
   const catCounts = categories.map((cat) => ({
@@ -75,7 +75,7 @@ export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
         <div className="flex-1 overflow-y-auto py-2">
           {/* Catalog */}
           <div className="px-4 py-3">
-            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-2 mb-2">Catalog Produse</p>
+            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-2 mb-2">{t("sidebar.catalog")}</p>
             {catCounts.map(({ href, slug, iconKey, label, count }) => (
               <Link
                 key={href}
@@ -96,7 +96,7 @@ export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
 
           {/* Utility pages */}
           <div className="px-4 py-3">
-            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-2 mb-2">Servicii</p>
+            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-2 mb-2">{t("sidebar.services_section")}</p>
             {pages.map(({ href, icon: Icon, label }) => (
               <Link
                 key={href}
@@ -117,7 +117,7 @@ export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
 
           {/* Legal */}
           <div className="px-4 py-3">
-            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-2 mb-2">Informații Legale</p>
+            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-2 mb-2">{t("sidebar.legal")}</p>
             {legal.map(({ href, label }) => (
               <Link
                 key={href}
@@ -133,7 +133,7 @@ export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
 
           {/* Contact quick links */}
           <div className="px-4 py-3 mx-4 bg-zinc-50 rounded-2xl my-2">
-            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">Contact Rapid</p>
+            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-3">{t("sidebar.contact_quick")}</p>
             <a href={`tel:+${phone}`} className="flex items-center gap-2 text-sm font-semibold text-[#09090B] hover:text-[#FF4F00] transition-colors mb-1">
               <Phone className="w-4 h-4 text-[#FF4F00]" /> +{phone.slice(0,3)} {phone.slice(3,5)} {phone.slice(5,8)} {phone.slice(8)}
             </a>
@@ -152,9 +152,9 @@ export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
         <div className="px-5 py-4 border-t border-zinc-100">
           <div className="flex items-center gap-2 mb-1">
             <Award className="w-3.5 h-3.5 text-[#FF4F00]" />
-            <span className="text-xs font-bold text-zinc-700">Garanție 2–3 ani · Service certificat</span>
+            <span className="text-xs font-bold text-zinc-700">{t("sidebar.warranty_badge")}</span>
           </div>
-          <p className="text-[10px] text-zinc-400">© 2026 Teco.md — Toate drepturile rezervate</p>
+          <p className="text-[10px] text-zinc-400">{t("sidebar.copyright")}</p>
         </div>
       </div>
     </>
