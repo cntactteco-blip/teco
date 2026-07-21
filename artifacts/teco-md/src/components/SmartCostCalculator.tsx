@@ -127,45 +127,46 @@ export default function SmartCostCalculator() {
     const cameraCount = parseInt(selections.cameras) || 2;
     const installCost = cameraCount <= 1 ? 750 : 650 * cameraCount;
 
-    // ── Găsește toate kiturile din catalog cu suficiente camere ──
+    // Toate kiturile cu număr de camere detectat
     const seturi = allProducts
       .filter((p) => p.category === "kituri" && p.inStock !== false)
       .map((p) => ({ product: p, count: extractCameraCount(p) }))
       .filter((s): s is { product: typeof allProducts[number]; count: number } => s.count !== null);
 
-    const potrivite = seturi
+    // Găsește cea mai mică dimensiune de kit care acoperă cerința
+    const countMinim = seturi
       .filter((s) => s.count >= cameraCount)
-      .sort((a, b) => a.product.price - b.product.price); // crescător după preț
+      .reduce((min, s) => (s.count < min ? s.count : min), Infinity);
 
-    if (potrivite.length >= 2) {
-      // Calculul = cel MAI SCUMP kit potrivit (sau cel mai bine echipat)
-      // Recomandarea = cel MAI IEFTIN kit potrivit
-      const kitCalc = potrivite[potrivite.length - 1].product; // cel mai scump
-      const kitRecomandat = potrivite[0].product;              // cel mai ieftin
-      const equipmentCost = kitCalc.price;
+    // Kituri cu EXACT acea dimensiune minimă (cele mai apropiate de cerință)
+    const kitPotrivite = seturi
+      .filter((s) => s.count === countMinim)
+      .sort((a, b) => a.product.price - b.product.price);
+
+    if (kitPotrivite.length >= 2) {
+      // Estimat = cel mai scump din categoria potrivită; Recomandat = cel mai ieftin
+      const kitCalc = kitPotrivite[kitPotrivite.length - 1].product;
+      const kitRecomandat = kitPotrivite[0].product;
       const economisire = Math.max(0, kitCalc.price - kitRecomandat.price);
-      return { equipmentCost, installCost, totalCost: equipmentCost + installCost, kitRecomandat, economisire };
+      return { equipmentCost: kitCalc.price, installCost, totalCost: kitCalc.price + installCost, kitRecomandat, economisire };
     }
 
-    if (potrivite.length === 1) {
-      // Doar un kit potrivit — folosim prețul lui per-cameră × count ca estimat mai mare
-      const kit = potrivite[0];
-      const pretPerCamera = kit.product.price / kit.count;
-      const equipmentCost = Math.round(pretPerCamera * cameraCount * 1.15); // +15% față de kit
-      const kitRecomandat = kit.product;
-      const economisire = Math.max(0, equipmentCost - kitRecomandat.price);
-      return { equipmentCost, installCost, totalCost: equipmentCost + installCost, kitRecomandat, economisire };
+    if (kitPotrivite.length === 1) {
+      // Un singur kit potrivit — estimatul e +15% ca să existe diferența față de recomandare
+      const kit = kitPotrivite[0].product;
+      const equipmentCost = Math.round(kit.price * 1.15);
+      return { equipmentCost, installCost, totalCost: equipmentCost + installCost, kitRecomandat: kit, economisire: Math.round(kit.price * 0.15) };
     }
 
-    // ── Fallback: nicio kit potrivit — calculează din seturi mai mari sau camere individuale ──
-    const oriceSeturi = seturi.sort((a, b) => b.count - a.count);
-    if (oriceSeturi.length > 0) {
-      const cel = oriceSeturi[0];
-      const equipmentCost = Math.round((cel.product.price / cel.count) * cameraCount * 1.1);
-      return { equipmentCost, installCost, totalCost: equipmentCost + installCost, kitRecomandat: cel.product, economisire: Math.max(0, equipmentCost - cel.product.price) };
+    // Niciun kit cu count >= cameraCount — scalăm prețul per-cameră din cel mai mare kit disponibil
+    const celMaiMareKit = [...seturi].sort((a, b) => b.count - a.count)[0];
+    if (celMaiMareKit) {
+      const pretPerCam = celMaiMareKit.product.price / celMaiMareKit.count;
+      const equipmentCost = Math.round(pretPerCam * cameraCount * 1.1);
+      return { equipmentCost, installCost, totalCost: equipmentCost + installCost, kitRecomandat: celMaiMareKit.product, economisire: Math.max(0, equipmentCost - celMaiMareKit.product.price) };
     }
 
-    // ── Fallback final: camere individuale ──
+    // Fallback final: camere individuale
     const poeCameras = allProducts.filter((p) => p.category === "poe" && p.inStock !== false).sort((a, b) => a.price - b.price);
     const wifiCameras = allProducts.filter((p) => p.category === "wifi" && p.inStock !== false).sort((a, b) => a.price - b.price);
     const nvrList = allProducts.filter((p) => p.category === "nvr" && p.inStock !== false).sort((a, b) => a.price - b.price);
