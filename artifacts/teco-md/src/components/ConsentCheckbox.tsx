@@ -1,5 +1,4 @@
 // ─── ConsentCheckbox — checkbox GDPR refolosibil pentru toate formularele ──
-import { Shield } from "lucide-react";
 
 interface Props {
   checked: boolean;
@@ -10,8 +9,9 @@ interface Props {
 
 export function ConsentCheckbox({ checked, onChange, required = true, className = "" }: Props) {
   return (
-    <label className={`flex items-start gap-2.5 cursor-pointer group ${className}`}>
-      <div className="mt-0.5 flex-shrink-0">
+    <label className={`flex items-start gap-3 cursor-pointer select-none ${className}`}>
+      {/* Wrapper cu touch target minim 44×44px pe mobile */}
+      <span className="flex-shrink-0 flex items-center justify-center -m-2 p-2 rounded-xl" style={{ minWidth: 44, minHeight: 44 }}>
         <input
           type="checkbox"
           checked={checked}
@@ -19,22 +19,22 @@ export function ConsentCheckbox({ checked, onChange, required = true, className 
           required={required}
           className="sr-only"
         />
-        <div
-          onClick={() => onChange(!checked)}
-          className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
+        <span
+          className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-150 ${
             checked
-              ? "bg-[#FF4F00] border-[#FF4F00]"
-              : "border-zinc-300 bg-white group-hover:border-[#FF4F00]"
+              ? "bg-[#FF4F00] border-[#FF4F00] shadow-sm"
+              : "border-zinc-400 bg-white"
           }`}
         >
           {checked && (
-            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+            <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           )}
-        </div>
-      </div>
-      <span className="text-xs text-zinc-500 leading-relaxed">
+        </span>
+      </span>
+
+      <span className="text-xs text-zinc-500 leading-relaxed pt-0.5">
         Sunt de acord cu prelucrarea datelor mele cu caracter personal (nume și telefon) de către{" "}
         <span className="font-semibold text-zinc-700">TECO.MD</span> în scopul contactării comerciale,
         conform{" "}
