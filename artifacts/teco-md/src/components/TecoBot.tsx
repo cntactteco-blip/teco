@@ -297,21 +297,32 @@ export function TecoBot() {
         </div>
       )}
 
-      {/* ── Floating operator button — pill mic ca originalul ── */}
+      {/* ── Floating operator button — chat bubble cu siluetă ── */}
       <button
         onClick={openChat}
         aria-label="Chat consultant"
-        className="fixed bottom-33 left-4 md:bottom-6 md:left-6 z-40 flex items-center gap-2 bg-gradient-to-br from-[#FF4F00] to-orange-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 px-3.5 py-2.5 md:px-4 md:py-3"
+        className="fixed bottom-32 left-4 md:bottom-6 md:left-6 z-40 relative"
       >
-        {/* Siluetă umană în loc de robot */}
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
-          <circle cx="12" cy="8" r="4" fill="white" fillOpacity="0.97" />
-          <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeOpacity="0.97" />
-        </svg>
-        <span className="text-sm font-bold hidden sm:inline">{OPERATOR.name}</span>
-        <span className="text-sm font-bold sm:hidden">Ana</span>
+        {/* Cercul principal */}
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FF4F00] to-orange-600 flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200">
+          {/* Chat bubble + person SVG */}
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+            {/* Speech bubble */}
+            <rect x="2" y="2" width="18" height="14" rx="4" fill="white" fillOpacity="0.97"/>
+            <path d="M7 16 L10 21 L13 16" fill="white" fillOpacity="0.97"/>
+            {/* Person head */}
+            <circle cx="11" cy="7.5" r="2.2" fill="#FF4F00" fillOpacity="0.9"/>
+            {/* Person body */}
+            <path d="M7 13.5 C7 11 8.8 9.8 11 9.8 C13.2 9.8 15 11 15 13.5" stroke="#FF4F00" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.9"/>
+          </svg>
+        </div>
+
+        {/* Green online dot */}
+        <span className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full bg-green-400 border-2 border-white animate-pulse shadow-sm" />
+
+        {/* Unread badge */}
         {unread > 0 && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">
+          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center shadow">
             {unread}
           </span>
         )}
