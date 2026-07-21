@@ -2,6 +2,7 @@ import { useState, useEffect, Suspense, lazy } from "react";
 import { Link } from "wouter";
 import { Camera, Shield, Server, Zap, Truck, Phone, Award, Star, CheckCircle2, ChevronDown } from "lucide-react";
 import { ProductCarousel } from "@/components/ProductCarousel";
+import { AppointmentBooker } from "@/components/AppointmentBooker";
 import BundleBuilder from "@/components/BundleBuilder";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
@@ -435,6 +436,13 @@ export default function Home() {
               );
             })}
           </div>
+        </div>
+      </section>
+
+      {/* Programare instalare */}
+      <section className="py-8 md:py-12 bg-[#FAFAFA]">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <AppointmentBooker />
         </div>
       </section>
 
