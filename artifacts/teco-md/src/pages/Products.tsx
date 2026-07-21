@@ -573,8 +573,7 @@ export default function Products() {
 
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl md:text-3xl font-black text-[#09090B] tracking-tight">{t("products.title")}</h1>
-                <p className="text-zinc-500 text-sm mt-0.5">{products.length} {t("products.in_stock")}</p>
+                <h1 className="text-lg md:text-3xl font-black text-[#09090B] tracking-tight">{t("products.title")}</h1>
               </div>
 
               {/* Desktop sort dropdown */}
