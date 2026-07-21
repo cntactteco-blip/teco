@@ -3,6 +3,7 @@ import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
 import { useStore } from "@/lib/store";
+import { useLang } from "@/contexts/LangContext";
 
 export default function ColorHunterSlider() {
   const [sliderPos, setSliderPos] = useState(40);
@@ -11,8 +12,9 @@ export default function ColorHunterSlider() {
   const addItem = useCart((s) => s.addItem);
   const openCart = useCart((s) => s.openCart);
   const { toast } = useToast();
+  const { lang } = useLang();
+  const ru = lang === "ru";
 
-  // Admin-configured images and product
   const settings = useStore((s) => s.settings);
   const allProducts = useStore((s) => s.products);
   const adminProduct = settings.moduleB.productId
@@ -30,19 +32,27 @@ export default function ColorHunterSlider() {
   const handleAdd = () => {
     if (!adminProduct) return;
     addItem(adminProduct as any);
-    toast({ title: "Adăugat în coș!", description: adminProduct.name });
+    toast({ title: ru ? "Добавлено в корзину!" : "Adăugat în coș!", description: adminProduct.name });
     setTimeout(() => openCart(), 400);
   };
 
   return (
     <section className="relative bg-zinc-950 py-12 px-4 text-white overflow-hidden">
-      {/* Smooth fade from white sections above */}
       <div className="absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-white to-transparent pointer-events-none z-10" />
       <div className="max-w-7xl mx-auto">
         <div className="mb-6 md:mb-8">
-          <span className="inline-block bg-white/10 text-white/80 text-xs font-bold px-3 py-1 rounded-full mb-3">TEHNOLOGIE EXCLUSIVĂ</span>
-          <h2 className="font-black text-2xl md:text-3xl text-white tracking-tight">Color Night Vision — Ziua &amp; Noaptea</h2>
-          <p className="text-zinc-400 text-sm mt-1">Trage slider-ul și compară: cameră clasică infraroșu <span className="text-white font-semibold">vs</span> ColorHunter 4K în timp real</p>
+          <span className="inline-block bg-white/10 text-white/80 text-xs font-bold px-3 py-1 rounded-full mb-3">
+            {ru ? "ЭКСКЛЮЗИВНАЯ ТЕХНОЛОГИЯ" : "TEHNOLOGIE EXCLUSIVĂ"}
+          </span>
+          <h2 className="font-black text-2xl md:text-3xl text-white tracking-tight">
+            {ru ? "Цветное ночное видение — Днём и Ночью" : "Color Night Vision — Ziua & Noaptea"}
+          </h2>
+          <p className="text-zinc-400 text-sm mt-1">
+            {ru
+              ? <>Перетащите ползунок и сравните: классическая ИК-камера <span className="text-white font-semibold">vs</span> ColorHunter 4K в реальном времени</>
+              : <>Trage slider-ul și compară: cameră clasică infraroșu <span className="text-white font-semibold">vs</span> ColorHunter 4K în timp real</>
+            }
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-start">
@@ -61,10 +71,7 @@ export default function ColorHunterSlider() {
               onTouchEnd={() => setIsDragging(false)}
               data-testid="colorhunter-slider"
             >
-              {/* Right: Color image (full layer) */}
               <img src={imgRight} alt="Color Hunter" className="absolute inset-0 w-full h-full object-cover" draggable={false} />
-
-              {/* Left: IR/grayscale overlay clipped to left side */}
               <img
                 src={imgLeft}
                 alt="IR vision"
@@ -79,7 +86,9 @@ export default function ColorHunterSlider() {
 
               {/* Labels */}
               <div className="absolute top-3 left-3 pointer-events-none z-20" style={{ opacity: sliderPos > 15 ? 1 : 0, transition: "opacity 0.2s" }}>
-                <span className="bg-black/70 text-zinc-300 font-mono text-[10px] font-bold px-2 py-1 rounded-sm">IR CLASIC — Alb/Negru</span>
+                <span className="bg-black/70 text-zinc-300 font-mono text-[10px] font-bold px-2 py-1 rounded-sm">
+                  {ru ? "ИК КЛАССИК — Чёрно-белый" : "IR CLASIC — Alb/Negru"}
+                </span>
               </div>
               <div className="absolute top-3 right-3 pointer-events-none z-20" style={{ opacity: sliderPos < 85 ? 1 : 0, transition: "opacity 0.2s" }}>
                 <span className="bg-green-600/90 text-white font-mono text-[10px] font-bold px-2 py-1 rounded-sm">COLOR HUNTER 4K ✦</span>
@@ -95,19 +104,19 @@ export default function ColorHunterSlider() {
 
               {sliderPos === 40 && (
                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 text-white/70 text-[10px] px-2 py-1 rounded-full font-medium pointer-events-none z-20 whitespace-nowrap">
-                  ← trage pentru a compara →
+                  {ru ? "← потяните для сравнения →" : "← trage pentru a compara →"}
                 </div>
               )}
             </div>
 
             <div className="flex gap-3 mt-3 overflow-x-auto no-scrollbar">
-              {["0.001 Lux (vs 0.05 IR)", "Apertura F1.0", "H.265+", "IP67 Impermeabil", "IR fallback 30m"].map((s) => (
+              {["0.001 Lux (vs 0.05 IR)", "Apertura F1.0", "H.265+", ru ? "IP67 Водонепроницаемый" : "IP67 Impermeabil", "IR fallback 30m"].map((s) => (
                 <span key={s} className="flex-shrink-0 bg-white/5 border border-white/10 text-zinc-400 text-[10px] px-2.5 py-1 rounded-full font-medium">{s}</span>
               ))}
             </div>
           </div>
 
-          {/* Product card — admin or fallback */}
+          {/* Product card */}
           {(() => {
             const p = adminProduct ?? {
               id: 201,
@@ -120,7 +129,7 @@ export default function ColorHunterSlider() {
               model: "IPC3612LB",
               imageUrl: "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=600&q=85&auto=format&fit=crop",
               category: "camere",
-              description: "Color noapte la 0.005 Lux — fără infraroșu.",
+              description: ru ? "Цветная картинка ночью при 0.005 Лк — без инфракрасного." : "Color noapte la 0.005 Lux — fără infraroșu.",
               inStock: true,
             };
             const discount = p.oldPrice ? Math.round((1 - p.price / p.oldPrice) * 100) : 0;
@@ -130,10 +139,10 @@ export default function ColorHunterSlider() {
                   <span className="inline-block bg-zinc-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-full mb-3">{p.badge}</span>
                 )}
                 <div className="bg-zinc-50 rounded-xl overflow-hidden mb-4 relative">
-                  <img src={p.imageUrl} alt={p.name} className="w-full h-40 object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                  <img src={(p as any).imageUrl} alt={p.name} className="w-full h-40 object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                   <div className="absolute top-2 right-2 bg-green-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">COLOR 24/7</div>
                 </div>
-                <p className="text-[10px] font-bold text-zinc-400 mb-0.5">{p.brand} · {p.model}</p>
+                <p className="text-[10px] font-bold text-zinc-400 mb-0.5">{(p as any).brand} · {(p as any).model}</p>
                 <h3 className="font-bold text-sm leading-tight mb-1">{p.name}</h3>
                 <p className="font-mono text-[10px] text-zinc-400 mb-3">{p.specs}</p>
                 <div className="flex items-end justify-between mb-4">
@@ -146,9 +155,11 @@ export default function ColorHunterSlider() {
                   )}
                 </div>
                 <button onClick={handleAdd} data-testid="colorhunter-add-btn" className="w-full bg-[#FF4F00] text-white font-bold py-3 rounded-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 text-sm">
-                  <ShoppingCart className="w-4 h-4" /> Adaugă în Coș
+                  <ShoppingCart className="w-4 h-4" /> {ru ? "Добавить в корзину" : "Adaugă în Coș"}
                 </button>
-                <p className="text-center text-[10px] text-zinc-400 mt-2">Livrare în 24h · Garanție 5 ani</p>
+                <p className="text-center text-[10px] text-zinc-400 mt-2">
+                  {ru ? "Доставка за 24ч · Гарантия 5 лет" : "Livrare în 24h · Garanție 5 ani"}
+                </p>
               </div>
             );
           })()}

@@ -34,7 +34,7 @@ export function BottomNav() {
 
   const phone = adminPhone || "37367200463";
   const WA_MSG = encodeURIComponent(
-    t("nav.contact") === "Контакт"
+    lang === "ru"
       ? "Здравствуйте! Меня интересуют системы видеонаблюдения TECO.MD. Можно получить предложение?"
       : "Bună ziua! Sunt interesat de sistemele de supraveghere TECO.MD. Pot primi o ofertă?"
   );
@@ -81,7 +81,7 @@ export function BottomNav() {
               style={{ animation: "slideUpContact 0.12s ease-out" }}
             >
               <Wrench className="w-4 h-4" />
-              <span>{lang === "ru" ? "Заказать Монтаж" : "Solicită Montaj"}</span>
+              <span>{lang === "ru" ? "Заказать монтаж" : "Solicită Montaj"}</span>
             </button>
             <a
               href={viberLink}
@@ -134,7 +134,7 @@ export function BottomNav() {
                 <span className="absolute -top-1 -right-1.5 bg-[#FF4F00] w-2 h-2 rounded-full border border-white" />
               )}
             </div>
-            <span className="text-[9px] font-medium">{lang === "ru" ? "Ofertă" : "Ofertă"}</span>
+            <span className="text-[9px] font-medium">{lang === "ru" ? "Акция" : "Ofertă"}</span>
           </button>
 
           <button

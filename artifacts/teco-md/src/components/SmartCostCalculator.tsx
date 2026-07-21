@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Home, Building, Briefcase, MapPin, Cable, Zap, Star, Wifi, HelpCircle, Check, Camera, ShoppingCart, Package, Wrench, Smartphone, MessageCircle, Lightbulb, RotateCcw } from "lucide-react";
+import { Home, Building, Briefcase, MapPin, Zap, Star, Wifi, HelpCircle, Check, Camera, ShoppingCart, Package, Wrench, Smartphone, MessageCircle, Lightbulb, RotateCcw } from "lucide-react";
 import { ConsentCheckbox } from "@/components/ConsentCheckbox";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
-import { useStore, storeActions, getState } from "@/lib/store";
+import { useStore, storeActions } from "@/lib/store";
 import { getSessionPayload } from "@/lib/session";
+import { useLang } from "@/contexts/LangContext";
 
 // ── Defined outside to keep stable identity across renders (prevents keyboard dismiss) ──
 function OptionButton({ icon: Icon, label, isActive, onClick, testId }: {
@@ -25,11 +26,42 @@ function OptionButton({ icon: Icon, label, isActive, onClick, testId }: {
 }
 
 export default function SmartCostCalculator() {
+  const { lang } = useLang();
+  const ru = lang === "ru";
+  const s = (ro: string, ru_: string) => ru ? ru_ : ro;
+
+  const OBJECTIVES = [
+    { icon: Home,      ro: "Casă / Vilă",                 ru: "Дом / Вилла" },
+    { icon: Building,  ro: "Apartament",                   ru: "Квартира" },
+    { icon: Briefcase, ro: "Spațiu Comercial / Depozit",   ru: "Коммерческое помещение / Склад" },
+    { icon: MapPin,    ro: "Curte / Teren",                ru: "Двор / Участок" },
+  ];
+
+  const CAMERA_OPTS = [
+    { ro: "2 Camere",   ru: "2 камеры"   },
+    { ro: "4 Camere",   ru: "4 камеры"   },
+    { ro: "8 Camere",   ru: "8 камер"    },
+    { ro: "16+ Camere", ru: "16+ камер"  },
+  ];
+
+  const STORAGE_OPTS = [
+    { ro: "14 zile",    ru: "14 дней"   },
+    { ro: "30 de zile", ru: "30 дней"   },
+    { ro: "60 de zile", ru: "60 дней"   },
+    { ro: "90+ zile",   ru: "90+ дней"  },
+  ];
+
+  const INSTALL_OPTS = [
+    { icon: Zap,        ro: "Standard (pat cablu)",       ru: "Стандарт (кабель-канал)"     },
+    { icon: Star,       ro: "Premium (ascuns în pereți)", ru: "Премиум (скрытый в стенах)"  },
+    { icon: Wifi,       ro: "Fără cablu (Wireless)",      ru: "Без кабеля (Wireless)"       },
+    { icon: HelpCircle, ro: "Nu știu, vreau sfat",        ru: "Не знаю, хочу совет"         },
+  ];
+
   const [step, setStep] = useState(1);
   const [selections, setSelections] = useState({ objective: "", cameras: "", storage: "", installation: "" });
   const [formData, setFormData] = useState({ name: "", phone: "" });
   const [calcConsent, setCalcConsent] = useState(false);
-
   const sectionRef = useRef<HTMLElement>(null);
 
   const resetCalc = () => {
@@ -38,7 +70,6 @@ export default function SmartCostCalculator() {
     setFormData({ name: "", phone: "" });
   };
 
-  // Scroll la top-ul calculatorului la fiecare schimbare de step
   useEffect(() => {
     if (step > 1) {
       setTimeout(() => {
@@ -46,24 +77,28 @@ export default function SmartCostCalculator() {
       }, 50);
     }
   }, [step]);
+
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
-  const [loadingText, setLoadingText] = useState("Verificăm stocul disponibil...");
+  const loadingTexts = {
+    ro: ["Verificăm stocul disponibil...", "Calculăm costul manoperei...", "Generăm devizul personalizat..."],
+    ru: ["Проверяем наличие товаров...", "Рассчитываем стоимость монтажа...", "Формируем персональную смету..."],
+  };
+  const [loadingText, setLoadingText] = useState(loadingTexts.ro[0]);
 
   const addItem = useCart((state) => state.addItem);
   const openCart = useCart((state) => state.openCart);
   const { toast } = useToast();
 
-  // Admin-configured product for module A
-  const settings = useStore((s) => s.settings);
-  const allProducts = useStore((s) => s.products);
+  const settings = useStore((st) => st.settings);
+  const allProducts = useStore((st) => st.products);
   const adminProduct = settings.moduleA.productId
     ? allProducts.find((p) => p.id === settings.moduleA.productId) ?? null
     : null;
 
   useEffect(() => {
     if (step === 5) {
-      const texts = ["Verificăm stocul disponibil...", "Calculăm costul manoperei...", "Generăm devizul personalizat..."];
+      const texts = ru ? loadingTexts.ru : loadingTexts.ro;
       let ti = 0;
       const textInt = setInterval(() => { ti = (ti + 1) % texts.length; setLoadingText(texts[ti]); }, 800);
       setLoadingProgress(0);
@@ -72,7 +107,7 @@ export default function SmartCostCalculator() {
       return () => { clearTimeout(t); clearInterval(textInt); clearInterval(progInt); };
     }
     return undefined;
-  }, [step]);
+  }, [step, ru]);
 
   const handleSelect = (key: keyof typeof selections, value: string) => {
     setSelections((prev) => ({ ...prev, [key]: value }));
@@ -81,16 +116,14 @@ export default function SmartCostCalculator() {
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.phone.trim()) { alert("Introduceți numărul de telefon"); return; }
-    // Save lead to store
+    if (!formData.phone.trim()) { alert(s("Introduceți numărul de telefon", "Введите номер телефона")); return; }
     storeActions.addLead({
       name: formData.name,
       phone: formData.phone,
-      source: "Calculator Cost",
+      source: s("Calculator Cost", "Калькулятор стоимости"),
       selections,
     });
 
-    // Trimite la Telegram cu toate detaliile calculatorului
     const { equipmentCost, installCost, totalCost } = getCalculations();
     const session = getSessionPayload();
     const API = import.meta.env.VITE_API_URL || "";
@@ -111,7 +144,6 @@ export default function SmartCostCalculator() {
     setStep(7);
   };
 
-  // Extrage numărul de camere dintr-un produs (kit)
   const extractCameraCount = (p: { name: string; specs: string }): number | null => {
     const text = `${p.name} ${p.specs}`.toLowerCase();
     let m = text.match(/(\d+)\s*(?:x|×)?\s*camer/);
@@ -126,47 +158,33 @@ export default function SmartCostCalculator() {
   const getCalculations = () => {
     const cameraCount = parseInt(selections.cameras) || 2;
     const installCost = cameraCount <= 1 ? 750 : 650 * cameraCount;
-
-    // Toate kiturile cu număr de camere detectat
     const seturi = allProducts
       .filter((p) => p.category === "kituri" && p.inStock !== false)
       .map((p) => ({ product: p, count: extractCameraCount(p) }))
-      .filter((s): s is { product: typeof allProducts[number]; count: number } => s.count !== null);
-
-    // Găsește cea mai mică dimensiune de kit care acoperă cerința
+      .filter((s_): s_ is { product: typeof allProducts[number]; count: number } => s_.count !== null);
     const countMinim = seturi
-      .filter((s) => s.count >= cameraCount)
-      .reduce((min, s) => (s.count < min ? s.count : min), Infinity);
-
-    // Kituri cu EXACT acea dimensiune minimă (cele mai apropiate de cerință)
+      .filter((s_) => s_.count >= cameraCount)
+      .reduce((min, s_) => (s_.count < min ? s_.count : min), Infinity);
     const kitPotrivite = seturi
-      .filter((s) => s.count === countMinim)
+      .filter((s_) => s_.count === countMinim)
       .sort((a, b) => a.product.price - b.product.price);
-
     if (kitPotrivite.length >= 2) {
-      // Estimat = cel mai scump din categoria potrivită; Recomandat = cel mai ieftin
       const kitCalc = kitPotrivite[kitPotrivite.length - 1].product;
       const kitRecomandat = kitPotrivite[0].product;
       const economisire = Math.max(0, kitCalc.price - kitRecomandat.price);
       return { equipmentCost: kitCalc.price, installCost, totalCost: kitCalc.price + installCost, kitRecomandat, economisire };
     }
-
     if (kitPotrivite.length === 1) {
-      // Un singur kit potrivit — estimatul e +15% ca să existe diferența față de recomandare
       const kit = kitPotrivite[0].product;
       const equipmentCost = Math.round(kit.price * 1.15);
       return { equipmentCost, installCost, totalCost: equipmentCost + installCost, kitRecomandat: kit, economisire: Math.round(kit.price * 0.15) };
     }
-
-    // Niciun kit cu count >= cameraCount — scalăm prețul per-cameră din cel mai mare kit disponibil
     const celMaiMareKit = [...seturi].sort((a, b) => b.count - a.count)[0];
     if (celMaiMareKit) {
       const pretPerCam = celMaiMareKit.product.price / celMaiMareKit.count;
       const equipmentCost = Math.round(pretPerCam * cameraCount * 1.1);
       return { equipmentCost, installCost, totalCost: equipmentCost + installCost, kitRecomandat: celMaiMareKit.product, economisire: Math.max(0, equipmentCost - celMaiMareKit.product.price) };
     }
-
-    // Fallback final: camere individuale
     const poeCameras = allProducts.filter((p) => p.category === "poe" && p.inStock !== false).sort((a, b) => a.price - b.price);
     const wifiCameras = allProducts.filter((p) => p.category === "wifi" && p.inStock !== false).sort((a, b) => a.price - b.price);
     const nvrList = allProducts.filter((p) => p.category === "nvr" && p.inStock !== false).sort((a, b) => a.price - b.price);
@@ -189,22 +207,28 @@ export default function SmartCostCalculator() {
       <div className="max-w-[800px] mx-auto text-center">
         {step < 5 && (
           <div className="mb-10">
-            <p className="text-[#FF4F00] text-xs font-bold uppercase tracking-[0.2em] mb-3">Calculator Gratuit</p>
-            <h2 className="font-black text-3xl md:text-4xl mb-3 text-zinc-950 tracking-tight">Calculează Costul<br className="md:hidden"/> Sistemului Tău</h2>
-            <p className="text-zinc-400 max-w-md mx-auto">Răspunde la 4 întrebări și primești devizul estimativ gratuit în 60 de secunde.</p>
+            <p className="text-[#FF4F00] text-xs font-bold uppercase tracking-[0.2em] mb-3">
+              {s("Calculator Gratuit", "Бесплатный калькулятор")}
+            </p>
+            <h2 className="font-black text-3xl md:text-4xl mb-3 text-zinc-950 tracking-tight">
+              {s(<>Calculează Costul<br className="md:hidden"/> Sistemului Tău</>, <>Рассчитайте стоимость<br className="md:hidden"/> вашей системы</>)}
+            </h2>
+            <p className="text-zinc-400 max-w-md mx-auto">
+              {s("Răspunde la 4 întrebări și primești devizul estimativ gratuit în 60 de secunde.", "Ответьте на 4 вопроса и получите бесплатную смету за 60 секунд.")}
+            </p>
           </div>
         )}
 
         {step <= 4 && (
           <div className="flex items-center justify-center gap-4 mb-8">
-            {[1, 2, 3, 4].map((s) => (
-              <div key={s} className="flex items-center">
+            {[1, 2, 3, 4].map((n) => (
+              <div key={n} className="flex items-center">
                 <button
-                  onClick={() => s < step ? setStep(s) : undefined}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${s === step ? "bg-[#FF4F00] text-white shadow-[0_0_12px_rgba(255,79,0,0.4)]" : s < step ? "bg-orange-100 text-[#FF4F00] cursor-pointer hover:bg-orange-200" : "bg-zinc-100 text-zinc-400 cursor-default"}`}>
-                  {s < step ? <Check className="w-4 h-4" /> : s}
+                  onClick={() => n < step ? setStep(n) : undefined}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${n === step ? "bg-[#FF4F00] text-white shadow-[0_0_12px_rgba(255,79,0,0.4)]" : n < step ? "bg-orange-100 text-[#FF4F00] cursor-pointer hover:bg-orange-200" : "bg-zinc-100 text-zinc-400 cursor-default"}`}>
+                  {n < step ? <Check className="w-4 h-4" /> : n}
                 </button>
-                {s < 4 && <div className={`w-12 h-1 transition-colors ${s < step ? "bg-[#FF4F00]/30" : "bg-zinc-100"}`} />}
+                {n < 4 && <div className={`w-12 h-1 transition-colors ${n < step ? "bg-[#FF4F00]/30" : "bg-zinc-100"}`} />}
               </div>
             ))}
           </div>
@@ -213,46 +237,74 @@ export default function SmartCostCalculator() {
         <div className="animate-fade-in text-left">
           {step === 1 && (
             <div>
-              <h3 className="text-xl font-bold mb-6 text-center text-[#09090B]">Ce vrei să protejezi?</h3>
+              <h3 className="text-xl font-bold mb-6 text-center text-[#09090B]">
+                {s("Ce vrei să protejezi?", "Что вы хотите защитить?")}
+              </h3>
               <div className="grid grid-cols-2 gap-4">
-                <OptionButton icon={Home} label="Casă / Vilă" isActive={selections.objective === "Casă / Vilă"} onClick={() => handleSelect("objective", "Casă / Vilă")} testId="calc-obj-casa" />
-                <OptionButton icon={Building} label="Apartament" isActive={selections.objective === "Apartament"} onClick={() => handleSelect("objective", "Apartament")} testId="calc-obj-apartament" />
-                <OptionButton icon={Briefcase} label="Spațiu Comercial / Depozit" isActive={selections.objective === "Spațiu Comercial / Depozit"} onClick={() => handleSelect("objective", "Spațiu Comercial / Depozit")} testId="calc-obj-comercial" />
-                <OptionButton icon={MapPin} label="Curte / Teren" isActive={selections.objective === "Curte / Teren"} onClick={() => handleSelect("objective", "Curte / Teren")} testId="calc-obj-teren" />
+                {OBJECTIVES.map(({ icon, ro, ru: ruLabel }) => {
+                  const label = ru ? ruLabel : ro;
+                  return (
+                    <OptionButton
+                      key={ro}
+                      icon={icon}
+                      label={label}
+                      isActive={selections.objective === ro}
+                      onClick={() => handleSelect("objective", ro)}
+                      testId={`calc-obj-${ro.toLowerCase().replace(/[^a-z]/g, "")}`}
+                    />
+                  );
+                })}
               </div>
             </div>
           )}
 
           {step === 2 && (
             <div>
-              <h3 className="text-xl font-bold mb-6 text-center text-[#09090B]">De câte camere ai nevoie?</h3>
+              <h3 className="text-xl font-bold mb-6 text-center text-[#09090B]">
+                {s("De câte camere ai nevoie?", "Сколько камер вам нужно?")}
+              </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {["2 Camere", "4 Camere", "8 Camere", "16+ Camere"].map((opt) => (
-                  <OptionButton key={opt} icon={Camera} label={opt} isActive={selections.cameras === opt} onClick={() => handleSelect("cameras", opt)} testId={`calc-cam-${opt.replace("+","")}`} />
-                ))}
+                {CAMERA_OPTS.map(({ ro, ru: ruLabel }) => {
+                  const label = ru ? ruLabel : ro;
+                  return (
+                    <OptionButton key={ro} icon={Camera} label={label} isActive={selections.cameras === ro}
+                      onClick={() => handleSelect("cameras", ro)} testId={`calc-cam-${ro.replace("+","")}`} />
+                  );
+                })}
               </div>
             </div>
           )}
 
           {step === 3 && (
             <div>
-              <h3 className="text-xl font-bold mb-6 text-center text-[#09090B]">Câte zile de înregistrare?</h3>
+              <h3 className="text-xl font-bold mb-6 text-center text-[#09090B]">
+                {s("Câte zile de înregistrare?", "Сколько дней записи?")}
+              </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {["14 zile", "30 de zile", "60 de zile", "90+ zile"].map((opt) => (
-                  <OptionButton key={opt} icon={Check} label={opt} isActive={selections.storage === opt} onClick={() => handleSelect("storage", opt)} testId={`calc-storage-${opt.replace("+","")}`} />
-                ))}
+                {STORAGE_OPTS.map(({ ro, ru: ruLabel }) => {
+                  const label = ru ? ruLabel : ro;
+                  return (
+                    <OptionButton key={ro} icon={Check} label={label} isActive={selections.storage === ro}
+                      onClick={() => handleSelect("storage", ro)} testId={`calc-storage-${ro.replace("+","")}`} />
+                  );
+                })}
               </div>
             </div>
           )}
 
           {step === 4 && (
             <div>
-              <h3 className="text-xl font-bold mb-6 text-center text-[#09090B]">Tipul instalării</h3>
+              <h3 className="text-xl font-bold mb-6 text-center text-[#09090B]">
+                {s("Tipul instalării", "Тип установки")}
+              </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                <OptionButton icon={Zap} label="Standard (pat cablu)" isActive={selections.installation === "Standard (pat cablu)"} onClick={() => handleSelect("installation", "Standard (pat cablu)")} testId="calc-inst-standard" />
-                <OptionButton icon={Star} label="Premium (ascuns în pereți)" isActive={selections.installation === "Premium (ascuns în pereți)"} onClick={() => handleSelect("installation", "Premium (ascuns în pereți)")} testId="calc-inst-premium" />
-                <OptionButton icon={Wifi} label="Fără cablu (Wireless)" isActive={selections.installation === "Fără cablu (Wireless)"} onClick={() => handleSelect("installation", "Fără cablu (Wireless)")} testId="calc-inst-wireless" />
-                <OptionButton icon={HelpCircle} label="Nu știu, vreau sfat" isActive={selections.installation === "Nu știu, vreau sfat"} onClick={() => handleSelect("installation", "Nu știu, vreau sfat")} testId="calc-inst-sfat" />
+                {INSTALL_OPTS.map(({ icon, ro, ru: ruLabel }) => {
+                  const label = ru ? ruLabel : ro;
+                  return (
+                    <OptionButton key={ro} icon={icon} label={label} isActive={selections.installation === ro}
+                      onClick={() => handleSelect("installation", ro)} testId={`calc-inst-${ro.toLowerCase().replace(/[^a-z]/g,"")}`} />
+                  );
+                })}
               </div>
               <div className="flex justify-center mt-8">
                 <button
@@ -261,7 +313,7 @@ export default function SmartCostCalculator() {
                   className="bg-[#FF4F00] text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-orange-600 transition-colors disabled:opacity-50 active:scale-95"
                   data-testid="calc-submit-btn"
                 >
-                  Calculează Devizul
+                  {s("Calculează Devizul", "Рассчитать смету")}
                 </button>
               </div>
             </div>
@@ -282,23 +334,42 @@ export default function SmartCostCalculator() {
           {step === 6 && (
             <div className="bg-zinc-950 text-white rounded-2xl p-8 max-w-lg mx-auto shadow-2xl animate-fade-in relative overflow-hidden">
               <div className="absolute top-0 right-0 p-4">
-                <div className="bg-[#FF4F00] text-white text-xs font-bold px-3 py-1 rounded-full">Devizul tău este gata!</div>
+                <div className="bg-[#FF4F00] text-white text-xs font-bold px-3 py-1 rounded-full">
+                  {s("Devizul tău este gata!", "Ваша смета готова!")}
+                </div>
               </div>
-              <h3 className="text-2xl font-bold mb-4 pr-24 text-white">Deblochează prețul calculat</h3>
-              <p className="text-zinc-300 mb-4">Primești INSTANT pe Viber/WhatsApp:</p>
+              <h3 className="text-2xl font-bold mb-4 pr-24 text-white">
+                {s("Deblochează prețul calculat", "Разблокируйте рассчитанную цену")}
+              </h3>
+              <p className="text-zinc-300 mb-4">
+                {s("Primești INSTANT pe Viber/WhatsApp:", "Получите МГНОВЕННО на Viber/WhatsApp:")}
+              </p>
               <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-3 text-sm text-zinc-300"><Check className="w-5 h-5 text-[#10B981] shrink-0" />Prețul estimativ (Echipamente + Manoperă)</li>
-                <li className="flex items-start gap-3 text-sm text-zinc-300"><Check className="w-5 h-5 text-[#10B981] shrink-0" />Voucher -10% pentru instalare (valabil 48h)</li>
-                <li className="flex items-start gap-3 text-sm text-zinc-300"><Check className="w-5 h-5 text-[#10B981] shrink-0" />Schiță tehnică gratuită de amplasare a camerelor</li>
+                <li className="flex items-start gap-3 text-sm text-zinc-300">
+                  <Check className="w-5 h-5 text-[#10B981] shrink-0" />
+                  {s("Prețul estimativ (Echipamente + Manoperă)", "Ориентировочная цена (оборудование + монтаж)")}
+                </li>
+                <li className="flex items-start gap-3 text-sm text-zinc-300">
+                  <Check className="w-5 h-5 text-[#10B981] shrink-0" />
+                  {s("Voucher -10% pentru instalare (valabil 48h)", "Ваучер -10% на монтаж (действует 48ч)")}
+                </li>
+                <li className="flex items-start gap-3 text-sm text-zinc-300">
+                  <Check className="w-5 h-5 text-[#10B981] shrink-0" />
+                  {s("Schiță tehnică gratuită de amplasare a camerelor", "Бесплатная техническая схема расстановки камер")}
+                </li>
               </ul>
               <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
-                <input type="text" placeholder="Nume complet" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                <input type="text" placeholder={s("Nume complet", "Полное имя")} required value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#FF4F00]" data-testid="calc-form-name" />
-                <input type="tel" placeholder="+373 " required value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                <input type="tel" placeholder="+373 " required value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#FF4F00]" data-testid="calc-form-phone" />
                 <ConsentCheckbox checked={calcConsent} onChange={setCalcConsent} dark />
-                <button type="submit" disabled={!calcConsent} className="w-full bg-[#FF4F00] text-white font-bold py-4 rounded-xl hover:bg-orange-600 active:scale-95 transition-all mt-2 shadow-[0_4px_14px_rgba(255,79,0,0.4)] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none" data-testid="calc-form-submit">
-                  Deblochează Prețul + Obține Voucherul
+                <button type="submit" disabled={!calcConsent}
+                  className="w-full bg-[#FF4F00] text-white font-bold py-4 rounded-xl hover:bg-orange-600 active:scale-95 transition-all mt-2 shadow-[0_4px_14px_rgba(255,79,0,0.4)] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
+                  data-testid="calc-form-submit">
+                  {s("Deblochează Prețul + Obține Voucherul", "Разблокировать цену + получить ваучер")}
                 </button>
               </form>
             </div>
@@ -307,120 +378,117 @@ export default function SmartCostCalculator() {
           {step === 7 && (() => {
             const { equipmentCost, installCost, totalCost, kitRecomandat, economisire } = getCalculations();
             const phone = (settings.general?.adminPhone || "373").replace(/\D/g, "");
+            const waText = ru
+              ? `Здравствуйте! Заполнил калькулятор TECO.MD. Имя: ${formData.name}, Тел: ${formData.phone}. Жду подробную смету.`
+              : `Bună! Am completat calculatorul TECO.MD. Nume: ${formData.name}, Tel: ${formData.phone}. Aștept devizul detaliat.`;
             return (
-            <div className="animate-fade-in max-w-lg mx-auto">
-              {/* Header */}
-              <div className="text-center mb-6">
-                <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 text-sm font-semibold px-4 py-1.5 rounded-full border border-green-200 mb-3">
-                  <Check className="w-4 h-4" /> Deviz trimis cu succes!
+              <div className="animate-fade-in max-w-lg mx-auto">
+                <div className="text-center mb-6">
+                  <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 text-sm font-semibold px-4 py-1.5 rounded-full border border-green-200 mb-3">
+                    <Check className="w-4 h-4" /> {s("Deviz trimis cu succes!", "Смета успешно отправлена!")}
+                  </div>
+                  <h2 className="font-bold text-2xl text-[#09090B]">
+                    {s("Deviz Estimativ", "Ориентировочная смета")} {formData.name ? (ru ? `для ${formData.name}` : `pentru ${formData.name}`) : ""}
+                  </h2>
                 </div>
-                <h2 className="font-bold text-2xl text-[#09090B]">
-                  Deviz Estimativ {formData.name ? `pentru ${formData.name}` : ""}
-                </h2>
-              </div>
 
-              {/* Price card */}
-              <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 text-white rounded-2xl p-6 mb-4 shadow-xl">
-                <div className="space-y-3 mb-4">
-                  <div className="flex justify-between items-center text-zinc-300">
-                    <span className="text-sm flex items-center gap-1.5"><Package className="w-3.5 h-3.5 text-zinc-400" /> Echipamente (estimat)</span>
-                    <span className="font-mono font-semibold">~{equipmentCost.toLocaleString("ro-MD")} MDL</span>
-                  </div>
-                  <div className="flex justify-between items-center text-zinc-300">
-                    <span className="text-sm flex items-center gap-1.5"><Wrench className="w-3.5 h-3.5 text-zinc-400" /> Instalare</span>
-                    <span className="font-mono font-semibold">~{installCost.toLocaleString("ro-MD")} MDL</span>
-                  </div>
-                  <div className="border-t border-zinc-700 pt-3 flex justify-between items-center">
-                    <span className="font-bold text-white">Total estimat</span>
-                    <span className="font-mono font-black text-2xl text-[#FF4F00]">~{totalCost.toLocaleString("ro-MD")} MDL</span>
-                  </div>
-                </div>
-                <p className="text-xs text-zinc-500 text-center bg-zinc-800 rounded-lg p-2">
-                  Prețul exact îl primești pe WhatsApp / Viber în câteva minute.
-                </p>
-              </div>
-
-              {/* Contact buttons */}
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                <a
-                  href={`https://wa.me/${phone}?text=${encodeURIComponent(`Bună! Am completat calculatorul TECO.MD. Nume: ${formData.name}, Tel: ${formData.phone}. Aștept devizul detaliat.`)}`}
-                  target="_blank" rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 bg-[#25D366] text-white font-bold py-3 rounded-xl hover:opacity-90 active:scale-95 transition-all shadow-[0_4px_14px_rgba(37,211,102,0.3)]"
-                >
-                  <Smartphone className="w-4 h-4" /> WhatsApp
-                </a>
-                <a
-                  href={`viber://chat?number=${phone}`}
-                  className="flex items-center justify-center gap-2 bg-[#7360F2] text-white font-bold py-3 rounded-xl hover:opacity-90 active:scale-95 transition-all shadow-[0_4px_14px_rgba(115,96,242,0.3)]"
-                >
-                  <MessageCircle className="w-4 h-4" /> Viber
-                </a>
-              </div>
-
-              {/* Reset */}
-              <div className="text-center mb-6">
-                <button
-                  onClick={resetCalc}
-                  className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-[#FF4F00] transition-colors underline underline-offset-4"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" /> Calculează din nou cu alte opțiuni
-                </button>
-              </div>
-
-              {/* Kit recomandat din catalog — mai ieftin decât estimatul */}
-              {kitRecomandat && (
-                <>
-                  <div className="text-center mb-4">
-                    <h4 className="font-bold text-lg text-[#09090B] flex items-center justify-center gap-2"><Lightbulb className="w-5 h-5 text-[#FF4F00]" /> Kit complet disponibil acum</h4>
-                    {economisire > 0 && (
-                      <p className="text-sm text-green-600 font-semibold mt-1">
-                        Economisești ~{economisire.toLocaleString("ro-MD")} MDL față de estimat
-                      </p>
-                    )}
-                  </div>
-                  <div className="bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-[#E4E4E7] overflow-hidden">
-                    {kitRecomandat.imageUrl && (
-                      <div className="h-40 bg-zinc-50 overflow-hidden">
-                        <img
-                          src={kitRecomandat.imageUrl}
-                          alt={kitRecomandat.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                        />
-                      </div>
-                    )}
-                    <div className="p-5">
-                      <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">
-                        {kitRecomandat.brand}{kitRecomandat.model ? ` · ${kitRecomandat.model}` : ""}
-                      </p>
-                      <h5 className="font-bold text-[#09090B] mb-1 text-base leading-snug">{kitRecomandat.name}</h5>
-                      <p className="text-xs text-zinc-400 mb-4 line-clamp-2">{kitRecomandat.specs}</p>
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          {kitRecomandat.oldPrice && (
-                            <p className="text-xs text-zinc-400 line-through">{kitRecomandat.oldPrice.toLocaleString()} MDL</p>
-                          )}
-                          <p className="font-mono font-black text-2xl text-[#FF4F00]">{kitRecomandat.price.toLocaleString()} MDL</p>
-                          <p className="text-[10px] text-zinc-400">echipamente · fără manoperă</p>
-                        </div>
-                        {economisire > 0 && (
-                          <div className="bg-green-50 border border-green-200 rounded-xl px-3 py-2 text-center">
-                            <p className="text-[10px] text-green-600 font-bold uppercase">Economii</p>
-                            <p className="text-base font-black text-green-700">~{economisire.toLocaleString()} MDL</p>
-                          </div>
-                        )}
-                      </div>
-                      <button
-                        onClick={() => { addItem(kitRecomandat as any); toast({ title: "Kit adăugat în coș!" }); setTimeout(() => openCart(), 300); }}
-                        className="w-full bg-[#FF4F00] text-white font-bold py-3 rounded-xl hover:opacity-90 transition-all active:scale-95 flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(255,79,0,0.3)]"
-                      >
-                        <ShoppingCart className="w-4 h-4" /> Adaugă în Coș
-                      </button>
+                <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 text-white rounded-2xl p-6 mb-4 shadow-xl">
+                  <div className="space-y-3 mb-4">
+                    <div className="flex justify-between items-center text-zinc-300">
+                      <span className="text-sm flex items-center gap-1.5"><Package className="w-3.5 h-3.5 text-zinc-400" /> {s("Echipamente (estimat)", "Оборудование (оценка)")}</span>
+                      <span className="font-mono font-semibold">~{equipmentCost.toLocaleString("ro-MD")} MDL</span>
+                    </div>
+                    <div className="flex justify-between items-center text-zinc-300">
+                      <span className="text-sm flex items-center gap-1.5"><Wrench className="w-3.5 h-3.5 text-zinc-400" /> {s("Instalare", "Монтаж")}</span>
+                      <span className="font-mono font-semibold">~{installCost.toLocaleString("ro-MD")} MDL</span>
+                    </div>
+                    <div className="border-t border-zinc-700 pt-3 flex justify-between items-center">
+                      <span className="font-bold text-white">{s("Total estimat", "Итого (оценка)")}</span>
+                      <span className="font-mono font-black text-2xl text-[#FF4F00]">~{totalCost.toLocaleString("ro-MD")} MDL</span>
                     </div>
                   </div>
-                </>
-              )}
-            </div>
+                  <p className="text-xs text-zinc-500 text-center bg-zinc-800 rounded-lg p-2">
+                    {s("Prețul exact îl primești pe WhatsApp / Viber în câteva minute.", "Точную цену получите на WhatsApp / Viber в течение нескольких минут.")}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                  <a
+                    href={`https://wa.me/${phone}?text=${encodeURIComponent(waText)}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 bg-[#25D366] text-white font-bold py-3 rounded-xl hover:opacity-90 active:scale-95 transition-all shadow-[0_4px_14px_rgba(37,211,102,0.3)]"
+                  >
+                    <Smartphone className="w-4 h-4" /> WhatsApp
+                  </a>
+                  <a
+                    href={`viber://chat?number=${phone}`}
+                    className="flex items-center justify-center gap-2 bg-[#7360F2] text-white font-bold py-3 rounded-xl hover:opacity-90 active:scale-95 transition-all shadow-[0_4px_14px_rgba(115,96,242,0.3)]"
+                  >
+                    <MessageCircle className="w-4 h-4" /> Viber
+                  </a>
+                </div>
+
+                <div className="text-center mb-6">
+                  <button onClick={resetCalc}
+                    className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-[#FF4F00] transition-colors underline underline-offset-4">
+                    <RotateCcw className="w-3.5 h-3.5" /> {s("Calculează din nou cu alte opțiuni", "Пересчитать с другими параметрами")}
+                  </button>
+                </div>
+
+                {kitRecomandat && (
+                  <>
+                    <div className="text-center mb-4">
+                      <h4 className="font-bold text-lg text-[#09090B] flex items-center justify-center gap-2">
+                        <Lightbulb className="w-5 h-5 text-[#FF4F00]" /> {s("Kit complet disponibil acum", "Готовый комплект в наличии")}
+                      </h4>
+                      {economisire > 0 && (
+                        <p className="text-sm text-green-600 font-semibold mt-1">
+                          {s(`Economisești ~${economisire.toLocaleString("ro-MD")} MDL față de estimat`,
+                             `Экономите ~${economisire.toLocaleString("ro-MD")} MDL по сравнению со сметой`)}
+                        </p>
+                      )}
+                    </div>
+                    <div className="bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-[#E4E4E7] overflow-hidden">
+                      {kitRecomandat.imageUrl && (
+                        <div className="h-40 bg-zinc-50 overflow-hidden">
+                          <img src={kitRecomandat.imageUrl} alt={kitRecomandat.name} className="w-full h-full object-cover"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                        </div>
+                      )}
+                      <div className="p-5">
+                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">
+                          {kitRecomandat.brand}{kitRecomandat.model ? ` · ${kitRecomandat.model}` : ""}
+                        </p>
+                        <h5 className="font-bold text-[#09090B] mb-1 text-base leading-snug">{kitRecomandat.name}</h5>
+                        <p className="text-xs text-zinc-400 mb-4 line-clamp-2">{kitRecomandat.specs}</p>
+                        <div className="flex items-center justify-between mb-4">
+                          <div>
+                            {kitRecomandat.oldPrice && (
+                              <p className="text-xs text-zinc-400 line-through">{kitRecomandat.oldPrice.toLocaleString()} MDL</p>
+                            )}
+                            <p className="font-mono font-black text-2xl text-[#FF4F00]">{kitRecomandat.price.toLocaleString()} MDL</p>
+                            <p className="text-[10px] text-zinc-400">
+                              {s("echipamente · fără manoperă", "оборудование · без монтажа")}
+                            </p>
+                          </div>
+                          {economisire > 0 && (
+                            <div className="bg-green-50 border border-green-200 rounded-xl px-3 py-2 text-center">
+                              <p className="text-[10px] text-green-600 font-bold uppercase">{s("Economii", "Экономия")}</p>
+                              <p className="text-base font-black text-green-700">~{economisire.toLocaleString()} MDL</p>
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => { addItem(kitRecomandat as any); toast({ title: s("Kit adăugat în coș!", "Комплект добавлен в корзину!") }); setTimeout(() => openCart(), 300); }}
+                          className="w-full bg-[#FF4F00] text-white font-bold py-3 rounded-xl hover:opacity-90 transition-all active:scale-95 flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(255,79,0,0.3)]"
+                        >
+                          <ShoppingCart className="w-4 h-4" /> {s("Adaugă în Coș", "Добавить в корзину")}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             );
           })()}
         </div>
