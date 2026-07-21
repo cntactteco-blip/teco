@@ -830,7 +830,7 @@ export default function ProductDetail() {
               <div className="w-full bg-zinc-200 h-1.5 rounded-full overflow-hidden mb-1.5">
                 <div className="bg-gradient-to-r from-[#FF4F00] to-orange-400 h-full rounded-full stock-bar-grow" style={{ width: `${stockPct}%` }} />
               </div>
-              <p className="text-[10px] text-zinc-500">🔥 {2 + (product.id % 4)} {t("pd.bought_24h")}</p>
+              <p className="text-[10px] text-zinc-500 flex items-center gap-1"><Flame className="w-3 h-3 text-[#FF4F00]" /> {2 + (product.id % 4)} {t("pd.bought_24h")}</p>
             </div>
 
             {/* 6. Spec chips */}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useCart } from "@/hooks/useCart";
-import { X, Shield, Phone, User } from "lucide-react";
+import { X, Shield, Phone, User, CheckCircle } from "lucide-react";
 import { storeActions } from "@/lib/store";
 import { trackLead } from "@/lib/analytics";
 import { ConsentCheckbox } from "@/components/ConsentCheckbox";
@@ -95,7 +95,7 @@ export function ExitIntentPopup() {
           {submitted ? (
             <div className="py-8 text-center">
               <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <span className="text-3xl">✅</span>
+                <CheckCircle className="w-7 h-7 text-green-600" />
               </div>
               <p className="font-black text-zinc-800 text-lg">Mulțumim!</p>
               <p className="text-sm text-zinc-500 mt-1">Te contactăm în cel mai scurt timp.</p>

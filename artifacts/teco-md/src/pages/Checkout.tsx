@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { CheckCircle, ShoppingCart, Truck, CreditCard, Phone, Mail, MapPin, User, ArrowLeft } from "lucide-react";
+import { CheckCircle, ShoppingCart, Truck, CreditCard, Phone, Mail, MapPin, User, ArrowLeft, Package, MessageCircle } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { storeActions, getState } from "@/lib/store";
 import { SEO } from "@/components/SEO";
@@ -131,7 +131,7 @@ export default function Checkout() {
             Vei fi contactat(ă) de echipa noastră în cel mult <strong>2 ore</strong> pentru confirmare și detalii livrare.
           </p>
           <div className="bg-white rounded-2xl border border-zinc-200 p-5 mb-6 text-left">
-            <p className="font-semibold text-sm mb-3 text-[#09090B]">📦 Ce urmează:</p>
+            <p className="font-semibold text-sm mb-3 text-[#09090B] flex items-center gap-1.5"><Package className="w-4 h-4 text-[#FF4F00]" /> Ce urmează:</p>
             <div className="space-y-2 text-sm text-zinc-600">
               <p>✓ Confirmare telefonică la {form.phone}</p>
               <p>✓ Pregătire și ambalare comandă (1-2 ore)</p>
@@ -148,7 +148,7 @@ export default function Checkout() {
                 href={`viber://chat?number=${viberPhone.replace(/\D/g, "")}`}
                 className="inline-flex items-center justify-center gap-2 bg-[#7360F2] text-white font-bold px-6 py-3 rounded-xl hover:opacity-90 active:scale-95 transition-all"
               >
-                <span className="text-base leading-none">💬</span> Contactați pe Viber
+                <MessageCircle className="w-4 h-4" /> Contactați pe Viber
               </a>
             )}
             {viberPhone && (
@@ -158,7 +158,7 @@ export default function Checkout() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 bg-[#25D366] text-white font-bold px-6 py-3 rounded-xl hover:opacity-90 active:scale-95 transition-all"
               >
-                <span className="text-base leading-none">💬</span> Contactați pe WhatsApp
+                <MessageCircle className="w-4 h-4" /> Contactați pe WhatsApp
               </a>
             )}
           </div>

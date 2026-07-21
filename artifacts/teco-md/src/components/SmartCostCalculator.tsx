@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Home, Building, Briefcase, MapPin, Cable, Zap, Star, Wifi, HelpCircle, Check, Camera, ShoppingCart } from "lucide-react";
+import { Home, Building, Briefcase, MapPin, Cable, Zap, Star, Wifi, HelpCircle, Check, Camera, ShoppingCart, Package, Wrench, Smartphone, MessageCircle, Lightbulb, RotateCcw } from "lucide-react";
 import { ConsentCheckbox } from "@/components/ConsentCheckbox";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
@@ -323,11 +323,11 @@ export default function SmartCostCalculator() {
               <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 text-white rounded-2xl p-6 mb-4 shadow-xl">
                 <div className="space-y-3 mb-4">
                   <div className="flex justify-between items-center text-zinc-300">
-                    <span className="text-sm">📦 Echipamente (estimat)</span>
+                    <span className="text-sm flex items-center gap-1.5"><Package className="w-3.5 h-3.5 text-zinc-400" /> Echipamente (estimat)</span>
                     <span className="font-mono font-semibold">~{equipmentCost.toLocaleString("ro-MD")} MDL</span>
                   </div>
                   <div className="flex justify-between items-center text-zinc-300">
-                    <span className="text-sm">🔧 Instalare</span>
+                    <span className="text-sm flex items-center gap-1.5"><Wrench className="w-3.5 h-3.5 text-zinc-400" /> Instalare</span>
                     <span className="font-mono font-semibold">~{installCost.toLocaleString("ro-MD")} MDL</span>
                   </div>
                   <div className="border-t border-zinc-700 pt-3 flex justify-between items-center">
@@ -347,13 +347,13 @@ export default function SmartCostCalculator() {
                   target="_blank" rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 bg-[#25D366] text-white font-bold py-3 rounded-xl hover:opacity-90 active:scale-95 transition-all shadow-[0_4px_14px_rgba(37,211,102,0.3)]"
                 >
-                  <span>📱</span> WhatsApp
+                  <Smartphone className="w-4 h-4" /> WhatsApp
                 </a>
                 <a
                   href={`viber://chat?number=${phone}`}
                   className="flex items-center justify-center gap-2 bg-[#7360F2] text-white font-bold py-3 rounded-xl hover:opacity-90 active:scale-95 transition-all shadow-[0_4px_14px_rgba(115,96,242,0.3)]"
                 >
-                  <span>💬</span> Viber
+                  <MessageCircle className="w-4 h-4" /> Viber
                 </a>
               </div>
 
@@ -363,7 +363,7 @@ export default function SmartCostCalculator() {
                   onClick={resetCalc}
                   className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-[#FF4F00] transition-colors underline underline-offset-4"
                 >
-                  ↩ Calculează din nou cu alte opțiuni
+                  <RotateCcw className="w-3.5 h-3.5" /> Calculează din nou cu alte opțiuni
                 </button>
               </div>
 
@@ -371,7 +371,7 @@ export default function SmartCostCalculator() {
               {kitRecomandat && (
                 <>
                   <div className="text-center mb-4">
-                    <h4 className="font-bold text-lg text-[#09090B]">💡 Kit complet disponibil acum</h4>
+                    <h4 className="font-bold text-lg text-[#09090B] flex items-center justify-center gap-2"><Lightbulb className="w-5 h-5 text-[#FF4F00]" /> Kit complet disponibil acum</h4>
                     {economisire > 0 && (
                       <p className="text-sm text-green-600 font-semibold mt-1">
                         Economisești ~{economisire.toLocaleString("ro-MD")} MDL față de estimat
@@ -411,7 +411,7 @@ export default function SmartCostCalculator() {
                         )}
                       </div>
                       <button
-                        onClick={() => { addItem(kitRecomandat as any); toast({ title: "Kit adăugat în coș! 🎉" }); setTimeout(() => openCart(), 300); }}
+                        onClick={() => { addItem(kitRecomandat as any); toast({ title: "Kit adăugat în coș!" }); setTimeout(() => openCart(), 300); }}
                         className="w-full bg-[#FF4F00] text-white font-bold py-3 rounded-xl hover:opacity-90 transition-all active:scale-95 flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(255,79,0,0.3)]"
                       >
                         <ShoppingCart className="w-4 h-4" /> Adaugă în Coș

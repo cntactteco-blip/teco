@@ -155,7 +155,7 @@ export function TecoBot() {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json() as { content?: string; error?: string };
-      const raw = data.error ? "⚠️ Eroare. Sunați-ne: **+373 67 200 463**" : (data.content ?? "");
+      const raw = data.error ? "Eroare de conexiune. Sunați-ne: **+373 67 200 463**" : (data.content ?? "");
       const cleaned = extractLead(raw);
       const pids = extractProductIds(cleaned);
       setMessages((prev) => {
