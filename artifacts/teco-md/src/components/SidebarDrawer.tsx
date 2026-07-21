@@ -76,7 +76,7 @@ export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
           {/* Catalog */}
           <div className="px-4 py-3">
             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-2 mb-2">{t("sidebar.catalog")}</p>
-            {catCounts.map(({ href, slug, iconKey, label, count }) => (
+            {catCounts.filter(({ count }) => count > 0).map(({ href, slug, iconKey, label, count }) => (
               <Link
                 key={href}
                 href={href}
