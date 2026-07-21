@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { X, Send, Loader2, User, ShoppingCart, Phone } from "lucide-react";
+import { X, Send, Loader2, User, ShoppingCart, Sparkles } from "lucide-react";
 import { useLang } from "@/contexts/LangContext";
 import { storeActions, useStore } from "@/lib/store";
 import { useCart } from "@/hooks/useCart";
@@ -12,10 +12,8 @@ interface Message {
   products?: number[];
 }
 
-const OPERATOR = { name: "Ana M.", short: "A", role: { ro: "Consultant Teco.md", ru: "Консультант Teco.md" } };
-
 const GREET: Record<string, string> = {
-  ro: "Bună ziua! 👋 Sunt Ana, consultantul tău Teco.md. Cu ce te pot ajuta azi?",
+  ro: "Bună ziua! 👋 Sunt Ana, consultantul Teco.md. Cu ce te pot ajuta azi?",
   ru: "Добрый день! 👋 Меня зовут Анна, консультант Teco.md. Чем могу помочь?",
 };
 
@@ -24,24 +22,7 @@ const PROACTIVE: Record<string, string> = {
   ru: "Привет! 👋 Помогу подобрать нужную систему.",
 };
 
-const BUBBLE_KEY = "teco_bubble_dismissed_v3";
-
-/** SVG avatar uman simplu — fără dependențe externe */
-function OperatorAvatar({ size = 36, className = "" }: { size?: number; className?: string }) {
-  return (
-    <div
-      className={`rounded-full bg-gradient-to-br from-[#FF4F00] to-orange-500 flex items-center justify-center flex-shrink-0 ${className}`}
-      style={{ width: size, height: size }}
-    >
-      <svg width={size * 0.55} height={size * 0.55} viewBox="0 0 24 24" fill="none">
-        {/* Head */}
-        <circle cx="12" cy="8" r="4" fill="white" fillOpacity="0.95" />
-        {/* Body */}
-        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.95" />
-      </svg>
-    </div>
-  );
-}
+const BUBBLE_KEY = "teco_bubble_v4";
 
 function renderMarkdown(text: string) {
   return text
@@ -95,53 +76,30 @@ export function TecoBot() {
   const messagesRef = useRef<Message[]>([]);
   const API = import.meta.env.VITE_API_URL || "";
 
-  // Proactive bubble — apare doar când utilizatorul e cu adevărat implicat:
-  // a petrecut ≥35s pe pagină ȘI a scrollat ≥40% din pagină
+  // Bubble smart: apare după 35s ȘI scroll ≥40%
   useEffect(() => {
     if (sessionStorage.getItem(BUBBLE_KEY)) return;
     let timeOk = false;
     let scrollOk = false;
     let shown = false;
-
     const tryShow = () => {
-      if (!shown && timeOk && scrollOk && !open) {
-        shown = true;
-        setShowBubble(true);
-      }
+      if (!shown && timeOk && scrollOk && !open) { shown = true; setShowBubble(true); }
     };
-
-    const timeTimer = setTimeout(() => {
-      timeOk = true;
-      tryShow();
-    }, 35000);
-
+    const t = setTimeout(() => { timeOk = true; tryShow(); }, 35000);
     const onScroll = () => {
       const el = document.documentElement;
-      const pct = el.scrollTop / (el.scrollHeight - el.clientHeight || 1);
-      if (pct >= 0.40) {
+      if (el.scrollTop / (el.scrollHeight - el.clientHeight || 1) >= 0.4) {
         scrollOk = true;
         window.removeEventListener("scroll", onScroll);
         tryShow();
       }
     };
     window.addEventListener("scroll", onScroll, { passive: true });
-
-    return () => {
-      clearTimeout(timeTimer);
-      window.removeEventListener("scroll", onScroll);
-    };
+    return () => { clearTimeout(t); window.removeEventListener("scroll", onScroll); };
   }, []);
 
-  const dismissBubble = () => {
-    setShowBubble(false);
-    sessionStorage.setItem(BUBBLE_KEY, "1");
-  };
-
-  const openChat = () => {
-    setOpen(true);
-    setShowBubble(false);
-    sessionStorage.setItem(BUBBLE_KEY, "1");
-  };
+  const dismissBubble = () => { setShowBubble(false); sessionStorage.setItem(BUBBLE_KEY, "1"); };
+  const openChat = () => { setOpen(true); setShowBubble(false); sessionStorage.setItem(BUBBLE_KEY, "1"); };
 
   useEffect(() => {
     const vv = window.visualViewport;
@@ -182,15 +140,10 @@ export function TecoBot() {
       const name = match[1].trim();
       const phone = match[2].trim();
       storeActions.addLead({ name, phone, notes: "TecoBot Chat", source: "tecobot" });
-      const session = getSessionPayload();
       fetch(API + "/api/notify/chat-lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name, phone,
-          messages: messagesRef.current.map((m) => ({ role: m.role, content: m.content })),
-          session,
-        }),
+        body: JSON.stringify({ name, phone, messages: messagesRef.current.map((m) => ({ role: m.role, content: m.content })), session: getSessionPayload() }),
       }).catch(() => {});
     }
     return text.replace(/LEAD_CAPTURED:[^\n]*/g, "").trim();
@@ -259,70 +212,43 @@ export function TecoBot() {
 
   return (
     <>
-      {/* ── Proactive bubble — compact & elegant ── */}
+      {/* ── Proactive bubble ── */}
       {showBubble && !open && (
-        <div className="fixed bottom-[5.8rem] left-[4.5rem] md:bottom-[4.5rem] md:left-[5.5rem] z-40">
-          <div className="relative bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.10)] border border-zinc-100 px-3.5 py-3 w-[185px]">
-            {/* Close */}
-            <button onClick={dismissBubble} className="absolute top-2 right-2 text-zinc-300 hover:text-zinc-500 transition-colors">
+        <div className="fixed bottom-44 left-16 z-40">
+          <div className="relative bg-white rounded-2xl shadow-lg border border-zinc-100 px-3.5 py-3 w-[180px]">
+            <button onClick={dismissBubble} className="absolute top-2 right-2 text-zinc-300 hover:text-zinc-500">
               <X className="w-3 h-3" />
             </button>
-
-            {/* Avatar + name */}
-            <div className="flex items-center gap-2 mb-2 pr-3">
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#FF4F00] to-orange-500 flex items-center justify-center flex-shrink-0">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="8" r="4" fill="white" />
-                  <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="white" strokeWidth="2.4" strokeLinecap="round" />
-                </svg>
-              </div>
-              <span className="text-[11px] font-bold text-zinc-800">{OPERATOR.name}</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />
+            <div className="flex items-center gap-1.5 mb-1.5 pr-4">
+              <span className="text-[11px] font-bold text-zinc-800">Ana M.</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
             </div>
-
-            {/* Message */}
-            <p className="text-[12px] text-zinc-600 leading-snug mb-2.5">{PROACTIVE[lang] ?? PROACTIVE.ro}</p>
-
-            {/* CTA link */}
-            <button
-              onClick={openChat}
-              className="text-[11px] font-bold text-[#FF4F00] hover:underline flex items-center gap-0.5 transition-all"
-            >
-              {lang === "ru" ? "Написать" : "Scrie-mi"} <span className="text-xs">→</span>
+            <p className="text-[12px] text-zinc-600 leading-snug mb-2">{PROACTIVE[lang] ?? PROACTIVE.ro}</p>
+            <button onClick={openChat} className="text-[11px] font-bold text-[#FF4F00] flex items-center gap-0.5">
+              {lang === "ru" ? "Написать" : "Scrie-mi"} →
             </button>
-
-            {/* Tail pointing left toward button */}
-            <div className="absolute top-4 -left-1.5 w-3 h-3 bg-white border-l border-b border-zinc-100 rotate-45" />
+            <div className="absolute top-3.5 -left-1.5 w-3 h-3 bg-white border-l border-b border-zinc-100 rotate-45" />
           </div>
         </div>
       )}
 
-      {/* ── Floating operator button ── */}
+      {/* ── Floating button — același stil ca originalul, siluetă umană în loc de robot ── */}
       <button
         onClick={openChat}
-        aria-label="Chat consultant"
-        className="fixed bottom-[8.25rem] left-4 md:bottom-6 md:left-6 z-40 relative w-12 h-12 rounded-full bg-gradient-to-br from-[#FF4F00] to-orange-600 flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200"
+        aria-label="Ana M. — Consultant Teco.md"
+        className="fixed bottom-33 left-4 md:bottom-6 md:left-6 z-40 flex items-center gap-2 bg-gradient-to-br from-[#FF4F00] to-orange-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 px-3.5 py-2.5 md:px-4 md:py-3"
       >
-        {/* Speech bubble cu siluetă umană — totul alb pe fond portocaliu */}
-        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-          {/* Bubble body */}
-          <rect x="3" y="3" width="17" height="13" rx="3.5" fill="white" fillOpacity="0.96"/>
-          {/* Bubble tail */}
-          <path d="M8 16 L11 20 L14 16Z" fill="white" fillOpacity="0.96"/>
-          {/* Person head */}
-          <circle cx="11.5" cy="8" r="2" fill="#FF4F00"/>
-          {/* Person shoulders */}
-          <path d="M7.5 13.5C7.5 11.5 9.2 10.3 11.5 10.3C13.8 10.3 15.5 11.5 15.5 13.5" stroke="#FF4F00" strokeWidth="1.4" strokeLinecap="round"/>
+        {/* Siluetă umană SVG */}
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+          <circle cx="12" cy="8" r="4" fill="white" fillOpacity="0.97"/>
+          <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7" stroke="white" strokeWidth="2" strokeLinecap="round" fillOpacity="0.97"/>
         </svg>
-
-        {/* Green online dot */}
-        <span className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full bg-green-400 border-2 border-white animate-pulse shadow-sm" />
-
-        {/* Unread badge */}
+        <span className="text-sm font-bold hidden sm:inline">Ana M.</span>
+        <span className="text-sm font-bold sm:hidden">Ana</span>
+        {/* Online dot */}
+        <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
         {unread > 0 && (
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center shadow">
-            {unread}
-          </span>
+          <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">{unread}</span>
         )}
       </button>
 
@@ -338,26 +264,23 @@ export function TecoBot() {
           >
             {/* Header */}
             <div className="bg-gradient-to-r from-[#FF4F00] to-orange-500 px-4 py-3 flex items-center gap-3 flex-shrink-0">
-              <div className="relative flex-shrink-0">
-                <OperatorAvatar size={38} />
-                <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-400 border-2 border-white" />
+              <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="8" r="4" fill="white" fillOpacity="0.97"/>
+                  <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
               </div>
               <div className="flex-1 min-w-0">
-                <span className="text-white font-bold text-sm block leading-tight">{OPERATOR.name}</span>
-                <span className="text-white/80 text-[11px]">{OPERATOR.role[lang] ?? OPERATOR.role.ro}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-white font-bold text-sm">Ana M.</span>
+                  <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                  <span className="text-white/80 text-[11px]">{lang === "ru" ? "Онлайн • Консультант" : "Online • Consultant"}</span>
+                </div>
               </div>
-              <a
-                href={`tel:+${phone}`}
-                onClick={(e) => e.stopPropagation()}
-                className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors flex-shrink-0"
-                title={lang === "ru" ? "Позвонить" : "Sună acum"}
-              >
-                <Phone className="w-4 h-4 text-white" />
-              </a>
-              <button
-                onClick={() => setOpen(false)}
-                className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors flex-shrink-0"
-              >
+              <button onClick={() => setOpen(false)} className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors flex-shrink-0">
                 <X className="w-4 h-4 text-white" />
               </button>
             </div>
@@ -368,7 +291,12 @@ export function TecoBot() {
                 <div key={i} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
                   <div className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} w-full`}>
                     {msg.role === "assistant" && (
-                      <OperatorAvatar size={28} className="mr-2 mt-0.5" />
+                      <div className="w-7 h-7 rounded-full bg-[#FF4F00] flex items-center justify-center flex-shrink-0 mr-2 mt-0.5">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                          <circle cx="12" cy="8" r="4" fill="white" fillOpacity="0.97"/>
+                          <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+                        </svg>
+                      </div>
                     )}
                     <div className={`max-w-[82%] px-3 py-2.5 rounded-2xl text-sm leading-relaxed ${
                       msg.role === "user"
@@ -379,7 +307,7 @@ export function TecoBot() {
                         <span dangerouslySetInnerHTML={{ __html: renderMarkdown(cleanContent(msg.content)) }} />
                       ) : msg.content}
                       {msg.role === "assistant" && streaming && i === messages.length - 1 && msg.content === "" && (
-                        <span className="inline-flex gap-1 items-center h-4">
+                        <span className="inline-flex gap-1">
                           <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: "0ms" }} />
                           <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: "150ms" }} />
                           <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: "300ms" }} />
@@ -387,20 +315,15 @@ export function TecoBot() {
                       )}
                     </div>
                   </div>
-
                   {msg.role === "assistant" && msg.products && msg.products.length > 0 && (
-                    <div className="ml-9 mt-2 flex gap-2 overflow-x-auto pb-1 w-full scrollbar-hide">
+                    <div className="ml-9 mt-2 flex gap-2 overflow-x-auto pb-1 w-full">
                       {msg.products.map(pid => {
                         const p = allProducts.find(x => x.id === pid);
                         if (!p) return null;
                         return (
                           <div key={pid} className="flex-shrink-0 w-44 bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden">
                             <div className="h-28 bg-zinc-50 flex items-center justify-center overflow-hidden">
-                              {p.imageUrl ? (
-                                <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
-                              ) : (
-                                <User className="w-10 h-10 text-zinc-300" />
-                              )}
+                              {p.imageUrl ? <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" /> : <User className="w-10 h-10 text-zinc-300" />}
                             </div>
                             <div className="p-2">
                               <p className="text-[11px] font-semibold text-zinc-800 line-clamp-2 leading-tight mb-1">{p.brand} {p.name}</p>
@@ -423,25 +346,21 @@ export function TecoBot() {
                   )}
                 </div>
               ))}
-
               {leadCaptured && (
                 <div className="flex justify-center">
                   <div className="bg-green-50 border border-green-200 rounded-xl px-3 py-2 text-xs text-green-700 font-medium flex items-center gap-1.5">
-                    <span>✓</span>
-                    <span>{lang === "ru" ? "Запрос сохранён — вам перезвонят" : "Cerere salvată — vă vom contacta"}</span>
+                    ✓ {lang === "ru" ? "Запрос сохранён — вам перезвонят" : "Cerere salvată — vă vom contacta"}
                   </div>
                 </div>
               )}
               <div ref={bottomRef} />
             </div>
 
-            {/* Quick action — speak to human */}
             {messages.length >= 2 && (
               <div className="px-3 py-2 flex-shrink-0 bg-white border-t border-zinc-100">
                 <a
                   href={`https://wa.me/${phone}?text=${encodeURIComponent(lang === "ru" ? "Здравствуйте! Хочу поговорить с менеджером." : "Bună ziua! Vreau să vorbesc cu un consultant.")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  target="_blank" rel="noopener noreferrer"
                   className="w-full flex items-center justify-center gap-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-semibold py-2 rounded-xl text-xs transition-all"
                 >
                   <User className="w-3.5 h-3.5" />
@@ -450,7 +369,6 @@ export function TecoBot() {
               </div>
             )}
 
-            {/* Input */}
             <div className="border-t border-[#E4E4E7] bg-white flex-shrink-0" style={{ padding: "12px", paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
               <div className="flex gap-2 items-center">
                 <input
@@ -472,7 +390,7 @@ export function TecoBot() {
                   {streaming ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 </button>
               </div>
-              <p className="text-[10px] text-zinc-400 text-center mt-1.5">Teco.md · {lang === "ru" ? "Быстрый ответ гарантирован" : "Răspuns rapid garantat"}</p>
+              <p className="text-[10px] text-zinc-400 text-center mt-1.5">Teco.md · {lang === "ru" ? "Răspuns rapid garantat" : "Răspuns rapid garantat"}</p>
             </div>
           </div>
         </div>
