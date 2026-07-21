@@ -120,7 +120,7 @@ export function TecoBot() {
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let accumulated = "";
-      while (true) {
+      outer: while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         const lines = decoder.decode(value, { stream: true }).split("\n");
@@ -128,8 +128,8 @@ export function TecoBot() {
           if (!line.startsWith("data: ")) continue;
           try {
             const data = JSON.parse(line.slice(6));
-            if (data.done) break;
-            if (data.error) { accumulated += "\n\n⚠️ Eroare. Sunați-ne: +373 67 200 463"; break; }
+            if (data.done) break outer;
+            if (data.error) { accumulated += "\n\n⚠️ Eroare. Sunați-ne: +373 67 200 463"; break outer; }
             if (data.content) {
               accumulated += data.content;
               const recMatch = accumulated.match(RECOMMEND_RE);
@@ -150,6 +150,17 @@ export function TecoBot() {
             }
           } catch {}
         }
+      }
+      // Dacă stream-ul s-a terminat dar nu a venit niciun conținut, afișăm fallback
+      if (!accumulated.trim()) {
+        const fallback = lang === "ru"
+          ? "Îmi pare rău, a apărut o problemă tehnică. Sunați-ne direct: **+373 67 200 463**"
+          : "Îmi pare rău, a apărut o problemă tehnică. Sunați-ne direct: **+373 67 200 463**";
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = { ...botMsg, content: fallback };
+          return updated;
+        });
       }
     } catch (err: unknown) {
       if (err instanceof Error && err.name === "AbortError") return;
