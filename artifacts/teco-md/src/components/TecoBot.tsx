@@ -9,7 +9,10 @@ interface Message {
   content: string;
   ts: number;
   products?: number[];
+  isRecommendation?: boolean;
 }
+
+const RECOMMEND_RE = /RECOMMEND:\[(\d+),\s*(\d+),\s*(\d+)\]/;
 
 const GREET: Record<string, string> = {
   ro: "Salut! Cu ce te pot ajuta azi?",
@@ -129,11 +132,19 @@ export function TecoBot() {
             if (data.error) { accumulated += "\n\n⚠️ Eroare. Sunați-ne: +373 67 200 463"; break; }
             if (data.content) {
               accumulated += data.content;
-              const cleaned = extractLead(accumulated);
-              const pids = extractProductIds(cleaned);
+              const recMatch = accumulated.match(RECOMMEND_RE);
+              const cleaned = extractLead(accumulated.replace(RECOMMEND_RE, "").trim());
+              const pids = recMatch
+                ? [parseInt(recMatch[1]), parseInt(recMatch[2]), parseInt(recMatch[3])]
+                : extractProductIds(cleaned);
               setMessages((prev) => {
                 const updated = [...prev];
-                updated[updated.length - 1] = { ...botMsg, content: cleaned, products: pids };
+                updated[updated.length - 1] = {
+                  ...botMsg,
+                  content: cleaned,
+                  products: pids,
+                  isRecommendation: !!recMatch,
+                };
                 return updated;
               });
             }
@@ -157,7 +168,8 @@ export function TecoBot() {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
   };
 
-  const cleanContent = (content: string) => content.replace(/\[\d+\]/g, "").trim();
+  const cleanContent = (content: string) =>
+    content.replace(/RECOMMEND:\[\d+,\s*\d+,\s*\d+\]/g, "").replace(/\[\d+\]/g, "").trim();
 
   return (
     <>
@@ -229,7 +241,56 @@ export function TecoBot() {
                     </div>
                   </div>
 
-                  {msg.role === "assistant" && msg.products && msg.products.length > 0 && (
+                  {msg.role === "assistant" && msg.products && msg.products.length > 0 && msg.isRecommendation && (
+                    /* ── Carduri mari de recomandare — 3 variante ── */
+                    <div className="mt-2 w-full flex flex-col gap-2">
+                      {msg.products.map((pid, idx) => {
+                        const p = products.find(x => x.id === pid);
+                        if (!p) return null;
+                        const labels = lang === "ru"
+                          ? ["💰 Cel mai accesibil", "⭐ Echilibrat", "🏆 Premium"]
+                          : ["💰 Cel mai accesibil", "⭐ Echilibrat calitate/preț", "🏆 Premium"];
+                        return (
+                          <div key={pid} className="bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden flex">
+                            {/* Imagine stânga */}
+                            <div className="w-24 h-24 bg-zinc-50 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                              {p.imageUrl
+                                ? <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                                : <Bot className="w-8 h-8 text-zinc-300" />}
+                            </div>
+                            {/* Info dreapta */}
+                            <div className="flex-1 p-2.5 flex flex-col justify-between min-w-0">
+                              <div>
+                                <span className="text-[10px] font-bold text-[#FF4F00] uppercase tracking-wide">{labels[idx]}</span>
+                                <p className="text-xs font-semibold text-zinc-800 leading-tight mt-0.5 line-clamp-2">{p.brand} {p.name}</p>
+                                {p.specs && <p className="text-[10px] text-zinc-400 mt-0.5 line-clamp-1">{p.specs}</p>}
+                              </div>
+                              <div className="flex items-center justify-between mt-1.5 gap-2">
+                                <div>
+                                  <span className="text-[#FF4F00] font-black text-sm">{p.price.toLocaleString()} MDL</span>
+                                  {p.oldPrice && <span className="text-zinc-400 text-[10px] line-through ml-1">{p.oldPrice}</span>}
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    cartAddItem({ id: p.id, name: `${p.brand} ${p.name}`, price: p.price, imageUrl: p.imageUrl });
+                                    cartOpen();
+                                    setOpen(false);
+                                  }}
+                                  className="flex-shrink-0 bg-[#FF4F00] text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 hover:opacity-90 active:scale-95 transition-all"
+                                >
+                                  <ShoppingCart className="w-3 h-3" />
+                                  {lang === "ru" ? "Comandă" : "Comandă"}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {msg.role === "assistant" && msg.products && msg.products.length > 0 && !msg.isRecommendation && (
+                    /* ── Carduri mici orizontale pentru menționări obișnuite ── */
                     <div className="ml-9 mt-2 flex gap-2 overflow-x-auto pb-1 w-full scrollbar-hide">
                       {msg.products.map(pid => {
                         const p = products.find(x => x.id === pid);
@@ -237,11 +298,9 @@ export function TecoBot() {
                         return (
                           <div key={pid} className="flex-shrink-0 w-44 bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden">
                             <div className="h-28 bg-zinc-50 flex items-center justify-center overflow-hidden">
-                              {p.imageUrl ? (
-                                <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
-                              ) : (
-                                <Bot className="w-10 h-10 text-zinc-300" />
-                              )}
+                              {p.imageUrl
+                                ? <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                                : <Bot className="w-10 h-10 text-zinc-300" />}
                             </div>
                             <div className="p-2">
                               <p className="text-[11px] font-semibold text-zinc-800 line-clamp-2 leading-tight mb-1">{p.brand} {p.name}</p>
