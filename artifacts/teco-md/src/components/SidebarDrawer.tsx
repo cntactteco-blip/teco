@@ -1,23 +1,13 @@
 import { useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { X, Camera, Shield, Server, Package, Wrench, FileText, Lock, Award, ChevronRight, Phone, Instagram, Facebook, Tag } from "lucide-react";
+import { X, Wrench, FileText, Lock, Award, ChevronRight, Phone, Instagram, Facebook } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useLang } from "@/contexts/LangContext";
+import { CatSvgIcon } from "@/components/CatIcons";
 
 interface SidebarDrawerProps {
   open: boolean;
   onClose: () => void;
-}
-
-// Alege iconița potrivită bazată pe slug-ul categoriei
-function catIcon(slug: string) {
-  const s = slug.toLowerCase();
-  if (s.includes("nvr") || s.includes("recorder") || s.includes("stocare") || s.includes("hdd")) return Server;
-  if (s.includes("kit") || s.includes("bundle") || s.includes("complet")) return Package;
-  if (s.includes("alarm") || s.includes("securit")) return Shield;
-  if (s.includes("interfon") || s.includes("intercom") || s.includes("videofon")) return Phone;
-  if (s.includes("camer") || s.includes("wifi") || s.includes("poe") || s.includes("4g") || s.includes("solar")) return Camera;
-  return Tag;
 }
 
 const pages = [
@@ -43,9 +33,8 @@ export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
   // Contoare calculate live din catalog — dinamic din categoriile admin
   const catCounts = categories.map((cat) => ({
     href: `/produse?cat=${cat.slug}`,
-    icon: catIcon(cat.slug),
-    label: lang === "ru" ? (cat.labelRu ?? cat.label) : cat.label,
     slug: cat.slug,
+    label: lang === "ru" ? (cat.labelRu ?? cat.label) : cat.label,
     count: products.filter((p) => p.category === cat.slug).length,
   }));
 
@@ -86,7 +75,7 @@ export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
           {/* Catalog */}
           <div className="px-4 py-3">
             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-2 mb-2">Catalog Produse</p>
-            {catCounts.map(({ href, icon: Icon, label, count }) => (
+            {catCounts.map(({ href, slug, label, count }) => (
               <Link
                 key={href}
                 href={href}
@@ -94,7 +83,7 @@ export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
                 className="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-zinc-50 transition-colors group"
               >
                 <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Icon className="w-4 h-4 text-[#FF4F00]" />
+                  <CatSvgIcon slug={slug} className="w-4 h-4 text-[#FF4F00]" />
                 </div>
                 <span className="flex-1 text-sm font-medium text-zinc-700 group-hover:text-[#09090B]">{label}</span>
                 <span className="text-[10px] text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded-full font-medium">{count}</span>
