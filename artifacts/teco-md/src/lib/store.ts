@@ -742,8 +742,10 @@ async function _backgroundRefreshFromD1(): Promise<void> {
 
     if (settingsRes?.data) {
       const fromD1 = mergeSettings(settingsRes.data);
-      // Restaurează imaginile base64 din localStorage (nu sunt salvate în D1)
-      const merged = _cachedSettings ? restoreBase64FromCache(fromD1, _cachedSettings) : fromD1;
+      // Restaurează imaginile base64 din localStorage sau snapshot (nu sunt în D1 — prea mari)
+      // Fallback la state.settings curent (care vine din snapshot) dacă localStorage e gol
+      const imageSource = _cachedSettings ?? state.settings;
+      const merged = restoreBase64FromCache(fromD1, imageSource);
       try { localStorage.setItem("teco_settings_cache", JSON.stringify({ ...merged, _v: SETTINGS_CACHE_VERSION })); } catch {}
       setState((s) => ({ ...s, settings: merged }));
     }
@@ -785,15 +787,14 @@ export async function refreshFromApiServer(): Promise<void> {
     const blogRows: any[] = blogRes?.data ?? null;
 
     // ── Settings: D1 este sursa de adevăr pentru config text ────────────────────
-    // Imaginile base64 (>10KB) nu sunt în D1 (prea mari); le restaurăm din localStorage.
+    // Imaginile base64 (>10KB) nu sunt în D1 (prea mari); le restaurăm din localStorage sau snapshot.
     let mergedSettings: ModuleSettings | null = null;
     if (rawSettings) {
       const fromD1 = mergeSettings(rawSettings);
-      // Restaurează imaginile base64 din localStorage care nu au putut fi salvate în D1
-      const cached = _cachedSettings;
-      if (cached) mergedSettings = restoreBase64FromCache(fromD1, cached);
-      else mergedSettings = fromD1;
-      // Actualizăm localStorage cu setările complete (D1 text + localStorage images)
+      // Fallback la state.settings (snapshot) dacă localStorage e gol — păstrează imaginile
+      const imageSource = _cachedSettings ?? state.settings;
+      mergedSettings = restoreBase64FromCache(fromD1, imageSource);
+      // Actualizăm localStorage cu setările complete (D1 text + imagini restaurate)
       try { localStorage.setItem("teco_settings_cache", JSON.stringify({ ...mergedSettings, _v: SETTINGS_CACHE_VERSION })); } catch {}
     }
 
