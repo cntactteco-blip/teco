@@ -607,22 +607,6 @@ export default function Products() {
               </div>
             </div>
 
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-              <input
-                type="text"
-                placeholder={t("products.search")}
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="w-full bg-[#FAFAFA] border border-[#E4E4E7] rounded-xl pl-10 pr-10 py-3 text-sm text-[#09090B] placeholder:text-zinc-400 focus:outline-none focus:border-[#FF4F00] focus:ring-2 focus:ring-[#FF4F00]/20 transition-all"
-              />
-              {search && (
-                <button onClick={() => setSearch("")} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600">
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
           </div>
         </div>
 
