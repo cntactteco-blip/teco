@@ -120,54 +120,73 @@ export function TecoBot() {
         }),
         signal: abortRef.current.signal,
       });
-      if (!res.ok || !res.body) throw new Error("Network error");
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let accumulated = "";
-      outer: while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const lines = decoder.decode(value, { stream: true }).split("\n");
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          try {
-            const data = JSON.parse(line.slice(6));
-            if (data.done) break outer;
-            if (data.error) { accumulated += "\n\n⚠️ Eroare. Sunați-ne: +373 67 200 463"; break outer; }
-            if (data.content) {
-              accumulated += data.content;
-              const recMatch = accumulated.match(RECOMMEND_RE);
-              const cleaned = extractLead(accumulated.replace(RECOMMEND_RE, "").trim());
-              const pids = recMatch
-                ? [parseInt(recMatch[1]), parseInt(recMatch[2]), parseInt(recMatch[3])]
-                : extractProductIds(cleaned);
-              setMessages((prev) => {
-                const updated = [...prev];
-                updated[updated.length - 1] = {
-                  ...botMsg,
-                  content: cleaned,
-                  products: pids,
-                  isRecommendation: !!recMatch,
-                };
-                return updated;
-              });
-            }
-          } catch {}
-        }
-      }
-      // Dacă stream-ul s-a terminat dar nu a venit niciun conținut, afișăm fallback
-      if (!accumulated.trim()) {
-        const fallback = lang === "ru"
-          ? "Îmi pare rău, a apărut o problemă tehnică. Sunați-ne direct: **+373 67 200 463**"
-          : "Îmi pare rău, a apărut o problemă tehnică. Sunați-ne direct: **+373 67 200 463**";
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      // Helper: aplică conținut acumulat în state
+      const applyContent = (raw: string) => {
+        const recMatch = raw.match(RECOMMEND_RE);
+        const cleaned = extractLead(raw.replace(RECOMMEND_RE, "").trim());
+        const pids = recMatch
+          ? [parseInt(recMatch[1]), parseInt(recMatch[2]), parseInt(recMatch[3])]
+          : extractProductIds(cleaned);
         setMessages((prev) => {
           const updated = [...prev];
-          updated[updated.length - 1] = { ...botMsg, content: fallback };
+          updated[updated.length - 1] = {
+            ...botMsg,
+            content: cleaned,
+            products: pids,
+            isRecommendation: !!recMatch,
+          };
           return updated;
         });
+        return cleaned;
+      };
+
+      const ct = res.headers.get("content-type") ?? "";
+
+      if (ct.includes("application/json")) {
+        // ── Producție (Cloudflare Pages Function) → răspuns JSON simplu ──
+        const json = await res.json() as { content?: string; error?: string };
+        const raw = json.content ?? json.error ?? "";
+        applyContent(raw || "Ne pare rău, am întâmpinat o problemă. Sunați-ne: **+373 67 200 463**");
+      } else {
+        // ── Dev (Express API Server) → SSE streaming ──
+        if (!res.body) throw new Error("No body");
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let accumulated = "";
+        outer: while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          // Ignorăm comentariile SSE de keepalive (": keepalive")
+          for (const line of chunk.split("\n")) {
+            if (!line.startsWith("data: ")) continue;
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.done) break outer;
+              if (data.error) { accumulated += data.error; break outer; }
+              if (data.content) {
+                accumulated += data.content;
+                applyContent(accumulated);
+              }
+            } catch {}
+          }
+        }
+        if (!accumulated.trim()) {
+          applyContent("Ne pare rău, am întâmpinat o problemă. Sunați-ne: **+373 67 200 463**");
+        }
       }
     } catch (err: unknown) {
-      if (err instanceof Error && err.name === "AbortError") return;
+      if (err instanceof Error && err.name === "AbortError") {
+        // Timeout — arată mesaj de fallback
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = { ...botMsg, content: "Răspunsul a durat prea mult. Sunați-ne: **+373 67 200 463**" };
+          return updated;
+        });
+        return;
+      }
       setMessages((prev) => {
         const updated = [...prev];
         updated[updated.length - 1] = { ...botMsg, content: "Eroare de conexiune. Sunați-ne: **+373 67 200 463**" };
