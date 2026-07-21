@@ -24,7 +24,7 @@ const PROACTIVE: Record<string, string> = {
   ru: "Привет! 👋 Нужна помощь с выбором системы видеонаблюдения? Я здесь для вас.",
 };
 
-const BUBBLE_KEY = "teco_bubble_dismissed_v2";
+const BUBBLE_KEY = "teco_bubble_dismissed_v3";
 
 /** SVG avatar uman simplu — fără dependențe externe */
 function OperatorAvatar({ size = 36, className = "" }: { size?: number; className?: string }) {
@@ -95,13 +95,41 @@ export function TecoBot() {
   const messagesRef = useRef<Message[]>([]);
   const API = import.meta.env.VITE_API_URL || "";
 
-  // Proactive bubble — apare după 5s dacă nu a fost deja închis
+  // Proactive bubble — apare doar când utilizatorul e cu adevărat implicat:
+  // a petrecut ≥35s pe pagină ȘI a scrollat ≥40% din pagină
   useEffect(() => {
     if (sessionStorage.getItem(BUBBLE_KEY)) return;
-    const timer = setTimeout(() => {
-      if (!open) setShowBubble(true);
-    }, 5000);
-    return () => clearTimeout(timer);
+    let timeOk = false;
+    let scrollOk = false;
+    let shown = false;
+
+    const tryShow = () => {
+      if (!shown && timeOk && scrollOk && !open) {
+        shown = true;
+        setShowBubble(true);
+      }
+    };
+
+    const timeTimer = setTimeout(() => {
+      timeOk = true;
+      tryShow();
+    }, 35000);
+
+    const onScroll = () => {
+      const el = document.documentElement;
+      const pct = el.scrollTop / (el.scrollHeight - el.clientHeight || 1);
+      if (pct >= 0.40) {
+        scrollOk = true;
+        window.removeEventListener("scroll", onScroll);
+        tryShow();
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => {
+      clearTimeout(timeTimer);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   const dismissBubble = () => {
@@ -269,37 +297,24 @@ export function TecoBot() {
         </div>
       )}
 
-      {/* ── Floating operator button ── */}
+      {/* ── Floating operator button — pill mic ca originalul ── */}
       <button
         onClick={openChat}
         aria-label="Chat consultant"
-        className="fixed bottom-[5.5rem] left-4 md:bottom-6 md:left-6 z-40 group"
+        className="fixed bottom-33 left-4 md:bottom-6 md:left-6 z-40 flex items-center gap-2 bg-gradient-to-br from-[#FF4F00] to-orange-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 px-3.5 py-2.5 md:px-4 md:py-3"
       >
-        <div className="relative">
-          {/* Avatar circle */}
-          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#FF4F00] to-orange-500 flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-105 group-active:scale-95 transition-all duration-200">
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="8" r="4" fill="white" fillOpacity="0.97" />
-              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeOpacity="0.97" />
-            </svg>
-          </div>
-
-          {/* Online dot */}
-          <span className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-green-400 border-2 border-white shadow-sm" />
-
-          {/* Unread badge */}
-          {unread > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow">
-              {unread}
-            </span>
-          )}
-        </div>
-
-        {/* Name label */}
-        <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-white rounded-xl shadow-md border border-zinc-100 px-3 py-1.5 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none">
-          <p className="text-xs font-bold text-zinc-900">{OPERATOR.name}</p>
-          <p className="text-[10px] text-green-600 font-medium">{OPERATOR.role[lang] ?? OPERATOR.role.ro}</p>
-        </div>
+        {/* Siluetă umană în loc de robot */}
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+          <circle cx="12" cy="8" r="4" fill="white" fillOpacity="0.97" />
+          <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeOpacity="0.97" />
+        </svg>
+        <span className="text-sm font-bold hidden sm:inline">{OPERATOR.name}</span>
+        <span className="text-sm font-bold sm:hidden">Ana</span>
+        {unread > 0 && (
+          <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">
+            {unread}
+          </span>
+        )}
       </button>
 
       {/* ── Chat window ── */}
