@@ -105,6 +105,7 @@ const SERVICES = [
   const handleServiceLeadSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!modalName.trim() || !modalPhone.trim()) return;
+    if (!/^[\d\s\+\-\(\)]{7,15}$/.test(modalPhone.trim())) return;
     storeActions.addLead({
       name: modalName.trim(),
       phone: modalPhone.trim(),

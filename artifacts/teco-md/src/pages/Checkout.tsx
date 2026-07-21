@@ -72,6 +72,7 @@ export default function Checkout() {
     const e: Partial<FormData> = {};
     if (!form.name.trim()) e.name = "Câmp obligatoriu";
     if (!form.phone.trim()) e.phone = "Câmp obligatoriu";
+    else if (!/^[\d\s\+\-\(\)]{7,15}$/.test(form.phone.trim())) e.phone = "Număr de telefon invalid";
     if (!form.address.trim()) e.address = "Câmp obligatoriu";
     return e;
   };

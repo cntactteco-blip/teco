@@ -2943,7 +2943,7 @@ export default function Admin() {
         </nav>
 
         <div className="px-3 py-4 border-t border-zinc-800 space-y-1">
-          <a href="/" target="_blank" rel="noreferrer"
+          <a href="/" target="_blank" rel="noopener noreferrer"
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-zinc-500 hover:text-white hover:bg-zinc-800 transition-all">
             <Eye className="w-4 h-4" /> Vizualizează Magazin
           </a>
@@ -2967,7 +2967,7 @@ export default function Admin() {
             {NAV.find((n) => n.key === tab)?.label}
           </h1>
           <div className="ml-auto flex items-center gap-2">
-            <a href="/" target="_blank" rel="noreferrer"
+            <a href="/" target="_blank" rel="noopener noreferrer"
               className="hidden sm:flex items-center gap-1.5 text-xs text-zinc-500 hover:text-white transition-colors bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-lg">
               <Eye className="w-3.5 h-3.5" /> Magazin
             </a>

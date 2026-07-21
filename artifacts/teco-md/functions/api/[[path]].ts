@@ -818,20 +818,6 @@ app.post("/notify/order", async (c) => {
 
 // ─── Notify: daily-report (admin) ─────────────────────────────────────────────
 
-// ─── Debug Telegram (temporar) ───────────────────────────────────────────────
-app.get("/notify/tg-test", async (c) => {
-  const token = c.env.TELEGRAM_BOT_TOKEN;
-  const chatId = c.env.TELEGRAM_CHAT_ID;
-  if (!token || !chatId) return c.json({ error: "lipsă token sau chatId" });
-
-  const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: chatId, text: "✅ Test TecoBot notificări CF Pages — funcționează!" }),
-  });
-  const data = await res.json();
-  return c.json({ status: res.status, telegram: data });
-});
 
 app.post("/notify/daily-report", async (c) => {
   const pin = c.req.header("x-admin-pin");
@@ -956,7 +942,7 @@ function buildCatalog(products: PEntry[]): string {
       const stock = p.inStock === false ? " [LIPSĂ STOC]" : "";
       const promo = p.oldPrice ? ` (era ${p.oldPrice} MDL)` : "";
       const badge = p.badge ? ` [${p.badge}]` : "";
-      return `[${p.id}] ${p.brand} ${p.name}${badge}${stock} — ${p.specs} — ${p.price} MDL${promo}`;
+      return `[${p.id}] ${p.brand} ${p.name}${badge}${stock} — ${p.specs} — PREȚ: ${p.price} MDL (EXACT, nu modifica)${promo}`;
     });
     return `=== ${label} ===\n${lines.join("\n")}`;
   }).join("\n\n");
@@ -1019,11 +1005,13 @@ CATALOG CURENT (prețuri MDL):
 {CATALOG}
 
 CUM RECOMANZI:
-1. Recomandă produse SPECIFICE din catalog, cu prețul EXACT din catalog în MDL — copiază prețul cifră cu cifră, nu îl aproxima și nu îl modifica.
+1. Prețul pe care îl spui trebuie să fie IDENTIC cu cel marcat "PREȚ: X MDL" în catalog — nici un leu mai mult, nici mai puțin. Dacă scrie "PREȚ: 9980 MDL", spui "9980 MDL", nu "~10000" sau "9500".
 2. Instalarea NU e inclusă în prețul produsului — nu spune niciodată "inclusiv instalare" la prețul unui produs. Instalarea costă separat (de la 750 MDL/cameră).
 3. Dacă nu ai suficiente detalii ca să recomanzi bine, întreabă UN lucru cheie (ex: interior sau exterior, are WiFi), nu un interogatoriu.
-4. NU inventezi prețuri, produse sau specificații care nu sunt în catalog.
+4. NU inventezi prețuri, produse sau specificații care nu sunt în catalog. Dacă nu găsești produsul potrivit, spune că verifici stocul și oferi să fie contactat clientul.
 5. Când recomanzi un produs, include [id] după nume exact ca în catalog — activează cardul interactiv pentru client.
+EXEMPLU CORECT: "Kit Complet Pro-Solar 4G 4 Camere Imou Cell 3C [26] — 9980 MDL. Instalare separată de la 750 MDL/cameră."
+EXEMPLU GREȘIT: "Kit... — ~10000 MDL" sau "9500 MDL inclusiv instalare" — INTERZIS.
 
 CÂND CERI CONTACT:
 - Doar când clientul arată interes real de cumpărare sau instalare (nu la prima întrebare generală).

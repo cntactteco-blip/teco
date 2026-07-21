@@ -145,10 +145,10 @@ export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
               <Phone className="w-4 h-4 text-[#FF4F00]" /> +{phone.slice(0,3)} {phone.slice(3,5)} {phone.slice(5,8)} {phone.slice(8)}
             </a>
             <div className="flex gap-3 mt-2">
-              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-[#FF4F00] transition-colors">
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-[#FF4F00] transition-colors">
                 <Instagram className="w-3.5 h-3.5" /> Instagram
               </a>
-              <a href="https://facebook.com" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-[#FF4F00] transition-colors">
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-[#FF4F00] transition-colors">
                 <Facebook className="w-3.5 h-3.5" /> Facebook
               </a>
             </div>

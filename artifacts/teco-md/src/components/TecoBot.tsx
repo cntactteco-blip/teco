@@ -258,7 +258,8 @@ export function TecoBot() {
                   {msg.role === "assistant" && msg.products && msg.products.length > 0 && (
                     <div className="ml-9 mt-2 flex gap-2 overflow-x-auto pb-1 w-full scrollbar-hide">
                       {msg.products.map(pid => {
-                        const p = products.find(x => x.id === pid);
+                        // allProducts include imageUrl; products (trimis la AI) nu are imageUrl
+                        const p = allProducts.find(x => x.id === pid);
                         if (!p) return null;
                         return (
                           <div key={pid} className="flex-shrink-0 w-44 bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden">

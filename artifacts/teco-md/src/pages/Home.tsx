@@ -152,12 +152,14 @@ export default function Home() {
     const name = String(data.get("name") || "");
     const phone = String(data.get("phone") || "");
     const interest = String(data.get("interest") || "");
-    if (phone.trim()) {
-      storeActions.addLead({ name, phone, source: "Homepage Contact", notes: interest ? `Interes: ${interest}` : undefined });
-      import("@/lib/notify").then(({ notifyLead }) =>
-        notifyLead({ name, phone, source: "Homepage Contact", notes: interest ? `Interes: ${interest}` : undefined })
-      );
+    if (!phone.trim() || !/^[\d\s\+\-\(\)]{7,15}$/.test(phone.trim())) {
+      toast({ title: "Telefon invalid", description: "Introduceți un număr de telefon valid.", variant: "destructive" });
+      return;
     }
+    storeActions.addLead({ name, phone, source: "Homepage Contact", notes: interest ? `Interes: ${interest}` : undefined });
+    import("@/lib/notify").then(({ notifyLead }) =>
+      notifyLead({ name, phone, source: "Homepage Contact", notes: interest ? `Interes: ${interest}` : undefined })
+    );
     toast({
       title: t("home.contact.toast_title"),
       description: t("home.contact.toast_desc"),
@@ -420,7 +422,7 @@ export default function Home() {
               return (
                 <Link key={cat.id} href={`/produse?cat=${cat.slug}`}
                   className="group relative snap-start min-w-[200px] md:min-w-0 h-[240px] md:h-[300px] rounded-2xl overflow-hidden cursor-pointer flex-shrink-0 block shadow-sm hover:shadow-xl transition-shadow duration-300">
-                  <img src={catImg} alt={cat.label} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <img src={catImg} alt={cat.label} loading="lazy" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4 flex flex-col gap-1">
                     <h3 className="text-white font-black text-lg leading-tight tracking-tight">{lang === "ro" ? cat.label : (cat.labelRu || cat.label)}</h3>

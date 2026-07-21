@@ -139,7 +139,7 @@ let supabase: any = null
 
 if (supabaseUrl && supabaseKey) {
   supabase = createClient(supabaseUrl, supabaseKey)
-  console.log('✅ Supabase initialized with credentials')
+  // supabase initialized
 } else {
   console.warn('⚠️ Supabase not configured - using offline mode with localStorage')
 
