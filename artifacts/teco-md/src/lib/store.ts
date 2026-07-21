@@ -462,6 +462,9 @@ Acoperim toată Moldova: Chișinău, Bălți, Orhei, Cahul, Soroca, Ungheni, Str
 // sau când vrei să forțezi invalidarea cache-ului corupt la toți utilizatorii.
 const SETTINGS_CACHE_VERSION = 2;
 
+// TTL cache: dacă e mai vechi de 3 minute, reîmprospătăm din D1 în background (SWR)
+const PRODUCTS_CACHE_TTL_MS = 3 * 60 * 1000;
+
 const _cachedSettings = (() => {
   try {
     const raw = localStorage.getItem("teco_settings_cache");
@@ -484,6 +487,12 @@ const _cachedProducts = (() => {
     // Tratăm array-ul gol ca null → fallback pe snapshot
     return parsed && parsed.length > 0 ? parsed : null;
   } catch { return null; }
+})();
+
+// Timestamp-ul ultimului refresh produse din D1
+const _productsCacheTs = (() => {
+  try { return Number(localStorage.getItem("teco_products_cache_ts") ?? "0"); }
+  catch { return 0; }
 })();
 
 const _seedProducts: StoreProduct[] = seedProducts.map((p) => ({
@@ -690,14 +699,42 @@ function mergeSettings(loaded: any): ModuleSettings {
   };
 }
 
-// ─── initStore — VIZITATORI: instant din snapshot/cache, ZERO apeluri Supabase ──
-// Supabase e apelat NUMAI din Admin panel via refreshFromSupabase().
-// Asta elimină egress-ul Supabase pentru vizitatori și face site-ul instant.
+// ─── Refresh produse + setări din D1 în background (SWR) ──────────────────────
+// Apelat din initStore când cache-ul e vechi; actualizează starea fără să blocheze UI.
+async function _backgroundRefreshFromD1(): Promise<void> {
+  try {
+    const [prodsRes, settingsRes] = await Promise.all([
+      fetch(_API + "/api/products").then((r) => r.ok ? r.json() : null).catch(() => null),
+      fetch(_API + "/api/settings").then((r) => r.ok ? r.json() : null).catch(() => null),
+    ]);
+
+    const products: any[] = prodsRes?.data ?? [];
+    if (products.length > 0) {
+      const mapped = products.map(dbProductToStore);
+      cacheProducts(mapped); // actualizează și timestamp-ul
+      setState((s) => ({ ...s, products: mapped }));
+    }
+
+    if (settingsRes?.data) {
+      const fromServer = mergeSettings(settingsRes.data);
+      try { localStorage.setItem("teco_settings_cache", JSON.stringify({ ...fromServer, _v: SETTINGS_CACHE_VERSION })); } catch {}
+      setState((s) => ({ ...s, settings: fromServer }));
+    }
+  } catch { /* silent — nu blocăm pagina */ }
+}
+
+// ─── initStore — VIZITATORI: instant din snapshot/cache + SWR background ──────
+// Afișează imediat din cache/snapshot, apoi reîmprospătează din D1 în background
+// dacă cache-ul e mai vechi de PRODUCTS_CACHE_TTL_MS (3 min).
 export function initStore(): void {
-  // Datele sunt deja în state (din _cachedProducts / _snapshotProducts / _seedProducts
-  // și _cachedSettings / _snapshotSettings / DEFAULT_SETTINGS) — mark loaded și gata.
+  // Datele sunt deja în state — mark loaded și gata.
   if (!state.loaded) {
     setState({ ...state, loaded: true });
+  }
+  // SWR: dacă cache-ul e stale (sau lipsă), reîmprospătăm D1 în background
+  const cacheAge = Date.now() - _productsCacheTs;
+  if (cacheAge > PRODUCTS_CACHE_TTL_MS) {
+    _backgroundRefreshFromD1();
   }
 }
 
@@ -720,25 +757,11 @@ export async function refreshFromApiServer(): Promise<void> {
     const rawSettings = settingsRes?.data ?? null;
     const blogRows: any[] = blogRes?.data ?? null;
 
-    // ── Settings: localStorage + api-server, categoriile locale au prioritate ─
+    // ── Settings: D1 este sursa de adevăr — nu mergem cu snapshot-ul local ──────
+    // (Merge-ul vechi reinjecta categorii șterse din admin dacă snapshotul le mai avea)
     let mergedSettings: ModuleSettings | null = null;
     if (rawSettings) {
-      const fromServer = mergeSettings(rawSettings);
-      const localCats: CategoryDef[] = state.settings.categories ?? [];
-      const serverCats: CategoryDef[] = fromServer.categories ?? [];
-      const serverSlugs = new Set(serverCats.map((c: CategoryDef) => c.slug));
-      const extraLocal = localCats.filter((c: CategoryDef) => !serverSlugs.has(c.slug));
-
-      if (extraLocal.length > 0) {
-        mergedSettings = { ...fromServer, categories: [...serverCats, ...extraLocal] };
-        fetch(_API + "/api/settings", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(mergedSettings),
-        }).catch(() => {});
-      } else {
-        mergedSettings = fromServer;
-      }
+      mergedSettings = mergeSettings(rawSettings);
       try { localStorage.setItem("teco_settings_cache", JSON.stringify({ ...mergedSettings, _v: SETTINGS_CACHE_VERSION })); } catch {}
     }
 
@@ -774,7 +797,10 @@ export async function refreshFromApiServer(): Promise<void> {
 export const refreshFromSupabase = refreshFromApiServer;
 
 function cacheProducts(products: StoreProduct[]) {
-  try { localStorage.setItem("teco_products_cache", JSON.stringify(products)); } catch {}
+  try {
+    localStorage.setItem("teco_products_cache", JSON.stringify(products));
+    localStorage.setItem("teco_products_cache_ts", String(Date.now()));
+  } catch {}
 }
 
 // ─── URL api-server (VITE_API_URL sau same-origin) ──────────────────
