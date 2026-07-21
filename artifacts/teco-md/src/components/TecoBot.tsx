@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Bot, X, Send, Loader2, Sparkles, User, ShoppingCart } from "lucide-react";
+import { X, Send, Loader2, User, ShoppingCart, Phone } from "lucide-react";
 import { useLang } from "@/contexts/LangContext";
 import { storeActions, useStore } from "@/lib/store";
 import { useCart } from "@/hooks/useCart";
@@ -12,10 +12,36 @@ interface Message {
   products?: number[];
 }
 
+const OPERATOR = { name: "Ana M.", short: "A", role: { ro: "Consultant Teco.md", ru: "Консультант Teco.md" } };
+
 const GREET: Record<string, string> = {
-  ro: "Salut! Cu ce te pot ajuta azi?",
-  ru: "Привет! Чем могу помочь?",
+  ro: "Bună ziua! 👋 Sunt Ana, consultantul tău Teco.md. Cu ce te pot ajuta azi?",
+  ru: "Добрый день! 👋 Меня зовут Анна, консультант Teco.md. Чем могу помочь?",
 };
+
+const PROACTIVE: Record<string, string> = {
+  ro: "Bună! 👋 Ai nevoie de ajutor cu alegerea unui sistem de supraveghere? Sunt aici pentru tine.",
+  ru: "Привет! 👋 Нужна помощь с выбором системы видеонаблюдения? Я здесь для вас.",
+};
+
+const BUBBLE_KEY = "teco_bubble_dismissed_v2";
+
+/** SVG avatar uman simplu — fără dependențe externe */
+function OperatorAvatar({ size = 36, className = "" }: { size?: number; className?: string }) {
+  return (
+    <div
+      className={`rounded-full bg-gradient-to-br from-[#FF4F00] to-orange-500 flex items-center justify-center flex-shrink-0 ${className}`}
+      style={{ width: size, height: size }}
+    >
+      <svg width={size * 0.55} height={size * 0.55} viewBox="0 0 24 24" fill="none">
+        {/* Head */}
+        <circle cx="12" cy="8" r="4" fill="white" fillOpacity="0.95" />
+        {/* Body */}
+        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.95" />
+      </svg>
+    </div>
+  );
+}
 
 function renderMarkdown(text: string) {
   return text
@@ -32,7 +58,6 @@ function extractProductIds(text: string): number[] {
 export function TecoBot() {
   const { lang } = useLang();
   const allProducts = useStore((s) => s.products);
-  // Nu trimitem imageUrl la AI — crește request-ul inutil (URL-uri Cloudflare lungi)
   const products = allProducts.map((p) => ({
     id: p.id, name: p.name, brand: p.brand,
     price: p.price, oldPrice: p.oldPrice,
@@ -44,7 +69,6 @@ export function TecoBot() {
   const settings = useStore((s) => s.settings);
   const adminPhone = settings.general?.adminPhone ?? "";
   const phone = (adminPhone || "37367200463").replace(/\D/g, "");
-  // Setările trimise la AI pentru prompt dinamic
   const storeSettings = {
     phone: "+" + phone,
     workingHours: settings.storeInfo?.workingHours || "Lun–Sâm 09:00–19:00",
@@ -55,12 +79,14 @@ export function TecoBot() {
     montaj: settings.servicePrices?.montaj || "de la 750 MDL/cameră",
     diagnosticare: settings.servicePrices?.diagnosticare || "de la 350 MDL/vizită",
   };
+
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [leadCaptured, setLeadCaptured] = useState(false);
   const [unread, setUnread] = useState(0);
+  const [showBubble, setShowBubble] = useState(false);
   const [vpHeight, setVpHeight] = useState<number>(() => window.visualViewport?.height ?? window.innerHeight);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -68,6 +94,26 @@ export function TecoBot() {
   const [vpOffset, setVpOffset] = useState({ top: 0, left: 0 });
   const messagesRef = useRef<Message[]>([]);
   const API = import.meta.env.VITE_API_URL || "";
+
+  // Proactive bubble — apare după 5s dacă nu a fost deja închis
+  useEffect(() => {
+    if (sessionStorage.getItem(BUBBLE_KEY)) return;
+    const timer = setTimeout(() => {
+      if (!open) setShowBubble(true);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const dismissBubble = () => {
+    setShowBubble(false);
+    sessionStorage.setItem(BUBBLE_KEY, "1");
+  };
+
+  const openChat = () => {
+    setOpen(true);
+    setShowBubble(false);
+    sessionStorage.setItem(BUBBLE_KEY, "1");
+  };
 
   useEffect(() => {
     const vv = window.visualViewport;
@@ -107,15 +153,13 @@ export function TecoBot() {
       setLeadCaptured(true);
       const name = match[1].trim();
       const phone = match[2].trim();
-      storeActions.addLead({ name, phone, notes: "TecoBot AI Chat", source: "tecobot" });
-      // Trimite transcrierea completă la Telegram
+      storeActions.addLead({ name, phone, notes: "TecoBot Chat", source: "tecobot" });
       const session = getSessionPayload();
       fetch(API + "/api/notify/chat-lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name,
-          phone,
+          name, phone,
           messages: messagesRef.current.map((m) => ({ role: m.role, content: m.content })),
           session,
         }),
@@ -187,19 +231,78 @@ export function TecoBot() {
 
   return (
     <>
+      {/* ── Proactive bubble ── */}
+      {showBubble && !open && (
+        <div className="fixed bottom-[9.5rem] left-4 md:bottom-28 md:left-6 z-40 animate-fade-in">
+          <div className="relative bg-white rounded-2xl rounded-bl-sm shadow-xl border border-zinc-100 p-4 max-w-[230px]">
+            {/* Close */}
+            <button
+              onClick={dismissBubble}
+              className="absolute top-2 right-2 w-5 h-5 flex items-center justify-center rounded-full hover:bg-zinc-100 transition-colors text-zinc-400 hover:text-zinc-600"
+            >
+              <X className="w-3 h-3" />
+            </button>
+
+            {/* Operator line */}
+            <div className="flex items-center gap-2 mb-2 pr-4">
+              <span className="text-[11px] font-bold text-zinc-900">{OPERATOR.name}</span>
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                <span className="text-[10px] text-green-600 font-semibold">Online</span>
+              </span>
+            </div>
+
+            {/* Message */}
+            <p className="text-sm text-zinc-700 leading-snug mb-3">{PROACTIVE[lang] ?? PROACTIVE.ro}</p>
+
+            {/* CTA */}
+            <button
+              onClick={openChat}
+              className="w-full bg-[#FF4F00] text-white text-xs font-bold py-2 rounded-xl hover:opacity-90 active:scale-95 transition-all"
+            >
+              {lang === "ru" ? "Написать →" : "Scrie-mi →"}
+            </button>
+
+            {/* Tail */}
+            <div className="absolute -bottom-2 left-5 w-4 h-4 bg-white border-b border-r border-zinc-100 rotate-45" />
+          </div>
+        </div>
+      )}
+
+      {/* ── Floating operator button ── */}
       <button
-        onClick={() => setOpen((v) => !v)}
-        aria-label="TecoBot AI"
-        className="fixed bottom-33 left-4 md:bottom-6 md:left-6 z-40 flex items-center gap-2 bg-gradient-to-br from-[#FF4F00] to-orange-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 px-3.5 py-2.5 md:px-4 md:py-3"
+        onClick={openChat}
+        aria-label="Chat consultant"
+        className="fixed bottom-[5.5rem] left-4 md:bottom-6 md:left-6 z-40 group"
       >
-        <Bot className="w-5 h-5 flex-shrink-0" />
-        <span className="text-sm font-bold hidden sm:inline">TecoBot AI</span>
-        <span className="text-sm font-bold sm:hidden">AI</span>
-        {unread > 0 && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">{unread}</span>
-        )}
+        <div className="relative">
+          {/* Avatar circle */}
+          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#FF4F00] to-orange-500 flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-105 group-active:scale-95 transition-all duration-200">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="8" r="4" fill="white" fillOpacity="0.97" />
+              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeOpacity="0.97" />
+            </svg>
+          </div>
+
+          {/* Online dot */}
+          <span className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full bg-green-400 border-2 border-white shadow-sm" />
+
+          {/* Unread badge */}
+          {unread > 0 && (
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow">
+              {unread}
+            </span>
+          )}
+        </div>
+
+        {/* Name label */}
+        <div className="absolute left-16 top-1/2 -translate-y-1/2 bg-white rounded-xl shadow-md border border-zinc-100 px-3 py-1.5 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none">
+          <p className="text-xs font-bold text-zinc-900">{OPERATOR.name}</p>
+          <p className="text-[10px] text-green-600 font-medium">{OPERATOR.role[lang] ?? OPERATOR.role.ro}</p>
+        </div>
       </button>
 
+      {/* ── Chat window ── */}
       {open && (
         <div
           className="fixed z-50 flex items-end justify-start pointer-events-none"
@@ -209,33 +312,39 @@ export function TecoBot() {
             className="pointer-events-auto w-full md:w-[400px] md:ml-6 md:mb-24 bg-white rounded-t-2xl md:rounded-2xl shadow-2xl border border-[#E4E4E7] flex flex-col overflow-hidden"
             style={{ height: window.innerWidth >= 768 ? "min(640px, calc(100vh - 80px))" : `${vpHeight}px` }}
           >
+            {/* Header */}
             <div className="bg-gradient-to-r from-[#FF4F00] to-orange-500 px-4 py-3 flex items-center gap-3 flex-shrink-0">
-              <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                <Bot className="w-5 h-5 text-white" />
+              <div className="relative flex-shrink-0">
+                <OperatorAvatar size={38} />
+                <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-400 border-2 border-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-white font-bold text-sm">TecoBot AI</span>
-                  <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                  <span className="text-white/80 text-[11px]">{lang === "ru" ? "Онлайн • Консультант" : "Online • Consultant"}</span>
-                </div>
+                <span className="text-white font-bold text-sm block leading-tight">{OPERATOR.name}</span>
+                <span className="text-white/80 text-[11px]">{OPERATOR.role[lang] ?? OPERATOR.role.ro}</span>
               </div>
-              <button onClick={() => setOpen(false)} className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors flex-shrink-0">
+              <a
+                href={`tel:+${phone}`}
+                onClick={(e) => e.stopPropagation()}
+                className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors flex-shrink-0"
+                title={lang === "ru" ? "Позвонить" : "Sună acum"}
+              >
+                <Phone className="w-4 h-4 text-white" />
+              </a>
+              <button
+                onClick={() => setOpen(false)}
+                className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors flex-shrink-0"
+              >
                 <X className="w-4 h-4 text-white" />
               </button>
             </div>
 
+            {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#FAFAFA]">
               {messages.map((msg, i) => (
                 <div key={i} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
                   <div className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} w-full`}>
                     {msg.role === "assistant" && (
-                      <div className="w-7 h-7 rounded-full bg-[#FF4F00] flex items-center justify-center flex-shrink-0 mr-2 mt-0.5">
-                        <Bot className="w-3.5 h-3.5 text-white" />
-                      </div>
+                      <OperatorAvatar size={28} className="mr-2 mt-0.5" />
                     )}
                     <div className={`max-w-[82%] px-3 py-2.5 rounded-2xl text-sm leading-relaxed ${
                       msg.role === "user"
@@ -246,7 +355,7 @@ export function TecoBot() {
                         <span dangerouslySetInnerHTML={{ __html: renderMarkdown(cleanContent(msg.content)) }} />
                       ) : msg.content}
                       {msg.role === "assistant" && streaming && i === messages.length - 1 && msg.content === "" && (
-                        <span className="inline-flex gap-1">
+                        <span className="inline-flex gap-1 items-center h-4">
                           <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: "0ms" }} />
                           <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: "150ms" }} />
                           <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: "300ms" }} />
@@ -258,7 +367,6 @@ export function TecoBot() {
                   {msg.role === "assistant" && msg.products && msg.products.length > 0 && (
                     <div className="ml-9 mt-2 flex gap-2 overflow-x-auto pb-1 w-full scrollbar-hide">
                       {msg.products.map(pid => {
-                        // allProducts include imageUrl; products (trimis la AI) nu are imageUrl
                         const p = allProducts.find(x => x.id === pid);
                         if (!p) return null;
                         return (
@@ -267,7 +375,7 @@ export function TecoBot() {
                               {p.imageUrl ? (
                                 <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
                               ) : (
-                                <Bot className="w-10 h-10 text-zinc-300" />
+                                <User className="w-10 h-10 text-zinc-300" />
                               )}
                             </div>
                             <div className="p-2">
@@ -291,6 +399,7 @@ export function TecoBot() {
                   )}
                 </div>
               ))}
+
               {leadCaptured && (
                 <div className="flex justify-center">
                   <div className="bg-green-50 border border-green-200 rounded-xl px-3 py-2 text-xs text-green-700 font-medium flex items-center gap-1.5">
@@ -302,6 +411,7 @@ export function TecoBot() {
               <div ref={bottomRef} />
             </div>
 
+            {/* Quick action — speak to human */}
             {messages.length >= 2 && (
               <div className="px-3 py-2 flex-shrink-0 bg-white border-t border-zinc-100">
                 <a
@@ -316,6 +426,7 @@ export function TecoBot() {
               </div>
             )}
 
+            {/* Input */}
             <div className="border-t border-[#E4E4E7] bg-white flex-shrink-0" style={{ padding: "12px", paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
               <div className="flex gap-2 items-center">
                 <input
@@ -337,7 +448,7 @@ export function TecoBot() {
                   {streaming ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 </button>
               </div>
-              <p className="text-[10px] text-zinc-400 text-center mt-1.5">Powered by Groq · Teco.md</p>
+              <p className="text-[10px] text-zinc-400 text-center mt-1.5">Teco.md · {lang === "ru" ? "Быстрый ответ гарантирован" : "Răspuns rapid garantat"}</p>
             </div>
           </div>
         </div>
