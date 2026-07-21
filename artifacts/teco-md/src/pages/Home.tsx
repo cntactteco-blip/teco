@@ -175,7 +175,7 @@ export default function Home() {
     { q: "Ce este mai bine — camere WiFi sau cablate (PoE)?", a: "Camerele WiFi sunt mai ușor de instalat și perfecte pentru case mici sau apartamente. Camerele PoE (cablate) sunt mai stabile, mai sigure și recomandate pentru afaceri sau case mari. Teco.md instalează ambele tipuri — te sfătuim în funcție de nevoile tale." },
     { q: "Pot vedea camerele de pe telefon, de oriunde?", a: "Da, toate sistemele Teco.md includ acces remote gratuit prin aplicație mobilă (iOS și Android). Poți vedea live, vizualiza înregistrările și primi notificări de mișcare oriunde te-ai afla, cu o conexiune la internet." },
     { q: "Livrați sisteme de supraveghere în toată Moldova?", a: "Da, livrăm produse oriunde în Moldova prin curier sau transport propriu. Livrarea este gratuită la comenzi peste 5.000 MDL. Oferim și instalare profesională în 24h oriunde în țară." },
-    { q: "Ce garanție au produsele de supraveghere?", a: "Produsele Teco.md au garanție producător de 2–3 ani. Brandurile Dahua, Hikvision, TP-Link Tapo și Reolink sunt renumite pentru fiabilitate. Pe lucrările de instalare oferim garanție separată de 12 luni." },
+    { q: "Ce garanție au produsele de supraveghere?", a: "Produsele Teco.md au garanție producător de 2–5 ani. Brandurile Dahua, Hikvision, TP-Link Tapo și Reolink sunt renumite pentru fiabilitate. Pe lucrările de instalare oferim garanție separată de 12 luni." },
     { q: "Aveți sisteme complete gata de instalat — kituri?", a: "Da, oferim kituri complete de supraveghere care includ camerele, NVR-ul, cablul și accesoriile necesare. Kiturile sunt configurate plug-and-play și vin cu suport tehnic gratuit. Le găsești în secțiunea Kituri Complete din catalog." },
   ];
   const HOME_FAQ_RU = [
@@ -183,7 +183,7 @@ export default function Home() {
     { q: "Что лучше — WiFi или кабельные (PoE) камеры?", a: "WiFi камеры проще установить — идеальны для небольших домов и квартир. PoE камеры (кабельные) стабильнее, надежнее и рекомендуются для бизнеса или больших домов. Teco.md устанавливает оба типа — посоветуем лучший вариант для вас." },
     { q: "Можно ли смотреть камеры с телефона откуда угодно?", a: "Да, все системы Teco.md включают бесплатный удалённый доступ через мобильное приложение (iOS и Android). Можно смотреть прямой эфир, просматривать записи и получать уведомления о движении из любой точки мира." },
     { q: "Доставляете системы видеонаблюдения по всей Молдове?", a: "Да, доставляем товары по всей Молдове курьером или собственным транспортом. Бесплатная доставка при заказе от 5000 MDL. Также предлагаем профессиональную установку за 24 часа в любом городе страны." },
-    { q: "Какая гарантия на оборудование?", a: "Оборудование Teco.md имеет гарантию производителя 2–3 года. Бренды Dahua, Hikvision, TP-Link Tapo и Reolink известны надёжностью. На монтажные работы предоставляем отдельную гарантию 12 месяцев." },
+    { q: "Какая гарантия на оборудование?", a: "Оборудование Teco.md имеет гарантию производителя 2–5 лет. Бренды Dahua, Hikvision, TP-Link Tapo и Reolink известны надёжностью. На монтажные работы предоставляем отдельную гарантию 12 месяцев." },
     { q: "Есть ли комплекты видеонаблюдения под ключ?", a: "Да, предлагаем комплекты видеонаблюдения, включающие камеры, NVR, кабель и необходимые аксессуары. Комплекты настроены plug-and-play и поставляются с бесплатной технической поддержкой. Найдите их в разделе «Kituri Complete»." },
   ];
   const homeFaqLd = schemas.faq(HOME_FAQ_RO.map((x) => ({ question: x.q, answer: x.a })));

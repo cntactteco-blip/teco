@@ -29,8 +29,8 @@ const FAQS = [
   { q: "Cât costă un sistem de supraveghere în Chișinău?", a: "Un sistem complet pentru casă sau apartament în Chișinău costă de la 3.500 MDL (2 camere WiFi + configurare). Un sistem profesional de 4 camere PoE + NVR + montaj pornește de la 8.000 MDL. Contactați-ne pentru ofertă personalizată gratuită." },
   { q: "Câte zile durează până instalați în Chișinău?", a: "De obicei instalăm în 24–48h de la confirmare. Pentru urgențe, putem veni în aceeași zi dacă tehnicianul este disponibil." },
   { q: "Puteți instala camere la apartament în bloc?", a: "Da, instalăm camere WiFi și PoE la apartamente în bloc (interior și pe hol/ușă intrare). Oferim soluții fără cabluri vizibile și fără modificări la structura blocului." },
-  { q: "Ce branduri de camere instalați în Chișinău?", a: "Instalăm IMOU, Dahua, Uniview, Uniarch, Reolink, TP-Link Tapo, Ajax. Toate produsele sunt originale, cu garanție producător 2–3 ani." },
-  { q: "Oferiți garanție pentru instalarea din Chișinău?", a: "Da, garanție 2 ani pentru montajul nostru. Dacă apare orice problemă cu instalarea în această perioadă, revenim gratuit." },
+  { q: "Ce branduri de camere instalați în Chișinău?", a: "Instalăm IMOU, Dahua, Uniview, Uniarch, Reolink, TP-Link Tapo, Ajax. Toate produsele sunt originale, cu garanție producător 2–5 ani." },
+  { q: "Oferiți garanție pentru instalarea din Chișinău?", a: "Da, garanție 2–5 ani pentru montajul nostru. Dacă apare orice problemă cu instalarea în această perioadă, revenim gratuit." },
   { q: "Pot vedea camerele de pe telefon, de oriunde?", a: "Da, configurăm accesul remote complet — vizualizare live și înregistrări din aplicație, de oriunde în lume, pe iPhone sau Android." },
   { q: "Instalați și sisteme de alarmă în Chișinău?", a: "Da, instalăm sisteme Ajax wireless — cele mai fiabile din Moldova. Senzori de mișcare, ușă/fereastră, sirenă, monitorizare 24/7 prin aplicație." },
 ];
@@ -41,7 +41,7 @@ export default function CamereChisinau() {
   const topProducts = storeProducts.filter(p => p.inStock !== false && p.price > 0).slice(0, 4);
 
   const title = "Camere Supraveghere Chișinău | Instalare și Montaj | Teco.md";
-  const description = "Camere de supraveghere în Chișinău — instalare profesională în toate sectoarele. WiFi, PoE, 4G Solar, NVR. Garanție 2 ani. Venim la tine în 24h. ☎ 067 200 463";
+  const description = "Camere de supraveghere în Chișinău — instalare profesională în toate sectoarele. WiFi, PoE, 4G Solar, NVR. Garanție 2–5 ani. Venim la tine în 24h. ☎ 067 200 463";
   const keywords = "camere supraveghere chisinau, instalare camere chisinau, montaj sistem supraveghere chisinau, camere ip chisinau, sisteme securitate chisinau, teco.md chisinau";
 
   const jsonLd = [
@@ -53,7 +53,7 @@ export default function CamereChisinau() {
       "@context": "https://schema.org",
       "@type": "Service",
       name: "Camere Supraveghere Chișinău — Instalare Profesională",
-      description: "Vânzare și instalare sisteme de supraveghere video în Chișinău. Acoperim toate sectoarele: Centru, Botanica, Buiucani, Ciocana, Rîșcani. Tehnicieni certificați, garanție 2 ani.",
+      description: "Vânzare și instalare sisteme de supraveghere video în Chișinău. Acoperim toate sectoarele: Centru, Botanica, Buiucani, Ciocana, Rîșcani. Tehnicieni certificați, garanție 2–5 ani.",
       url: "https://teco.md/camere-supraveghere-chisinau",
       provider: { "@type": "LocalBusiness", "@id": "https://teco.md/#business", name: "Teco.md" },
       areaServed: [
@@ -92,7 +92,7 @@ export default function CamereChisinau() {
               <span className="block text-[#FF4F00] mt-1">în Chișinău</span>
             </h1>
             <p className="text-zinc-300 text-base md:text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
-              Instalare profesională în toate sectoarele Chișinăului. Tehnicianul vine la tine în <strong className="text-white">24h</strong>. Garanție 2 ani. Prețuri de la <strong className="text-white">300 MDL/cameră</strong>.
+              Instalare profesională în toate sectoarele Chișinăului. Tehnicianul vine la tine în <strong className="text-white">24h</strong>. Garanție 2–5 ani. Prețuri de la <strong className="text-white">300 MDL/cameră</strong>.
             </p>
             <div className="flex items-center justify-center gap-2 mb-8">
               <div className="flex">{[1,2,3,4,5].map(i => <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />)}</div>
@@ -112,7 +112,7 @@ export default function CamereChisinau() {
         {/* Stats */}
         <section className="bg-[#FF4F00] py-8 px-4">
           <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-white text-center">
-            {[{ n: "500+", l: "Sisteme în Chișinău" }, { n: "24h", l: "Instalare rapidă" }, { n: "15", l: "Sectoare acoperite" }, { n: "2 ani", l: "Garanție montaj" }].map(s => (
+            {[{ n: "500+", l: "Sisteme în Chișinău" }, { n: "24h", l: "Instalare rapidă" }, { n: "15", l: "Sectoare acoperite" }, { n: "2–5 ani", l: "Garanție montaj" }].map(s => (
               <div key={s.l}><div className="text-3xl font-black mb-0.5">{s.n}</div><div className="text-orange-100 text-sm">{s.l}</div></div>
             ))}
           </div>
@@ -127,7 +127,7 @@ export default function CamereChisinau() {
               {[
                 { icon: MapPin, t: "Acoperim toate sectoarele", d: "Centru, Botanica, Buiucani, Ciocana, Rîșcani, Telecentru — oriunde în Chișinău." },
                 { icon: Clock, t: "Tehnicianul vine în 24h", d: "Programăm instalarea pentru ziua sau a doua zi — nu aștepți săptămâni." },
-                { icon: Shield, t: "Garanție 2 ani la montaj", d: "Dacă apare vreo problemă cu instalarea noastră, revenim și remediem gratuit." },
+                { icon: Shield, t: "Garanție 2–5 ani la montaj", d: "Dacă apare vreo problemă cu instalarea noastră, revenim și remediem gratuit." },
                 { icon: Camera, t: "Stoc fizic în Chișinău", d: "Nu comandăm din China — toate produsele sunt în stoc și le aduce tehnicianul." },
                 { icon: Zap, t: "Configurare completă", d: "Setăm NVR-ul, aplicația pe telefonul tău și alertele — totul funcțional din prima zi." },
                 { icon: CheckCircle2, t: "Prețuri transparente", d: "Ofertă detaliată înainte de montaj — exact cât costă, fără surprize." },

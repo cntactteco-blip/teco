@@ -92,7 +92,7 @@ export default function SistemeSupraveghereCasa() {
               <span className="block text-[#FF4F00] mt-1">pentru Casa Ta</span>
             </h1>
             <p className="text-zinc-300 text-base md:text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
-              Pachete complete de camere video pentru casă și curte în Moldova. De la <strong className="text-white">3.200 MDL</strong> cu montaj profesional inclus. Garanție 2 ani.
+              Pachete complete de camere video pentru casă și curte în Moldova. De la <strong className="text-white">3.200 MDL</strong> cu montaj profesional inclus. Garanție 2–5 ani.
             </p>
             <div className="flex items-center justify-center gap-2 mb-8">
               <div className="flex">{[1,2,3,4,5].map(i => <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />)}</div>

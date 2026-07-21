@@ -19,13 +19,13 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 }
 
 const FAQS = [
-  { q: "Ce camere de exterior sunt cele mai bune pentru Moldova?", a: "Pentru condițiile din Moldova (temperaturi -25°C iarna, ploi, praf) recomandăm camere cu protecție IP66/IP67. Cele mai bune branduri: IMOU (pentru WiFi), Dahua/Uniview (pentru PoE profesional), Reolink (pentru 4G Solar). Toate sunt disponibile la Teco.md cu garanție 2–3 ani." },
+  { q: "Ce camere de exterior sunt cele mai bune pentru Moldova?", a: "Pentru condițiile din Moldova (temperaturi -25°C iarna, ploi, praf) recomandăm camere cu protecție IP66/IP67. Cele mai bune branduri: IMOU (pentru WiFi), Dahua/Uniview (pentru PoE profesional), Reolink (pentru 4G Solar). Toate sunt disponibile la Teco.md cu garanție 2–5 ani." },
   { q: "Care este diferența dintre IP65, IP66 și IP67?", a: "IP65 = protecție la jet de apă din orice direcție. IP66 = protecție la jet de apă puternic (furtuni). IP67 = protecție la imersie în apă până la 1m/30min. Pentru exterior în Moldova, minimum IP66 este recomandat." },
   { q: "Camerele de exterior rezistă la îngheț?", a: "Da, camerele noastre de exterior funcționează la temperaturi de la -30°C la +60°C. Cele cu LED Color Night Vision sau cu Full-Color funcționează optim chiar și pe timp de ger." },
   { q: "Câte MP are nevoie o cameră de exterior?", a: "Recomandăm minimum 4MP pentru exterior. Pentru distanțe mari sau plăcuțe auto, 5MP–8MP (4K). Cu 4MP poți identifica clar o persoană la 15–20m, cu 8MP la 30–40m." },
   { q: "Ce distanță de vedere nocturnă au camerele de exterior?", a: "Camerele cu IR LED: 20–60m (imagine alb-negru noaptea). Camerele Full-Color sau cu LED White Light: 20–40m în culori noaptea. Camerele Dual-Light: IR + LED activat doar la detecție — economie energie." },
   { q: "Pot monta camere de exterior fără cabluri?", a: "Da! Camerele WiFi de exterior (IMOU, Reolink) se conectează wireless la routerul tău. Necesită doar alimentare cu curent (priză). Alternativ, camerele 4G Solar nu au nevoie nici de curent, nici de internet." },
-  { q: "Cât costă o cameră de exterior în Moldova?", a: "Camerele de exterior WiFi pornesc de la 1.100 MDL. Camerele PoE profesionale de la 1.300 MDL. Camerele 4G Solar de la 3.500 MDL. Prețurile includ garanție 2–3 ani. Livrare 24h în toată Moldova." },
+  { q: "Cât costă o cameră de exterior în Moldova?", a: "Camerele de exterior WiFi pornesc de la 1.100 MDL. Camerele PoE profesionale de la 1.300 MDL. Camerele 4G Solar de la 3.500 MDL. Prețurile includ garanție 2–5 ani. Livrare 24h în toată Moldova." },
   { q: "Instalați camere de exterior și la companii/afaceri?", a: "Da, instalăm sisteme de exterior pentru firme, depozite, parcări, restaurante, magazine. Oferim sisteme scalabile de la 4 la 32+ camere, cu NVR profesional și stocare extinsă." },
 ];
 
@@ -53,7 +53,7 @@ export default function CamereExterior() {
       "@context": "https://schema.org",
       "@type": "Service",
       name: "Camere de Supraveghere pentru Exterior Moldova",
-      description: "Vânzare și instalare camere de supraveghere exterior în Moldova. Camere WiFi, PoE și 4G Solar cu protecție IP66/IP67, vedere nocturnă Full-Color, rezoluție 4K. Garanție 2–3 ani.",
+      description: "Vânzare și instalare camere de supraveghere exterior în Moldova. Camere WiFi, PoE și 4G Solar cu protecție IP66/IP67, vedere nocturnă Full-Color, rezoluție 4K. Garanție 2–5 ani.",
       url: "https://teco.md/camere-supraveghere-exterior",
       provider: { "@type": "LocalBusiness", "@id": "https://teco.md/#business", name: "Teco.md" },
       areaServed: { "@type": "Country", name: "Moldova" },

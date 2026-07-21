@@ -50,7 +50,7 @@ const CITIES = [
 ];
 
 const FEATURES = [
-  { icon: Shield, title: "Garanție 2 ani la montaj", desc: "Dacă apare orice problemă cu instalarea noastră, revenim gratuit." },
+  { icon: Shield, title: "Garanție 2–5 ani la montaj", desc: "Dacă apare orice problemă cu instalarea noastră, revenim gratuit." },
   { icon: Clock, title: "Instalare în 24–48h", desc: "Programăm vizita pentru ziua următoare, în intervalul orar ales de tine." },
   { icon: Award, title: "Tehnicieni certificați", desc: "Echipa noastră are experiență în sisteme Dahua, Uniview, IMOU, Ajax." },
   { icon: Zap, title: "Configurare completă", desc: "Setăm NVR-ul, aplicația mobilă și alertele — totul funcționează din prima zi." },
@@ -85,7 +85,7 @@ const FAQS = [
   },
   {
     q: "Oferiți garanție pentru montaj?",
-    a: "Da, oferim garanție 2 ani pentru montajul realizat de noi. Dacă apare orice problemă legată de instalare în această perioadă, revenim și remediem gratuit.",
+    a: "Da, oferim garanție 2–5 ani pentru montajul realizat de noi. Dacă apare orice problemă legată de instalare în această perioadă, revenim și remediem gratuit.",
   },
   {
     q: "Pot vedea camerele de pe telefon de oriunde?",
@@ -113,7 +113,7 @@ export default function MontareCamere() {
   const { lang } = useLang();
 
   const title = "Montare Camere Supraveghere Moldova | Instalare Profesională 24h | Teco.md";
-  const description = "Montare și instalare sisteme de supraveghere în Moldova. Tehnicieni certificați, garanție 2 ani. Prețuri de la 300 MDL/cameră. Programează azi — instalăm în 24h oriunde în Moldova. ☎ +373 67 200 463";
+  const description = "Montare și instalare sisteme de supraveghere în Moldova. Tehnicieni certificați, garanție 2–5 ani. Prețuri de la 300 MDL/cameră. Programează azi — instalăm în 24h oriunde în Moldova. ☎ +373 67 200 463";
   const keywords = "montare camere supraveghere moldova, instalare sistem supraveghere chisinau, montaj camere ip wifi, instalare nvr dahua uniview, montare camere exterior, pret montaj camera supraveghere moldova, instalare sisteme securitate chisinau, teco.md montaj";
 
   const jsonLd = [
@@ -126,7 +126,7 @@ export default function MontareCamere() {
       "@type": "Service",
       "@id": "https://teco.md/montare-camere-supraveghere#service",
       name: "Montare și Instalare Sisteme de Supraveghere Moldova",
-      description: "Serviciu profesional de montare, instalare și configurare sisteme de supraveghere video, camere IP, NVR-uri și sisteme de alarmă în Moldova. Tehnicieni certificați, garanție 2 ani.",
+      description: "Serviciu profesional de montare, instalare și configurare sisteme de supraveghere video, camere IP, NVR-uri și sisteme de alarmă în Moldova. Tehnicieni certificați, garanție 2–5 ani.",
       url: "https://teco.md/montare-camere-supraveghere",
       image: "https://teco.md/opengraph.jpg",
       provider: {
@@ -206,7 +206,7 @@ export default function MontareCamere() {
             </h1>
             <p className="text-zinc-300 text-base md:text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
               Tehnicieni certificați instalează camerele la adresa ta în 24–48h.
-              Garanție 2 ani la montaj. Prețuri de la <strong className="text-white">300 MDL/cameră</strong>.
+              Garanție 2–5 ani la montaj. Prețuri de la <strong className="text-white">300 MDL/cameră</strong>.
             </p>
             {/* Stars */}
             <div className="flex items-center justify-center gap-2 mb-8">
@@ -241,7 +241,7 @@ export default function MontareCamere() {
             {[
               { n: "500+", label: "Sisteme instalate" },
               { n: "24h", label: "Timp de răspuns" },
-              { n: "2 ani", label: "Garanție montaj" },
+              { n: "2–5 ani", label: "Garanție montaj" },
               { n: "100%", label: "Clienți mulțumiți" },
             ].map((s) => (
               <div key={s.label}>

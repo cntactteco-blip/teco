@@ -67,10 +67,10 @@ const reviewsFor = (id: number) =>
 
 // ── Warranty by brand ────────────────────────────────────────────────
 const WARRANTY: Record<string, string> = {
-  "TP-Link Tapo": "24 luni", "TP-Link VIGI": "24 luni",
-  "Reolink": "24 luni", "Uniarch": "24 luni",
-  "Uniview": "36 luni", "Tiandy": "24 luni",
-  "Ajax Systems": "24 luni", "Teco.md": "12 luni",
+  "TP-Link Tapo": "2–5 ani", "TP-Link VIGI": "2–5 ani",
+  "Reolink": "2–5 ani", "Uniarch": "2–5 ani",
+  "Uniview": "2–5 ani", "Tiandy": "2–5 ani",
+  "Ajax Systems": "2–5 ani", "Teco.md": "2–5 ani",
 };
 
 // ── Badge + brand colors ─────────────────────────────────────────────
@@ -586,7 +586,7 @@ export default function ProductDetail() {
     ]),
   ];
   const metaTitle = `${product.name} — ${product.price.toLocaleString()} MDL | ${product.brand} | Teco.md`;
-  const metaDesc = product.description.slice(0, 160) || `${product.name}. Preț: ${product.price.toLocaleString()} MDL. Brand: ${product.brand}. Livrare în 24h. Garanție 2–3 ani.`;
+  const metaDesc = product.description.slice(0, 160) || `${product.name}. Preț: ${product.price.toLocaleString()} MDL. Brand: ${product.brand}. Livrare în 24h. Garanție 2–5 ani.`;
 
   return (
     <>
