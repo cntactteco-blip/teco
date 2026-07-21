@@ -74,7 +74,7 @@ export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-100">
-          <Link href="/" className="font-black text-xl tracking-tighter text-[#09090B]">
+          <Link href="/" onClick={onClose} className="font-black text-xl tracking-tighter text-[#09090B]">
             TECO<span className="text-[#FF4F00]">.</span>MD
           </Link>
           <button onClick={onClose} className="p-2 rounded-full hover:bg-zinc-100 transition-colors">
