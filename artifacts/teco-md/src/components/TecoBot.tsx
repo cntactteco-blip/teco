@@ -297,32 +297,30 @@ export function TecoBot() {
         </div>
       )}
 
-      {/* ── Floating operator button — chat bubble cu siluetă ── */}
+      {/* ── Floating operator button ── */}
       <button
         onClick={openChat}
         aria-label="Chat consultant"
-        className="fixed bottom-32 left-4 md:bottom-6 md:left-6 z-40 relative"
+        className="fixed bottom-[8.25rem] left-4 md:bottom-6 md:left-6 z-40 relative w-12 h-12 rounded-full bg-gradient-to-br from-[#FF4F00] to-orange-600 flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200"
       >
-        {/* Cercul principal */}
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FF4F00] to-orange-600 flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200">
-          {/* Chat bubble + person SVG */}
-          <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-            {/* Speech bubble */}
-            <rect x="2" y="2" width="18" height="14" rx="4" fill="white" fillOpacity="0.97"/>
-            <path d="M7 16 L10 21 L13 16" fill="white" fillOpacity="0.97"/>
-            {/* Person head */}
-            <circle cx="11" cy="7.5" r="2.2" fill="#FF4F00" fillOpacity="0.9"/>
-            {/* Person body */}
-            <path d="M7 13.5 C7 11 8.8 9.8 11 9.8 C13.2 9.8 15 11 15 13.5" stroke="#FF4F00" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.9"/>
-          </svg>
-        </div>
+        {/* Speech bubble cu siluetă umană — totul alb pe fond portocaliu */}
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+          {/* Bubble body */}
+          <rect x="3" y="3" width="17" height="13" rx="3.5" fill="white" fillOpacity="0.96"/>
+          {/* Bubble tail */}
+          <path d="M8 16 L11 20 L14 16Z" fill="white" fillOpacity="0.96"/>
+          {/* Person head */}
+          <circle cx="11.5" cy="8" r="2" fill="#FF4F00"/>
+          {/* Person shoulders */}
+          <path d="M7.5 13.5C7.5 11.5 9.2 10.3 11.5 10.3C13.8 10.3 15.5 11.5 15.5 13.5" stroke="#FF4F00" strokeWidth="1.4" strokeLinecap="round"/>
+        </svg>
 
         {/* Green online dot */}
         <span className="absolute bottom-0.5 right-0.5 w-3 h-3 rounded-full bg-green-400 border-2 border-white animate-pulse shadow-sm" />
 
         {/* Unread badge */}
         {unread > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center shadow">
+          <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center shadow">
             {unread}
           </span>
         )}
