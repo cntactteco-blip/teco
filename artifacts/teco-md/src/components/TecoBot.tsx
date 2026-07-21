@@ -106,6 +106,10 @@ export function TecoBot() {
     const botMsg: Message = { role: "assistant", content: "", ts: Date.now() };
     setMessages([...allMessages, botMsg]);
     abortRef.current = new AbortController();
+    // Timeout de 30s pe întreaga cerere — dacă nu vine niciun răspuns, afișăm fallback
+    const globalTimeout = setTimeout(() => {
+      abortRef.current?.abort();
+    }, 30000);
     try {
       const res = await fetch((import.meta.env.VITE_API_URL || "") + "/api/ai/chat", {
         method: "POST",
@@ -170,6 +174,7 @@ export function TecoBot() {
         return updated;
       });
     } finally {
+      clearTimeout(globalTimeout);
       setStreaming(false);
       if (!open) setUnread((n) => n + 1);
     }
