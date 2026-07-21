@@ -243,8 +243,6 @@ export function TecoBot() {
           <circle cx="12" cy="8" r="4" fill="white" fillOpacity="0.97"/>
           <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7" stroke="white" strokeWidth="2" strokeLinecap="round" fillOpacity="0.97"/>
         </svg>
-        <span className="text-sm font-bold hidden sm:inline">Ana M.</span>
-        <span className="text-sm font-bold sm:hidden">Ana</span>
         {/* Online dot */}
         <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
         {unread > 0 && (
