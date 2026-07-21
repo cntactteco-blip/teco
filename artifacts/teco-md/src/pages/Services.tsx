@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { Wrench, Search, ShieldCheck, Phone, CheckCircle, CheckCircle2, X, Clock, Star, ArrowRight, ChevronDown, MapPin, Shield, Zap, Wifi } from "lucide-react";
 import { useStore, storeActions } from "@/lib/store";
@@ -98,6 +98,16 @@ const SERVICES = [
   const [modalService, setModalService] = useState<string | null>(null);
   const [modalName, setModalName] = useState("");
   const [modalPhone, setModalPhone] = useState("");
+
+  // Scroll to anchor (#montaj, #reparatii etc.) when page loads from sidebar link
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (!hash) return;
+    const el = document.getElementById(hash);
+    if (el) {
+      setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 300);
+    }
+  }, []);
   const [modalSubmitted, setModalSubmitted] = useState(false);
   const openWA = (service: string) => {
     setModalService(service);
@@ -258,7 +268,7 @@ const SERVICES = [
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {SERVICES.map((s) => (
-            <div key={s.id} className={`bg-white rounded-2xl border ${s.border} p-6 flex flex-col hover:shadow-lg transition-shadow`}>
+            <div key={s.id} id={s.id} className={`bg-white rounded-2xl border ${s.border} p-6 flex flex-col hover:shadow-lg transition-shadow scroll-mt-24`}>
               {(ro ? s.badge : s.badgeRu) && (
                 <div className="inline-flex self-start mb-3">
                   <span className="bg-[#FF4F00] text-white text-[10px] font-black px-2.5 py-1 rounded-full">
