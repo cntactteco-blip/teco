@@ -266,8 +266,9 @@ export default function Products() {
     if (activeCategory !== "all") n++;
     if (selectedBrands.length > 0) n++;
     if (priceMin > 0 || priceMax < 99999) n++;
+    if (sortBy !== "relevance") n++;
     return n;
-  }, [activeCategory, selectedBrands, priceMin, priceMax]);
+  }, [activeCategory, selectedBrands, priceMin, priceMax, sortBy]);
 
   const clearAll = () => {
     setActiveCategory("all");
@@ -646,38 +647,6 @@ export default function Products() {
                   </span>
                 )}
               </button>
-
-              {/* Mobile sort */}
-              <div className="md:hidden relative flex-shrink-0" ref={sortRef}>
-                <button
-                  onClick={() => setShowSortDropdown(!showSortDropdown)}
-                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-bold transition-all ${
-                    sortBy !== "relevance" ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-700 border border-zinc-200"
-                  }`}
-                >
-                  <ArrowUpDown className="w-3.5 h-3.5" />
-                  {sortBy === "price_asc" ? "Mic → Mare" : sortBy === "price_desc" ? "Mare → Mic" : "Sortare"}
-                </button>
-                {showSortDropdown && (
-                  <div className="absolute top-full left-0 mt-1 bg-white rounded-2xl border border-zinc-200 shadow-xl z-30 overflow-hidden w-48">
-                    {SORT_OPTIONS.map(opt => (
-                      <button
-                        key={opt.key}
-                        onClick={() => { setSortBy(opt.key); setShowSortDropdown(false); }}
-                        className={`w-full text-left px-4 py-3 text-sm font-semibold flex items-center justify-between hover:bg-zinc-50 transition-colors ${
-                          sortBy === opt.key ? "text-[#FF4F00]" : "text-zinc-700"
-                        }`}
-                      >
-                        {opt.label}
-                        {sortBy === opt.key && <Check className="w-3.5 h-3.5 text-[#FF4F00]" />}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Divider */}
-              <div className="w-px h-5 bg-zinc-200 flex-shrink-0" />
 
               {/* Category pills — scrollable */}
               <div className="flex gap-1.5 overflow-x-auto no-scrollbar flex-1">
