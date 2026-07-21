@@ -382,7 +382,10 @@ export default function Products() {
   ];
 
   const jsonLd = [
-    schemas.collectionPage(filtered.map(p => ({ id: p.id, name: p.name, imageUrl: p.imageUrl, price: p.price }))),
+    schemas.collectionPage(
+      filtered.map(p => ({ id: p.id, name: p.name, imageUrl: p.imageUrl, price: p.price, inStock: p.inStock })),
+      { name: seo.title, url: `https://teco.md${canonicalUrl}`, description: seo.desc }
+    ),
     schemas.breadcrumb(breadcrumbItems),
     ...(effectiveCat === "kituri" ? [schemas.faq([
       { question: "Cât costă un set complet de supraveghere în Moldova?", answer: "Prețurile pentru seturi complete de supraveghere video în Moldova încep de la 3.500 MDL și pot ajunge la 30.000+ MDL, în funcție de numărul de camere și rezoluție. La Teco.md găsești kituri de 4, 8 și 16 camere, gata de instalat." },

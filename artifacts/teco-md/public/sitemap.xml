@@ -4,11 +4,24 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 
   <url>
+    <loc>https://teco.md/montare-camere-supraveghere</loc>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/montare-camere-supraveghere"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://teco.md/montare-camere-supraveghere"/>
+    <lastmod>2026-07-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://teco.md/opengraph.jpg</image:loc>
+      <image:title>Montare Camere Supraveghere Moldova — Teco.md</image:title>
+    </image:image>
+  </url>
+
+  <url>
     <loc>https://teco.md/</loc>
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://teco.md/"/>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -22,7 +35,7 @@
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/produse"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/produse"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://teco.md/produse"/>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>
@@ -31,7 +44,7 @@
     <loc>https://teco.md/produse?cat=wifi</loc>
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/produse?cat=wifi"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/produse?cat=wifi"/>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
@@ -40,7 +53,7 @@
     <loc>https://teco.md/produse?cat=poe</loc>
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/produse?cat=poe"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/produse?cat=poe"/>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
@@ -49,7 +62,7 @@
     <loc>https://teco.md/produse?cat=4g</loc>
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/produse?cat=4g"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/produse?cat=4g"/>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
@@ -58,7 +71,7 @@
     <loc>https://teco.md/produse?cat=nvr</loc>
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/produse?cat=nvr"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/produse?cat=nvr"/>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
@@ -67,7 +80,7 @@
     <loc>https://teco.md/produse?cat=kituri</loc>
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/produse?cat=kituri"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/produse?cat=kituri"/>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
@@ -76,14 +89,14 @@
     <loc>https://teco.md/produse?cat=alarme</loc>
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/produse?cat=alarme"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/produse?cat=alarme"/>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
 
   <url>
     <loc>https://teco.md/seturi-camere-supraveghere</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
@@ -93,7 +106,7 @@
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/servicii"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/servicii"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://teco.md/servicii"/>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
@@ -103,14 +116,14 @@
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/blog"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/blog"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://teco.md/blog"/>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.65</priority>
   </url>
 
   <url>
     <loc>https://teco.md/product/6</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -121,7 +134,7 @@
 
   <url>
     <loc>https://teco.md/product/10</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -132,7 +145,7 @@
 
   <url>
     <loc>https://teco.md/product/14</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -143,7 +156,7 @@
 
   <url>
     <loc>https://teco.md/product/15</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -154,7 +167,7 @@
 
   <url>
     <loc>https://teco.md/product/17</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -165,7 +178,7 @@
 
   <url>
     <loc>https://teco.md/product/18</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -176,7 +189,7 @@
 
   <url>
     <loc>https://teco.md/product/19</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -187,7 +200,7 @@
 
   <url>
     <loc>https://teco.md/product/20</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -198,7 +211,7 @@
 
   <url>
     <loc>https://teco.md/product/21</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -209,7 +222,7 @@
 
   <url>
     <loc>https://teco.md/product/22</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -220,7 +233,7 @@
 
   <url>
     <loc>https://teco.md/product/23</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -231,7 +244,7 @@
 
   <url>
     <loc>https://teco.md/product/24</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -242,7 +255,7 @@
 
   <url>
     <loc>https://teco.md/product/25</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -253,7 +266,7 @@
 
   <url>
     <loc>https://teco.md/product/26</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -264,7 +277,7 @@
 
   <url>
     <loc>https://teco.md/product/27</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -275,7 +288,7 @@
 
   <url>
     <loc>https://teco.md/product/89</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -286,7 +299,7 @@
 
   <url>
     <loc>https://teco.md/product/90</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -297,7 +310,7 @@
 
   <url>
     <loc>https://teco.md/product/94</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -308,7 +321,7 @@
 
   <url>
     <loc>https://teco.md/product/95</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -319,7 +332,7 @@
 
   <url>
     <loc>https://teco.md/product/96</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -330,7 +343,7 @@
 
   <url>
     <loc>https://teco.md/product/97</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -341,7 +354,7 @@
 
   <url>
     <loc>https://teco.md/product/98</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -352,7 +365,7 @@
 
   <url>
     <loc>https://teco.md/product/99</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -363,7 +376,7 @@
 
   <url>
     <loc>https://teco.md/product/100</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -374,7 +387,7 @@
 
   <url>
     <loc>https://teco.md/product/101</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -385,7 +398,7 @@
 
   <url>
     <loc>https://teco.md/product/102</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -396,7 +409,7 @@
 
   <url>
     <loc>https://teco.md/product/103</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -407,7 +420,7 @@
 
   <url>
     <loc>https://teco.md/product/104</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -418,7 +431,7 @@
 
   <url>
     <loc>https://teco.md/product/105</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -429,7 +442,7 @@
 
   <url>
     <loc>https://teco.md/product/106</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -440,7 +453,7 @@
 
   <url>
     <loc>https://teco.md/product/107</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -451,7 +464,7 @@
 
   <url>
     <loc>https://teco.md/product/111</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -462,7 +475,7 @@
 
   <url>
     <loc>https://teco.md/product/112</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -473,7 +486,7 @@
 
   <url>
     <loc>https://teco.md/product/113</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -484,7 +497,7 @@
 
   <url>
     <loc>https://teco.md/product/115</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -495,7 +508,7 @@
 
   <url>
     <loc>https://teco.md/product/116</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -506,7 +519,7 @@
 
   <url>
     <loc>https://teco.md/product/117</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -517,7 +530,7 @@
 
   <url>
     <loc>https://teco.md/product/118</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -528,7 +541,7 @@
 
   <url>
     <loc>https://teco.md/product/119</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -539,7 +552,7 @@
 
   <url>
     <loc>https://teco.md/product/120</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -550,7 +563,7 @@
 
   <url>
     <loc>https://teco.md/product/121</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -561,7 +574,7 @@
 
   <url>
     <loc>https://teco.md/product/122</loc>
-    <lastmod>2026-07-20</lastmod>
+    <lastmod>2026-07-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
