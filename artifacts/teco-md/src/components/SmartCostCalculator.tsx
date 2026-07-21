@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Home, Building, Briefcase, MapPin, Cable, Zap, Star, Wifi, HelpCircle, Check, Camera, ShoppingCart } from "lucide-react";
 import { ConsentCheckbox } from "@/components/ConsentCheckbox";
 import { useCart } from "@/hooks/useCart";
@@ -30,11 +30,22 @@ export default function SmartCostCalculator() {
   const [formData, setFormData] = useState({ name: "", phone: "" });
   const [calcConsent, setCalcConsent] = useState(false);
 
+  const sectionRef = useRef<HTMLElement>(null);
+
   const resetCalc = () => {
     setStep(1);
     setSelections({ objective: "", cameras: "", storage: "", installation: "" });
     setFormData({ name: "", phone: "" });
   };
+
+  // Scroll la top-ul calculatorului la fiecare schimbare de step
+  useEffect(() => {
+    if (step > 1) {
+      setTimeout(() => {
+        sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 50);
+    }
+  }, [step]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingText, setLoadingText] = useState("Verificăm stocul disponibil...");
@@ -158,7 +169,7 @@ export default function SmartCostCalculator() {
   const bannerImage = settings.moduleA?.bannerImage;
 
   return (
-    <section className="w-full bg-white border-y border-zinc-100 py-16 px-4 relative overflow-hidden">
+    <section ref={sectionRef} className="w-full bg-white border-y border-zinc-100 py-16 px-4 relative overflow-hidden">
       {bannerImage && (
         <div className="max-w-[800px] mx-auto mb-8 rounded-2xl overflow-hidden shadow-sm">
           <img src={bannerImage} alt="Banner Calculator" className="w-full max-h-48 object-cover" />
