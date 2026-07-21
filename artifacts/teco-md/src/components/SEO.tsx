@@ -234,10 +234,10 @@ export const schemas = {
         url: "https://teco.md/produse",
         itemListElement: [
           { "@type": "Offer", itemOffered: { "@type": "Service", name: "Montare Camere Supraveghere", url: "https://teco.md/montare-camere-supraveghere" } },
-          { "@type": "Offer", itemOffered: { "@type": "Product", name: "Camere IP WiFi", url: "https://teco.md/produse?cat=wifi" } },
-          { "@type": "Offer", itemOffered: { "@type": "Product", name: "Seturi Complete Supraveghere", url: "https://teco.md/produse?cat=kituri" } },
-          { "@type": "Offer", itemOffered: { "@type": "Product", name: "Înregistratoare NVR", url: "https://teco.md/produse?cat=nvr" } },
-          { "@type": "Offer", itemOffered: { "@type": "Product", name: "Camere 4G Solar", url: "https://teco.md/produse?cat=4g" } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "Camere IP WiFi Moldova", url: "https://teco.md/produse?cat=wifi" } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "Seturi Complete Supraveghere", url: "https://teco.md/produse?cat=kituri" } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "Înregistratoare NVR", url: "https://teco.md/produse?cat=nvr" } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "Camere 4G Solar Autonome", url: "https://teco.md/produse?cat=4g" } },
         ],
       },
       aggregateRating: {

@@ -31,6 +31,9 @@ import Confidentialitate from "@/pages/Confidentialitate";
 import Garantii from "@/pages/Garantii";
 import Livrare from "@/pages/Livrare";
 const MontareCamere = lazy(() => import("@/pages/MontareCamere"));
+const CamereChisinau = lazy(() => import("@/pages/CamereChinau"));
+const SistemeSupraveghereCasa = lazy(() => import("@/pages/SistemeSupraveghereCasa"));
+const CamereExterior = lazy(() => import("@/pages/CamereExterior"));
 const Admin = lazy(() => import("@/pages/Admin"));
 const Wishlist = lazy(() => import("@/pages/Wishlist"));
 const RequestQuote = lazy(() => import("@/pages/RequestQuote"));
@@ -88,6 +91,9 @@ function ShopRoutes() {
         <Route path="/produse" component={Products} />
         <Route path="/seturi-camere-supraveghere" component={Products} />
         <Route path="/montare-camere-supraveghere" component={MontareCamere} />
+        <Route path="/camere-supraveghere-chisinau" component={CamereChisinau} />
+        <Route path="/sisteme-supraveghere-casa" component={SistemeSupraveghereCasa} />
+        <Route path="/camere-supraveghere-exterior" component={CamereExterior} />
         <Route path="/product/:id" component={ProductDetail} />
         <Route path="/servicii" component={Services} />
         <Route path="/servicii/:city" component={ServiceCity} />

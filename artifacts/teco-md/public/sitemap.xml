@@ -17,6 +17,45 @@
   </url>
 
   <url>
+    <loc>https://teco.md/camere-supraveghere-chisinau</loc>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/camere-supraveghere-chisinau"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://teco.md/camere-supraveghere-chisinau"/>
+    <lastmod>2026-07-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.95</priority>
+    <image:image>
+      <image:loc>https://teco.md/opengraph.jpg</image:loc>
+      <image:title>Camere Supraveghere Chișinău — Instalare Profesională | Teco.md</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/sisteme-supraveghere-casa</loc>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/sisteme-supraveghere-casa"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://teco.md/sisteme-supraveghere-casa"/>
+    <lastmod>2026-07-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://teco.md/opengraph.jpg</image:loc>
+      <image:title>Sistem Supraveghere Casă Moldova — Teco.md</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://teco.md/camere-supraveghere-exterior</loc>
+    <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/camere-supraveghere-exterior"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://teco.md/camere-supraveghere-exterior"/>
+    <lastmod>2026-07-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.90</priority>
+    <image:image>
+      <image:loc>https://teco.md/opengraph.jpg</image:loc>
+      <image:title>Camere Supraveghere Exterior IP66 Moldova — Teco.md</image:title>
+    </image:image>
+  </url>
+
+  <url>
     <loc>https://teco.md/</loc>
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/"/>
