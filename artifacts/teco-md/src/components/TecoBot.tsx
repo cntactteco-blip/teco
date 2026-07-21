@@ -20,8 +20,8 @@ const GREET: Record<string, string> = {
 };
 
 const PROACTIVE: Record<string, string> = {
-  ro: "Bună! 👋 Ai nevoie de ajutor cu alegerea unui sistem de supraveghere? Sunt aici pentru tine.",
-  ru: "Привет! 👋 Нужна помощь с выбором системы видеонаблюдения? Я здесь для вас.",
+  ro: "Bună! 👋 Te pot ajuta să alegi sistemul potrivit.",
+  ru: "Привет! 👋 Помогу подобрать нужную систему.",
 };
 
 const BUBBLE_KEY = "teco_bubble_dismissed_v3";
@@ -259,40 +259,40 @@ export function TecoBot() {
 
   return (
     <>
-      {/* ── Proactive bubble ── */}
+      {/* ── Proactive bubble — compact & elegant ── */}
       {showBubble && !open && (
-        <div className="fixed bottom-[9.5rem] left-4 md:bottom-28 md:left-6 z-40 animate-fade-in">
-          <div className="relative bg-white rounded-2xl rounded-bl-sm shadow-xl border border-zinc-100 p-4 max-w-[230px]">
+        <div className="fixed bottom-[5.8rem] left-[4.5rem] md:bottom-[4.5rem] md:left-[5.5rem] z-40">
+          <div className="relative bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.10)] border border-zinc-100 px-3.5 py-3 w-[185px]">
             {/* Close */}
-            <button
-              onClick={dismissBubble}
-              className="absolute top-2 right-2 w-5 h-5 flex items-center justify-center rounded-full hover:bg-zinc-100 transition-colors text-zinc-400 hover:text-zinc-600"
-            >
+            <button onClick={dismissBubble} className="absolute top-2 right-2 text-zinc-300 hover:text-zinc-500 transition-colors">
               <X className="w-3 h-3" />
             </button>
 
-            {/* Operator line */}
-            <div className="flex items-center gap-2 mb-2 pr-4">
-              <span className="text-[11px] font-bold text-zinc-900">{OPERATOR.name}</span>
-              <span className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                <span className="text-[10px] text-green-600 font-semibold">Online</span>
-              </span>
+            {/* Avatar + name */}
+            <div className="flex items-center gap-2 mb-2 pr-3">
+              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#FF4F00] to-orange-500 flex items-center justify-center flex-shrink-0">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="8" r="4" fill="white" />
+                  <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="white" strokeWidth="2.4" strokeLinecap="round" />
+                </svg>
+              </div>
+              <span className="text-[11px] font-bold text-zinc-800">{OPERATOR.name}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />
             </div>
 
             {/* Message */}
-            <p className="text-sm text-zinc-700 leading-snug mb-3">{PROACTIVE[lang] ?? PROACTIVE.ro}</p>
+            <p className="text-[12px] text-zinc-600 leading-snug mb-2.5">{PROACTIVE[lang] ?? PROACTIVE.ro}</p>
 
-            {/* CTA */}
+            {/* CTA link */}
             <button
               onClick={openChat}
-              className="w-full bg-[#FF4F00] text-white text-xs font-bold py-2 rounded-xl hover:opacity-90 active:scale-95 transition-all"
+              className="text-[11px] font-bold text-[#FF4F00] hover:underline flex items-center gap-0.5 transition-all"
             >
-              {lang === "ru" ? "Написать →" : "Scrie-mi →"}
+              {lang === "ru" ? "Написать" : "Scrie-mi"} <span className="text-xs">→</span>
             </button>
 
-            {/* Tail */}
-            <div className="absolute -bottom-2 left-5 w-4 h-4 bg-white border-b border-r border-zinc-100 rotate-45" />
+            {/* Tail pointing left toward button */}
+            <div className="absolute top-4 -left-1.5 w-3 h-3 bg-white border-l border-b border-zinc-100 rotate-45" />
           </div>
         </div>
       )}
