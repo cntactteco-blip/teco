@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Home, Building, Briefcase, MapPin, Cable, Zap, Star, Wifi, HelpCircle, Check, Camera, ShoppingCart } from "lucide-react";
+import { ConsentCheckbox } from "@/components/ConsentCheckbox";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
 import { useStore, storeActions, getState } from "@/lib/store";
@@ -274,30 +275,7 @@ export default function SmartCostCalculator() {
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#FF4F00]" data-testid="calc-form-name" />
                 <input type="tel" placeholder="+373 " required value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#FF4F00]" data-testid="calc-form-phone" />
-                <label className="flex items-start gap-2.5 cursor-pointer">
-                  <div className="mt-0.5 flex-shrink-0">
-                    <input
-                      type="checkbox"
-                      checked={calcConsent}
-                      onChange={(e) => setCalcConsent(e.target.checked)}
-                      required
-                      className="sr-only"
-                    />
-                    <div
-                      onClick={() => setCalcConsent(!calcConsent)}
-                      className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${calcConsent ? "bg-[#FF4F00] border-[#FF4F00]" : "border-zinc-600"}`}
-                    >
-                      {calcConsent && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
-                    </div>
-                  </div>
-                  <span className="text-xs text-zinc-400 leading-relaxed">
-                    Sunt de acord cu prelucrarea datelor mele conform{" "}
-                    <a href="/confidentialitate" className="text-[#FF4F00] underline" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
-                      Politicii de Confidențialitate
-                    </a>{" "}
-                    (Legea nr. 133/2011 Moldova) <span className="text-red-400">*</span>
-                  </span>
-                </label>
+                <ConsentCheckbox checked={calcConsent} onChange={setCalcConsent} dark />
                 <button type="submit" disabled={!calcConsent} className="w-full bg-[#FF4F00] text-white font-bold py-4 rounded-xl hover:bg-orange-600 active:scale-95 transition-all mt-2 shadow-[0_4px_14px_rgba(255,79,0,0.4)] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none" data-testid="calc-form-submit">
                   Deblochează Prețul + Obține Voucherul
                 </button>
