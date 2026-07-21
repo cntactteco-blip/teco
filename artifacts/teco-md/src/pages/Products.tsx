@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import { Link, useRoute, useSearch } from "wouter";
-import { Search, ShoppingCart, SlidersHorizontal, X, ChevronDown, Check, ArrowUpDown, Heart, BarChart2 } from "lucide-react";
+import { Search, ShoppingCart, SlidersHorizontal, X, ChevronDown, Check, ArrowUpDown, Heart, BarChart2, LayoutGrid } from "lucide-react";
+import { getCatIconDef } from "@/components/CatIcons";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
 import { useStore, type StoreProduct } from "@/lib/store";
@@ -200,10 +201,11 @@ export default function Products() {
 
   // TABS dinamic din store — se actualizează automat când adminul adaugă/șterge categorii
   const TABS = [
-    { key: "all", label: lang === "ru" ? "Все" : "Toate" },
+    { key: "all", label: lang === "ru" ? "Все" : "Toate", iconKey: undefined as string | undefined },
     ...storeCategories.map((c) => ({
       key: c.slug,
       label: lang === "ru" ? (c.labelRu ?? c.label) : c.label,
+      iconKey: c.iconKey,
     })),
   ];
 
@@ -626,46 +628,70 @@ export default function Products() {
         </div>
 
         {/* ── Sticky filter/tab bar ── */}
-        <div className="bg-white border-b border-[#E4E4E7] sticky top-[57px] md:top-[80px] z-20">
-          <div className="max-w-7xl mx-auto px-4 md:px-6">
-            <div className="flex items-center gap-2 py-2.5">
+        <div className="bg-zinc-50 border-b border-[#E4E4E7] sticky top-[57px] md:top-[80px] z-20">
+          <div className="max-w-7xl mx-auto px-3 md:px-6">
+            <div className="flex items-stretch gap-2 py-2.5">
 
-              {/* Filter button (mobile) + desktop inline */}
+              {/* Filter button — card style to match category pills */}
               <button
                 onClick={() => setShowFilters(true)}
-                className={`md:hidden flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-bold transition-all ${
+                className={`md:hidden flex-shrink-0 flex flex-col items-center justify-center gap-0.5 px-3 py-2 rounded-2xl min-w-[52px] border transition-all ${
                   activeFilterCount > 0
-                    ? "bg-[#FF4F00] text-white"
-                    : "bg-zinc-100 text-zinc-700 border border-zinc-200"
+                    ? "bg-[#FF4F00] text-white border-[#FF4F00] shadow-md shadow-orange-200/60"
+                    : "bg-white text-zinc-500 border-zinc-200"
                 }`}
               >
-                <SlidersHorizontal className="w-3.5 h-3.5" />
-                Filtre
+                <SlidersHorizontal className="w-4 h-4" />
+                <span className="text-[10px] font-bold leading-tight">Filtre</span>
                 {activeFilterCount > 0 && (
-                  <span className="bg-white/25 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center">
+                  <span className="bg-white/30 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
                     {activeFilterCount}
                   </span>
                 )}
               </button>
 
-              {/* Category pills — scrollable */}
-              <div className="flex gap-1.5 overflow-x-auto no-scrollbar flex-1">
+              {/* Divider */}
+              <div className="md:hidden w-px bg-zinc-200 flex-shrink-0 my-1" />
+
+              {/* Category cards — scrollable */}
+              <div className="flex gap-2 overflow-x-auto no-scrollbar flex-1">
                 {TABS.map(tab => {
                   const count = tab.key === "all" ? catCounts["all"] : (catCounts[tab.key] ?? 0);
                   if (tab.key !== "all" && count === 0) return null;
+                  const isActive = activeCategory === tab.key;
+                  const iconDef = tab.key !== "all" ? getCatIconDef(tab.key, tab.iconKey) : null;
+                  const MainIcon = iconDef?.main;
+                  const BadgeIcon = iconDef?.badge;
                   return (
                     <button
                       key={tab.key}
                       onClick={() => { setActiveCategory(tab.key); window.scrollTo({ top: 0, behavior: "instant" }); }}
-                      className={`flex-shrink-0 flex items-center gap-1 px-3.5 py-2 rounded-full text-sm font-semibold transition-all ${
-                        activeCategory === tab.key
-                          ? "bg-[#FF4F00] text-white"
-                          : "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
+                      className={`flex-shrink-0 flex flex-col items-center gap-0.5 px-3 py-2 rounded-2xl min-w-[60px] text-center border transition-all ${
+                        isActive
+                          ? "bg-[#FF4F00] text-white border-[#FF4F00] shadow-md shadow-orange-200/60"
+                          : "bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 active:scale-95"
                       }`}
                     >
-                      {tab.label}
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                        activeCategory === tab.key ? "bg-white/20 text-white" : "bg-zinc-100 text-zinc-500"
+                      {/* Icon */}
+                      {tab.key === "all" ? (
+                        <LayoutGrid className={`w-4.5 h-4.5 ${isActive ? "text-white" : "text-[#FF4F00]"}`} style={{ width: 18, height: 18 }} />
+                      ) : MainIcon ? (
+                        <div className="relative" style={{ width: 18, height: 18 }}>
+                          <MainIcon style={{ width: 18, height: 18 }} className={isActive ? "text-white" : "text-[#FF4F00]"} />
+                          {BadgeIcon && (
+                            <BadgeIcon
+                              className={`absolute -bottom-0.5 -right-0.5 ${isActive ? "text-white/80" : "text-zinc-500"}`}
+                              style={{ width: 9, height: 9 }}
+                              strokeWidth={2.5}
+                            />
+                          )}
+                        </div>
+                      ) : null}
+                      {/* Label */}
+                      <span className="text-[10px] font-bold leading-tight whitespace-nowrap">{tab.label}</span>
+                      {/* Count badge */}
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-tight ${
+                        isActive ? "bg-white/25 text-white" : "bg-zinc-100 text-zinc-500"
                       }`}>{count}</span>
                     </button>
                   );
