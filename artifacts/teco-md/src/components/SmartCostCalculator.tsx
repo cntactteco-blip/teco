@@ -111,59 +111,68 @@ export default function SmartCostCalculator() {
     setStep(7);
   };
 
+  // Extrage numărul de camere dintr-un produs (kit)
+  const extractCameraCount = (p: { name: string; specs: string }): number | null => {
+    const text = `${p.name} ${p.specs}`.toLowerCase();
+    let m = text.match(/(\d+)\s*(?:x|×)?\s*camer/);
+    if (m) return parseInt(m[1]);
+    m = text.match(/(\d+)\s*buc/);
+    if (m) return parseInt(m[1]);
+    m = text.match(/set\s*(?:of\s*)?(\d+)/);
+    if (m) return parseInt(m[1]);
+    return null;
+  };
+
   const getCalculations = () => {
     const cameraCount = parseInt(selections.cameras) || 2;
+    const installCost = cameraCount <= 1 ? 750 : 650 * cameraCount;
 
-    // ── 1. Încearcă să găsească un kit complet potrivit ──
-    const extractCount = (p: { name: string; specs: string }) => {
-      const text = `${p.name} ${p.specs}`.toLowerCase();
-      let m = text.match(/(\d+)\s*(?:x|×)?\s*camer/);
-      if (m) return parseInt(m[1]);
-      m = text.match(/(\d+)\s*buc/);
-      if (m) return parseInt(m[1]);
-      m = text.match(/set of\s*(\d+)/);
-      if (m) return parseInt(m[1]);
-      return null;
-    };
-
+    // ── Găsește toate kiturile din catalog cu suficiente camere ──
     const seturi = allProducts
-      .filter((p) => p.category === "kituri")
-      .map((p) => ({ product: p, count: extractCount(p) }))
+      .filter((p) => p.category === "kituri" && p.inStock !== false)
+      .map((p) => ({ product: p, count: extractCameraCount(p) }))
       .filter((s): s is { product: typeof allProducts[number]; count: number } => s.count !== null);
 
     const potrivite = seturi
       .filter((s) => s.count >= cameraCount)
-      .sort((a, b) => a.count - b.count || a.product.price - b.product.price);
+      .sort((a, b) => a.product.price - b.product.price); // crescător după preț
 
-    if (potrivite.length > 0) {
-      const equipmentCost = potrivite[0].product.price;
-      const installCost = cameraCount === 1 ? 750 : 650 * cameraCount;
-      return { equipmentCost, installCost, totalCost: equipmentCost + installCost };
+    if (potrivite.length >= 2) {
+      // Calculul = cel MAI SCUMP kit potrivit (sau cel mai bine echipat)
+      // Recomandarea = cel MAI IEFTIN kit potrivit
+      const kitCalc = potrivite[potrivite.length - 1].product; // cel mai scump
+      const kitRecomandat = potrivite[0].product;              // cel mai ieftin
+      const equipmentCost = kitCalc.price;
+      const economisire = Math.max(0, kitCalc.price - kitRecomandat.price);
+      return { equipmentCost, installCost, totalCost: equipmentCost + installCost, kitRecomandat, economisire };
     }
 
-    if (seturi.length > 0) {
-      const celMaiMare = [...seturi].sort((a, b) => b.count - a.count)[0];
-      const equipmentCost = Math.round((celMaiMare.product.price / celMaiMare.count) * cameraCount);
-      const installCost = cameraCount === 1 ? 750 : 650 * cameraCount;
-      return { equipmentCost, installCost, totalCost: equipmentCost + installCost };
+    if (potrivite.length === 1) {
+      // Doar un kit potrivit — folosim prețul lui per-cameră × count ca estimat mai mare
+      const kit = potrivite[0];
+      const pretPerCamera = kit.product.price / kit.count;
+      const equipmentCost = Math.round(pretPerCamera * cameraCount * 1.15); // +15% față de kit
+      const kitRecomandat = kit.product;
+      const economisire = Math.max(0, equipmentCost - kitRecomandat.price);
+      return { equipmentCost, installCost, totalCost: equipmentCost + installCost, kitRecomandat, economisire };
     }
 
-    // ── 2. Fallback: calculează din camere individuale + NVR ──
-    // Categoriile reale: "poe" = camere PoE (recomandate), "wifi" = camere WiFi, "nvr"
+    // ── Fallback: nicio kit potrivit — calculează din seturi mai mari sau camere individuale ──
+    const oriceSeturi = seturi.sort((a, b) => b.count - a.count);
+    if (oriceSeturi.length > 0) {
+      const cel = oriceSeturi[0];
+      const equipmentCost = Math.round((cel.product.price / cel.count) * cameraCount * 1.1);
+      return { equipmentCost, installCost, totalCost: equipmentCost + installCost, kitRecomandat: cel.product, economisire: Math.max(0, equipmentCost - cel.product.price) };
+    }
+
+    // ── Fallback final: camere individuale ──
     const poeCameras = allProducts.filter((p) => p.category === "poe" && p.inStock !== false).sort((a, b) => a.price - b.price);
     const wifiCameras = allProducts.filter((p) => p.category === "wifi" && p.inStock !== false).sort((a, b) => a.price - b.price);
     const nvrList = allProducts.filter((p) => p.category === "nvr" && p.inStock !== false).sort((a, b) => a.price - b.price);
-
-    // Alege camera cea mai accesibilă disponibilă (PoE > WiFi > default)
     const bestCamera = poeCameras[0] ?? wifiCameras[0];
     const bestNvr = nvrList[0];
-
-    const camPrice = bestCamera?.price ?? 1_600;
-    const nvrPrice = bestNvr?.price ?? 1_700;
-
-    const equipmentCost = camPrice * cameraCount + nvrPrice;
-    const installCost = cameraCount === 1 ? 750 : 650 * cameraCount;
-    return { equipmentCost, installCost, totalCost: equipmentCost + installCost };
+    const equipmentCost = (bestCamera?.price ?? 1_800) * cameraCount + (bestNvr?.price ?? 1_900);
+    return { equipmentCost, installCost, totalCost: equipmentCost + installCost, kitRecomandat: null, economisire: 0 };
   };
 
   const bannerImage = settings.moduleA?.bannerImage;
@@ -294,7 +303,10 @@ export default function SmartCostCalculator() {
             </div>
           )}
 
-          {step === 7 && (
+          {step === 7 && (() => {
+            const { equipmentCost, installCost, totalCost, kitRecomandat, economisire } = getCalculations();
+            const phone = (settings.general?.adminPhone || "373").replace(/\D/g, "");
+            return (
             <div className="animate-fade-in max-w-lg mx-auto">
               {/* Header */}
               <div className="text-center mb-6">
@@ -310,16 +322,16 @@ export default function SmartCostCalculator() {
               <div className="bg-gradient-to-br from-zinc-950 to-zinc-900 text-white rounded-2xl p-6 mb-4 shadow-xl">
                 <div className="space-y-3 mb-4">
                   <div className="flex justify-between items-center text-zinc-300">
-                    <span className="text-sm">📦 Echipamente</span>
-                    <span className="font-mono font-semibold">~{getCalculations().equipmentCost.toLocaleString("ro-MD")} MDL</span>
+                    <span className="text-sm">📦 Echipamente (estimat)</span>
+                    <span className="font-mono font-semibold">~{equipmentCost.toLocaleString("ro-MD")} MDL</span>
                   </div>
                   <div className="flex justify-between items-center text-zinc-300">
                     <span className="text-sm">🔧 Instalare</span>
-                    <span className="font-mono font-semibold">~{getCalculations().installCost.toLocaleString("ro-MD")} MDL</span>
+                    <span className="font-mono font-semibold">~{installCost.toLocaleString("ro-MD")} MDL</span>
                   </div>
                   <div className="border-t border-zinc-700 pt-3 flex justify-between items-center">
                     <span className="font-bold text-white">Total estimat</span>
-                    <span className="font-mono font-black text-2xl text-[#FF4F00]">~{getCalculations().totalCost.toLocaleString("ro-MD")} MDL</span>
+                    <span className="font-mono font-black text-2xl text-[#FF4F00]">~{totalCost.toLocaleString("ro-MD")} MDL</span>
                   </div>
                 </div>
                 <p className="text-xs text-zinc-500 text-center bg-zinc-800 rounded-lg p-2">
@@ -330,14 +342,14 @@ export default function SmartCostCalculator() {
               {/* Contact buttons */}
               <div className="grid grid-cols-2 gap-3 mb-6">
                 <a
-                  href={`https://wa.me/${(settings.general?.adminPhone || "373").replace(/\D/g, "")}?text=${encodeURIComponent(`Bună! Am completat calculatorul TECO.MD. Nume: ${formData.name}, Tel: ${formData.phone}. Aștept devizul detaliat.`)}`}
+                  href={`https://wa.me/${phone}?text=${encodeURIComponent(`Bună! Am completat calculatorul TECO.MD. Nume: ${formData.name}, Tel: ${formData.phone}. Aștept devizul detaliat.`)}`}
                   target="_blank" rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 bg-[#25D366] text-white font-bold py-3 rounded-xl hover:opacity-90 active:scale-95 transition-all shadow-[0_4px_14px_rgba(37,211,102,0.3)]"
                 >
                   <span>📱</span> WhatsApp
                 </a>
                 <a
-                  href={`viber://chat?number=${(settings.general?.adminPhone || "373").replace(/\D/g, "")}`}
+                  href={`viber://chat?number=${phone}`}
                   className="flex items-center justify-center gap-2 bg-[#7360F2] text-white font-bold py-3 rounded-xl hover:opacity-90 active:scale-95 transition-all shadow-[0_4px_14px_rgba(115,96,242,0.3)]"
                 >
                   <span>💬</span> Viber
@@ -354,34 +366,62 @@ export default function SmartCostCalculator() {
                 </button>
               </div>
 
-              {/* Admin-configured product */}
-              {adminProduct && (
+              {/* Kit recomandat din catalog — mai ieftin decât estimatul */}
+              {kitRecomandat && (
                 <>
-                  <h4 className="font-bold text-lg text-center mb-4 text-[#09090B]">Recomandarea Noastră:</h4>
-                  <div className="bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-[#E4E4E7] overflow-hidden">
-                    <div className="h-32 bg-zinc-50 overflow-hidden">
-                      <img src={adminProduct.imageUrl} alt={adminProduct.name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                    </div>
+                  <div className="text-center mb-4">
+                    <h4 className="font-bold text-lg text-[#09090B]">💡 Kit complet disponibil acum</h4>
+                    {economisire > 0 && (
+                      <p className="text-sm text-green-600 font-semibold mt-1">
+                        Economisești ~{economisire.toLocaleString("ro-MD")} MDL față de estimat
+                      </p>
+                    )}
+                  </div>
+                  <div className="bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-[#E4E4E7] overflow-hidden">
+                    {kitRecomandat.imageUrl && (
+                      <div className="h-40 bg-zinc-50 overflow-hidden">
+                        <img
+                          src={kitRecomandat.imageUrl}
+                          alt={kitRecomandat.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                        />
+                      </div>
+                    )}
                     <div className="p-5">
-                      <p className="text-[10px] font-bold text-zinc-400 mb-1">{adminProduct.brand} · {adminProduct.model}</p>
-                      <h5 className="font-bold text-[#09090B] mb-1">{adminProduct.name}</h5>
-                      <p className="text-xs text-zinc-400 font-mono mb-3">{adminProduct.specs}</p>
+                      <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-1">
+                        {kitRecomandat.brand}{kitRecomandat.model ? ` · ${kitRecomandat.model}` : ""}
+                      </p>
+                      <h5 className="font-bold text-[#09090B] mb-1 text-base leading-snug">{kitRecomandat.name}</h5>
+                      <p className="text-xs text-zinc-400 mb-4 line-clamp-2">{kitRecomandat.specs}</p>
                       <div className="flex items-center justify-between mb-4">
-                        {adminProduct.oldPrice && <p className="text-xs text-zinc-400 line-through">{adminProduct.oldPrice.toLocaleString()} MDL</p>}
-                        <p className="font-mono font-black text-xl text-[#FF4F00]">{adminProduct.price.toLocaleString()} MDL</p>
+                        <div>
+                          {kitRecomandat.oldPrice && (
+                            <p className="text-xs text-zinc-400 line-through">{kitRecomandat.oldPrice.toLocaleString()} MDL</p>
+                          )}
+                          <p className="font-mono font-black text-2xl text-[#FF4F00]">{kitRecomandat.price.toLocaleString()} MDL</p>
+                          <p className="text-[10px] text-zinc-400">echipamente · fără manoperă</p>
+                        </div>
+                        {economisire > 0 && (
+                          <div className="bg-green-50 border border-green-200 rounded-xl px-3 py-2 text-center">
+                            <p className="text-[10px] text-green-600 font-bold uppercase">Economii</p>
+                            <p className="text-base font-black text-green-700">~{economisire.toLocaleString()} MDL</p>
+                          </div>
+                        )}
                       </div>
                       <button
-                        onClick={() => { addItem(adminProduct as any); toast({ title: "Adăugat în coș!" }); setTimeout(() => openCart(), 300); }}
-                        className="w-full bg-[#FF4F00] text-white font-bold py-3 rounded-xl hover:opacity-90 transition-all active:scale-95 flex items-center justify-center gap-2"
+                        onClick={() => { addItem(kitRecomandat as any); toast({ title: "Kit adăugat în coș! 🎉" }); setTimeout(() => openCart(), 300); }}
+                        className="w-full bg-[#FF4F00] text-white font-bold py-3 rounded-xl hover:opacity-90 transition-all active:scale-95 flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(255,79,0,0.3)]"
                       >
-                        <ShoppingCart className="w-4 h-4" /> CUMPĂRĂ ACUM
+                        <ShoppingCart className="w-4 h-4" /> Adaugă în Coș
                       </button>
                     </div>
                   </div>
                 </>
               )}
             </div>
-          )}
+            );
+          })()}
         </div>
       </div>
     </section>
