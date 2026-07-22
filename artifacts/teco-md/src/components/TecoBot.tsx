@@ -3,6 +3,7 @@ import { Bot, X, Send, Loader2, Sparkles, User, ShoppingCart } from "lucide-reac
 import { useLang } from "@/contexts/LangContext";
 import { storeActions, useStore } from "@/lib/store";
 import { useCart } from "@/hooks/useCart";
+import { getSessionPayload } from "@/lib/session";
 
 interface Message {
   role: "user" | "assistant";
@@ -55,6 +56,7 @@ export function TecoBot() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const leadNotifiedRef = useRef(false);
   const [vpOffset, setVpOffset] = useState({ top: 0, left: 0 });
 
   useEffect(() => {
@@ -99,6 +101,18 @@ export function TecoBot() {
     const text = input.trim();
     if (!text || streaming) return;
     setInput("");
+
+    // Notificare Telegram la primul mesaj în chat
+    const isFirstUserMsg = messages.filter((m) => m.role === "user").length === 0;
+    if (isFirstUserMsg) {
+      const API = import.meta.env.VITE_API_URL || "";
+      fetch(API + "/api/notify/chat-notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, page: window.location.pathname, session: getSessionPayload() }),
+      }).catch(() => {});
+    }
+
     const userMsg: Message = { role: "user", content: text, ts: Date.now() };
     const allMessages = [...messages, userMsg];
     setMessages(allMessages);
@@ -106,10 +120,6 @@ export function TecoBot() {
     const botMsg: Message = { role: "assistant", content: "", ts: Date.now() };
     setMessages([...allMessages, botMsg]);
     abortRef.current = new AbortController();
-    // Timeout de 30s pe întreaga cerere — dacă nu vine niciun răspuns, afișăm fallback
-    const globalTimeout = setTimeout(() => {
-      abortRef.current?.abort();
-    }, 30000);
     try {
       const res = await fetch((import.meta.env.VITE_API_URL || "") + "/api/ai/chat", {
         method: "POST",
@@ -120,80 +130,69 @@ export function TecoBot() {
         }),
         signal: abortRef.current.signal,
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-      // Helper: aplică conținut acumulat în state
-      const applyContent = (raw: string) => {
-        const recMatch = raw.match(RECOMMEND_RE);
-        const cleaned = extractLead(raw.replace(RECOMMEND_RE, "").trim());
-        const pids = recMatch
-          ? [parseInt(recMatch[1]), parseInt(recMatch[2]), parseInt(recMatch[3])]
-          : extractProductIds(cleaned);
-        setMessages((prev) => {
-          const updated = [...prev];
-          updated[updated.length - 1] = {
-            ...botMsg,
-            content: cleaned,
-            products: pids,
-            isRecommendation: !!recMatch,
-          };
-          return updated;
-        });
-        return cleaned;
-      };
-
-      const ct = res.headers.get("content-type") ?? "";
-
-      if (ct.includes("application/json")) {
-        // ── Producție (Cloudflare Pages Function) → răspuns JSON simplu ──
-        const json = await res.json() as { content?: string; error?: string };
-        const raw = json.content ?? json.error ?? "";
-        applyContent(raw || "Ne pare rău, am întâmpinat o problemă. Sunați-ne: **+373 67 200 463**");
-      } else {
-        // ── Dev (Express API Server) → SSE streaming ──
-        if (!res.body) throw new Error("No body");
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let accumulated = "";
-        outer: while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value, { stream: true });
-          // Ignorăm comentariile SSE de keepalive (": keepalive")
-          for (const line of chunk.split("\n")) {
-            if (!line.startsWith("data: ")) continue;
-            try {
-              const data = JSON.parse(line.slice(6));
-              if (data.done) break outer;
-              if (data.error) { accumulated += data.error; break outer; }
-              if (data.content) {
-                accumulated += data.content;
-                applyContent(accumulated);
-              }
-            } catch {}
-          }
+      if (!res.ok || !res.body) throw new Error("Network error");
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulated = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const lines = decoder.decode(value, { stream: true }).split("\n");
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          try {
+            const data = JSON.parse(line.slice(6));
+            if (data.done) break;
+            if (data.error) { accumulated += "\n\n⚠️ Eroare. Sunați-ne: +373 67 200 463"; break; }
+            if (data.content) {
+              accumulated += data.content;
+              const recMatch = accumulated.match(RECOMMEND_RE);
+              const cleaned = extractLead(accumulated.replace(RECOMMEND_RE, "").trim());
+              const pids = recMatch
+                ? [parseInt(recMatch[1]), parseInt(recMatch[2]), parseInt(recMatch[3])]
+                : extractProductIds(cleaned);
+              setMessages((prev) => {
+                const updated = [...prev];
+                updated[updated.length - 1] = {
+                  ...botMsg,
+                  content: cleaned,
+                  products: pids,
+                  isRecommendation: !!recMatch,
+                };
+                return updated;
+              });
+            }
+          } catch {}
         }
-        if (!accumulated.trim()) {
-          applyContent("Ne pare rău, am întâmpinat o problemă. Sunați-ne: **+373 67 200 463**");
-        }
+      }
+
+      // Dacă AI-ul a capturat un lead (LEAD_CAPTURED în răspuns), trimite notificare Telegram
+      const leadMatch = accumulated.match(/LEAD_CAPTURED:name=([^,\n]+),phone=([^\n]+)/);
+      if (leadMatch && !leadNotifiedRef.current) {
+        leadNotifiedRef.current = true;
+        const lName = leadMatch[1].trim();
+        const lPhone = leadMatch[2].trim();
+        const API = import.meta.env.VITE_API_URL || "";
+        const chatHistory = [
+          ...allMessages
+            .filter((m, i) => !(i === 0 && m.role === "assistant"))
+            .map((m) => ({ role: m.role, content: m.content })),
+          { role: "assistant" as const, content: accumulated },
+        ];
+        fetch(API + "/api/notify/chat-lead", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: lName, phone: lPhone, messages: chatHistory, session: getSessionPayload() }),
+        }).catch(() => {});
       }
     } catch (err: unknown) {
-      if (err instanceof Error && err.name === "AbortError") {
-        // Timeout — arată mesaj de fallback
-        setMessages((prev) => {
-          const updated = [...prev];
-          updated[updated.length - 1] = { ...botMsg, content: "Răspunsul a durat prea mult. Sunați-ne: **+373 67 200 463**" };
-          return updated;
-        });
-        return;
-      }
+      if (err instanceof Error && err.name === "AbortError") return;
       setMessages((prev) => {
         const updated = [...prev];
         updated[updated.length - 1] = { ...botMsg, content: "Eroare de conexiune. Sunați-ne: **+373 67 200 463**" };
         return updated;
       });
     } finally {
-      clearTimeout(globalTimeout);
       setStreaming(false);
       if (!open) setUnread((n) => n + 1);
     }
