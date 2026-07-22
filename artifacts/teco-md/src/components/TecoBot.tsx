@@ -278,14 +278,16 @@ export function TecoBot() {
                   {msg.role === "assistant" && msg.products && msg.products.length > 0 && msg.isRecommendation && (
                     /* ── Carduri mari de recomandare — 3 variante ── */
                     <div className="mt-2 w-full flex flex-col gap-2">
-                      {msg.products.map((pid, idx) => {
-                        const p = products.find(x => x.id === pid);
-                        if (!p) return null;
+                      {[...msg.products]
+                        .map(pid => products.find(x => x.id === pid))
+                        .filter((p): p is typeof products[number] => !!p)
+                        .sort((a, b) => a.price - b.price)
+                        .map((p, idx) => {
                         const labels = lang === "ru"
-                          ? ["💰 Cel mai accesibil", "⭐ Echilibrat", "🏆 Premium"]
+                          ? ["💰 Самый доступный", "⭐ Оптимальный", "🏆 Премиум"]
                           : ["💰 Cel mai accesibil", "⭐ Echilibrat calitate/preț", "🏆 Premium"];
                         return (
-                          <div key={pid} className="bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden flex">
+                          <div key={p.id} className="bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden flex">
                             {/* Imagine stânga */}
                             <div className="w-24 h-24 bg-zinc-50 flex items-center justify-center flex-shrink-0 overflow-hidden">
                               {p.imageUrl
