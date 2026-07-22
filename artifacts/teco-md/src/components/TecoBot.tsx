@@ -130,26 +130,40 @@ export function TecoBot() {
         }),
         signal: abortRef.current.signal,
       });
-      if (!res.ok) throw new Error("Network error");
-      const json = await res.json() as { content?: string; error?: string };
-      let accumulated = json.content || "";
-      if (json.error) { accumulated = "\n\n⚠️ Eroare. Sunați-ne: +373 67 200 463"; }
-      if (accumulated) {
-        const recMatch = accumulated.match(RECOMMEND_RE);
-        const cleaned = extractLead(accumulated.replace(RECOMMEND_RE, "").trim());
-        const pids = recMatch
-          ? [parseInt(recMatch[1]), parseInt(recMatch[2]), parseInt(recMatch[3])]
-          : extractProductIds(cleaned);
-        setMessages((prev) => {
-          const updated = [...prev];
-          updated[updated.length - 1] = {
-            ...botMsg,
-            content: cleaned,
-            products: pids,
-            isRecommendation: !!recMatch,
-          };
-          return updated;
-        });
+      if (!res.ok || !res.body) throw new Error("Network error");
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulated = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const lines = decoder.decode(value, { stream: true }).split("\n");
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          try {
+            const data = JSON.parse(line.slice(6));
+            if (data.done) break;
+            if (data.error) { accumulated += "\n\n⚠️ Eroare. Sunați-ne: +373 67 200 463"; break; }
+            if (data.content) {
+              accumulated += data.content;
+              const recMatch = accumulated.match(RECOMMEND_RE);
+              const cleaned = extractLead(accumulated.replace(RECOMMEND_RE, "").trim());
+              const pids = recMatch
+                ? [parseInt(recMatch[1]), parseInt(recMatch[2]), parseInt(recMatch[3])]
+                : extractProductIds(cleaned);
+              setMessages((prev) => {
+                const updated = [...prev];
+                updated[updated.length - 1] = {
+                  ...botMsg,
+                  content: cleaned,
+                  products: pids,
+                  isRecommendation: !!recMatch,
+                };
+                return updated;
+              });
+            }
+          } catch {}
+        }
       }
 
       // Dacă AI-ul a capturat un lead (LEAD_CAPTURED în răspuns), trimite notificare Telegram
