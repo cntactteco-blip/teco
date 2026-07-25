@@ -332,15 +332,16 @@ app.post("/products", async (c) => {
   const stmt = c.env.DB.prepare(
     `INSERT INTO products
        (id, name, model, brand, price, old_price, specs, badge, category, image_url,
-        images, description, long_description, tech_specs, in_stock, icon)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        images, description, long_description, tech_specs, in_stock, icon, slug)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        name=excluded.name, model=excluded.model, brand=excluded.brand,
        price=excluded.price, old_price=excluded.old_price, specs=excluded.specs,
        badge=excluded.badge, category=excluded.category, image_url=excluded.image_url,
        images=excluded.images, description=excluded.description,
        long_description=excluded.long_description, tech_specs=excluded.tech_specs,
-       in_stock=excluded.in_stock, icon=excluded.icon`,
+       in_stock=excluded.in_stock, icon=excluded.icon,
+       slug=CASE WHEN excluded.slug IS NOT NULL AND excluded.slug != '' THEN excluded.slug ELSE products.slug END`,
   );
   const stmts = items.map((p) =>
     stmt.bind(
@@ -353,6 +354,7 @@ app.post("/products", async (c) => {
       p.tech_specs ?? null,
       p.in_stock === false || p.in_stock === 0 ? 0 : 1,
       p.icon ?? "camera",
+      p.slug ?? null,
     ),
   );
   await c.env.DB.batch(stmts);
@@ -366,15 +368,16 @@ app.put("/products/:id", async (c) => {
   await c.env.DB.prepare(
     `INSERT INTO products
        (id, name, model, brand, price, old_price, specs, badge, category, image_url,
-        images, description, long_description, tech_specs, in_stock, icon)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        images, description, long_description, tech_specs, in_stock, icon, slug)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        name=excluded.name, model=excluded.model, brand=excluded.brand,
        price=excluded.price, old_price=excluded.old_price, specs=excluded.specs,
        badge=excluded.badge, category=excluded.category, image_url=excluded.image_url,
        images=excluded.images, description=excluded.description,
        long_description=excluded.long_description, tech_specs=excluded.tech_specs,
-       in_stock=excluded.in_stock, icon=excluded.icon`,
+       in_stock=excluded.in_stock, icon=excluded.icon,
+       slug=CASE WHEN excluded.slug IS NOT NULL AND excluded.slug != '' THEN excluded.slug ELSE products.slug END`,
   ).bind(
     p.id, p.name ?? "", p.model ?? "", p.brand ?? "",
     p.price ?? 0, p.old_price ?? null,
@@ -385,6 +388,7 @@ app.put("/products/:id", async (c) => {
     p.tech_specs ?? null,
     p.in_stock === false || p.in_stock === 0 ? 0 : 1,
     p.icon ?? "camera",
+    p.slug ?? null,
   ).run();
   return c.json({ ok: true });
 });

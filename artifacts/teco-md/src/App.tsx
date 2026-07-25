@@ -94,7 +94,7 @@ function ShopRoutes() {
         <Route path="/camere-supraveghere-chisinau" component={CamereChisinau} />
         <Route path="/sisteme-supraveghere-casa" component={SistemeSupraveghereCasa} />
         <Route path="/camere-supraveghere-exterior" component={CamereExterior} />
-        <Route path="/product/:id" component={ProductDetail} />
+        <Route path="/product/:slug" component={ProductDetail} />
         <Route path="/servicii" component={Services} />
         <Route path="/servicii/:city" component={ServiceCity} />
         <Route path="/b2b" component={B2B} />

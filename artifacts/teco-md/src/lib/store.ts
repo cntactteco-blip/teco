@@ -5,6 +5,7 @@ import { products as seedProducts } from "./products";
 // ─── Types ─────────────────────────────────────────────────────────
 export interface StoreProduct {
   id: number;
+  slug?: string;
   name: string;
   model: string;
   brand: string;
@@ -563,6 +564,7 @@ export function useStore<T>(selector: (s: StoreState) => T): T {
 function dbProductToStore(row: any): StoreProduct {
   return {
     id: row.id,
+    slug: row.slug ?? undefined,
     name: row.name,
     model: row.model,
     brand: row.brand,
@@ -584,6 +586,7 @@ function dbProductToStore(row: any): StoreProduct {
 function storeProductToDb(p: StoreProduct) {
   return {
     id: p.id,
+    slug: p.slug,
     name: p.name,
     model: p.model,
     brand: p.brand,

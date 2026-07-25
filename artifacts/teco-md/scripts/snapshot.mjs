@@ -1,4 +1,8 @@
-import { createClient } from "@supabase/supabase-js";
+/**
+ * Generează src/lib/catalog-snapshot.json direct din Cloudflare D1 (teco-db).
+ * Rulează la fiecare build Cloudflare (cf-build), înainte de vite build.
+ * Migrat de la Supabase → D1 (site-ul rulează acum 100% pe Cloudflare).
+ */
 import { writeFileSync, mkdirSync } from "fs";
 import { fileURLToPath } from "url";
 import path from "path";
@@ -7,22 +11,22 @@ import { execFileSync } from "child_process";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(__dirname, "../src/lib/catalog-snapshot.json");
 const IMG_DIR = path.join(__dirname, "../public/product-images");
+const DB_NAME = "teco-db";
 
-const url = process.env.VITE_SUPABASE_URL;
-const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-if (!url || !key) {
-  console.log("[snapshot] No Supabase credentials — keeping existing snapshot.");
-  process.exit(0);
+function d1Query(sql) {
+  const raw = execFileSync(
+    "npx",
+    ["wrangler", "d1", "execute", DB_NAME, "--remote", "--json", "--command", sql],
+    { encoding: "utf8", maxBuffer: 50 * 1024 * 1024 },
+  );
+  const parsed = JSON.parse(raw);
+  return parsed[0]?.results ?? [];
 }
 
-// ─── Extrage base64 → fișiere statice ──────────────────────────────
 function extractBase64Images(products) {
   mkdirSync(IMG_DIR, { recursive: true });
   let extracted = 0;
-
   for (const product of products) {
-    // imagine principală
     if (product.image_url?.startsWith("data:")) {
       const match = product.image_url.match(/^data:image\/(\w+);base64,(.+)$/);
       if (match) {
@@ -33,8 +37,6 @@ function extractBase64Images(products) {
         extracted++;
       }
     }
-
-    // galerie suplimentară
     if (Array.isArray(product.images)) {
       product.images = product.images.map((img, idx) => {
         if (typeof img === "string" && img.startsWith("data:")) {
@@ -51,38 +53,35 @@ function extractBase64Images(products) {
       });
     }
   }
-
   return extracted;
 }
 
 try {
-  const sb = createClient(url, key);
-  const [{ data: products, error: pe }, { data: settingsRows, error: se }] =
-    await Promise.all([
-      sb.from("products").select("*").order("id"),
-      sb.from("settings").select("*").eq("id", 1),
-    ]);
+  const rawProducts = d1Query("SELECT * FROM products ORDER BY id");
+  const prods = rawProducts.map((p) => ({
+    ...p,
+    images: typeof p.images === "string" ? JSON.parse(p.images || "[]") : (p.images ?? []),
+    in_stock: p.in_stock === 1 || p.in_stock === true,
+  }));
 
-  if (pe || se) {
-    console.warn("[snapshot] Fetch error — keeping existing snapshot:", pe || se);
-    process.exit(0);
-  }
-
-  const prods = products ?? [];
-
-  // Extrage imaginile base64 în fișiere statice
   const extracted = extractBase64Images(prods);
+
+  const settingsRows = d1Query("SELECT data FROM settings WHERE id = 1");
+  let settings = null;
+  try {
+    settings = settingsRows?.[0]?.data ? JSON.parse(settingsRows[0].data) : null;
+  } catch {
+    settings = null;
+  }
 
   const snapshot = {
     products: prods,
-    settings: settingsRows?.[0]?.data ?? null,
+    settings,
     generatedAt: new Date().toISOString(),
   };
-
   writeFileSync(OUT, JSON.stringify(snapshot));
-  console.log(`[snapshot] OK — ${prods.length} produse, ${extracted} imagini extrase, settings: ${snapshot.settings ? "yes" : "no"}`);
+  console.log(`[snapshot] OK — ${prods.length} produse din D1, ${extracted} imagini extrase, settings: ${settings ? "yes" : "no"}`);
 
-  // Regenerează sitemap.xml cu produsele actualizate
   try {
     const sitemapScript = path.join(__dirname, "generate-sitemap.mjs");
     execFileSync(process.execPath, [sitemapScript], { stdio: "inherit" });

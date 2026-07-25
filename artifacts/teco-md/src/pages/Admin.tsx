@@ -127,6 +127,18 @@ const BADGE_COLORS = [
   { label: "Amber",      hex: "#D97706" },
   { label: "Rose",       hex: "#E11D48" },
 ];
+const CYRILLIC_MAP: Record<string, string> = {
+  а:"a",б:"b",в:"v",г:"g",д:"d",е:"e",ё:"e",ж:"zh",з:"z",и:"i",й:"i",
+  к:"k",л:"l",м:"m",н:"n",о:"o",п:"p",р:"r",с:"s",т:"t",у:"u",ф:"f",
+  х:"h",ц:"ts",ч:"ch",ш:"sh",щ:"sht",ъ:"",ы:"y",ь:"",э:"e",ю:"iu",я:"ia"
+};
+function slugify(str: string): string {
+  let s = str.toLowerCase();
+  s = s.replace(/[а-яё]/g, (c) => CYRILLIC_MAP[c] ?? "");
+  s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  s = s.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").replace(/-{2,}/g, "-");
+  return s.slice(0, 80).replace(/-+$/g, "");
+}
 const EMPTY_FORM: ProductFormData = {
   name: "", model: "", brand: brands[0], category: "wifi",
   price: "", oldPrice: "", specs: "", badge: "", badgeColor: "#09090B",
@@ -413,6 +425,7 @@ function ProductModal({ product, onClose, categories }: { product: StoreProduct 
       images: allImages,
       description: form.description, longDescription: form.longDescription || undefined,
       techSpecs: form.techSpecs || undefined, inStock: form.inStock, icon: "indoor",
+      slug: (product?.slug && product.slug.length > 0) ? product.slug : slugify(form.name),
     };
     if (product) storeActions.updateProduct(product.id, data);
     else storeActions.addProduct(data);

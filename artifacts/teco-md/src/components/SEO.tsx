@@ -240,29 +240,6 @@ export const schemas = {
           { "@type": "Offer", itemOffered: { "@type": "Service", name: "Camere 4G Solar Autonome", url: "https://teco.md/produse?cat=4g" } },
         ],
       },
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: "4.9",
-        reviewCount: "213",
-        bestRating: "5",
-        worstRating: "1",
-      },
-      review: [
-        {
-          "@type": "Review",
-          author: { "@type": "Person", name: "Alexandru M.", address: { "@type": "PostalAddress", addressLocality: "Chișinău" } },
-          reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
-          reviewBody: "Echipa Teco.md a instalat 6 camere la casa mea în 4 ore. Totul funcționează perfect, imaginile sunt clare zi și noapte. Recomand cu toată încrederea!",
-          datePublished: "2026-05-12",
-        },
-        {
-          "@type": "Review",
-          author: { "@type": "Person", name: "Victor B.", address: { "@type": "PostalAddress", addressLocality: "Strășeni" } },
-          reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
-          reviewBody: "Kit complet la un preț excelent. Montaj rapid și profesionist. Acum văd curtea de pe telefon oriunde mă aflu.",
-          datePublished: "2026-03-20",
-        },
-      ],
     };
   },
 
@@ -297,6 +274,7 @@ export const schemas = {
 
   product(p: {
     id: number;
+    slug?: string;
     name: string;
     brand: string;
     description: string;
@@ -319,7 +297,7 @@ export const schemas = {
       category: p.category,
       offers: {
         "@type": "Offer",
-        url: `https://teco.md/product/${p.id}`,
+        url: `https://teco.md/product/${p.slug || p.id}`,
         price: p.price,
         priceCurrency: "MDL",
         priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
@@ -367,17 +345,9 @@ export const schemas = {
   },
 
   collectionPage(
-    items: Array<{ id: number; name: string; imageUrl: string; price: number; inStock?: boolean }>,
+    items: Array<{ id: number; slug?: string; name: string; imageUrl: string; price: number; inStock?: boolean }>,
     opts?: { name?: string; url?: string; description?: string }
   ) {
-    const RATING_DATA = [
-      { r: 4.7, n: 23 }, { r: 4.9, n: 89 }, { r: 4.8, n: 34 },
-      { r: 4.6, n: 17 }, { r: 4.9, n: 67 }, { r: 4.7, n: 41 },
-      { r: 4.8, n: 28 }, { r: 5.0, n: 156 }, { r: 4.7, n: 19 },
-      { r: 4.8, n: 73 }, { r: 4.9, n: 44 }, { r: 4.6, n: 11 },
-      { r: 4.9, n: 58 }, { r: 4.7, n: 32 }, { r: 4.8, n: 97 },
-      { r: 4.9, n: 22 }, { r: 4.7, n: 63 }, { r: 4.8, n: 51 },
-    ];
     const validItems = items.filter((item) => item.price > 0);
     return {
       "@context": "https://schema.org",
@@ -389,33 +359,26 @@ export const schemas = {
         "@type": "ItemList",
         numberOfItems: validItems.length,
         itemListElement: validItems.map((item, i) => {
-          const rd = RATING_DATA[(item.id - 1) % RATING_DATA.length];
+          const slugOrId = item.slug || item.id;
           const priceValidUntil = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
           return {
             "@type": "ListItem",
             position: i + 1,
             item: {
               "@type": "Product",
-              "@id": `https://teco.md/product/${item.id}`,
+              "@id": `https://teco.md/product/${slugOrId}`,
               name: item.name,
-              url: `https://teco.md/product/${item.id}`,
+              url: `https://teco.md/product/${slugOrId}`,
               image: item.imageUrl.startsWith("http") ? item.imageUrl : `https://teco.md${item.imageUrl}`,
               offers: {
                 "@type": "Offer",
-                url: `https://teco.md/product/${item.id}`,
+                url: `https://teco.md/product/${slugOrId}`,
                 price: String(item.price),
                 priceCurrency: "MDL",
                 priceValidUntil,
                 availability: (item.inStock !== false) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
                 itemCondition: "https://schema.org/NewCondition",
                 seller: { "@type": "Organization", name: "Teco.md", url: "https://teco.md" },
-              },
-              aggregateRating: {
-                "@type": "AggregateRating",
-                ratingValue: String(rd.r),
-                reviewCount: String(rd.n),
-                bestRating: "5",
-                worstRating: "1",
               },
             },
           };

@@ -131,7 +131,7 @@ for (const p of products) {
 
   urls.push(`
   <url>
-    <loc>${BASE}/product/${p.id}</loc>
+    <loc>${BASE}/product/${p.slug || p.id}</loc>
     <lastmod>${snapshotDate}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>${priority}</priority>${imgUrl ? `

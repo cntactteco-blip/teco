@@ -4,63 +4,11 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 
   <url>
-    <loc>https://teco.md/montare-camere-supraveghere</loc>
-    <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/montare-camere-supraveghere"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://teco.md/montare-camere-supraveghere"/>
-    <lastmod>2026-07-21</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.95</priority>
-    <image:image>
-      <image:loc>https://teco.md/opengraph.jpg</image:loc>
-      <image:title>Montare Camere Supraveghere Moldova — Teco.md</image:title>
-    </image:image>
-  </url>
-
-  <url>
-    <loc>https://teco.md/camere-supraveghere-chisinau</loc>
-    <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/camere-supraveghere-chisinau"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://teco.md/camere-supraveghere-chisinau"/>
-    <lastmod>2026-07-21</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.95</priority>
-    <image:image>
-      <image:loc>https://teco.md/opengraph.jpg</image:loc>
-      <image:title>Camere Supraveghere Chișinău — Instalare Profesională | Teco.md</image:title>
-    </image:image>
-  </url>
-
-  <url>
-    <loc>https://teco.md/sisteme-supraveghere-casa</loc>
-    <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/sisteme-supraveghere-casa"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://teco.md/sisteme-supraveghere-casa"/>
-    <lastmod>2026-07-21</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.90</priority>
-    <image:image>
-      <image:loc>https://teco.md/opengraph.jpg</image:loc>
-      <image:title>Sistem Supraveghere Casă Moldova — Teco.md</image:title>
-    </image:image>
-  </url>
-
-  <url>
-    <loc>https://teco.md/camere-supraveghere-exterior</loc>
-    <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/camere-supraveghere-exterior"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://teco.md/camere-supraveghere-exterior"/>
-    <lastmod>2026-07-21</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.90</priority>
-    <image:image>
-      <image:loc>https://teco.md/opengraph.jpg</image:loc>
-      <image:title>Camere Supraveghere Exterior IP66 Moldova — Teco.md</image:title>
-    </image:image>
-  </url>
-
-  <url>
     <loc>https://teco.md/</loc>
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://teco.md/"/>
-    <lastmod>2026-07-21</lastmod>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -74,7 +22,7 @@
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/produse"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/produse"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://teco.md/produse"/>
-    <lastmod>2026-07-21</lastmod>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>
@@ -83,7 +31,7 @@
     <loc>https://teco.md/produse?cat=wifi</loc>
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/produse?cat=wifi"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/produse?cat=wifi"/>
-    <lastmod>2026-07-21</lastmod>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
@@ -92,7 +40,7 @@
     <loc>https://teco.md/produse?cat=poe</loc>
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/produse?cat=poe"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/produse?cat=poe"/>
-    <lastmod>2026-07-21</lastmod>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
@@ -101,7 +49,7 @@
     <loc>https://teco.md/produse?cat=4g</loc>
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/produse?cat=4g"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/produse?cat=4g"/>
-    <lastmod>2026-07-21</lastmod>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
@@ -110,7 +58,7 @@
     <loc>https://teco.md/produse?cat=nvr</loc>
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/produse?cat=nvr"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/produse?cat=nvr"/>
-    <lastmod>2026-07-21</lastmod>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
@@ -119,7 +67,7 @@
     <loc>https://teco.md/produse?cat=kituri</loc>
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/produse?cat=kituri"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/produse?cat=kituri"/>
-    <lastmod>2026-07-21</lastmod>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
@@ -128,14 +76,14 @@
     <loc>https://teco.md/produse?cat=alarme</loc>
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/produse?cat=alarme"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/produse?cat=alarme"/>
-    <lastmod>2026-07-21</lastmod>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
   </url>
 
   <url>
     <loc>https://teco.md/seturi-camere-supraveghere</loc>
-    <lastmod>2026-07-21</lastmod>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.90</priority>
   </url>
@@ -145,7 +93,7 @@
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/servicii"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/servicii"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://teco.md/servicii"/>
-    <lastmod>2026-07-21</lastmod>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
@@ -155,14 +103,14 @@
     <xhtml:link rel="alternate" hreflang="ro" href="https://teco.md/blog"/>
     <xhtml:link rel="alternate" hreflang="ru" href="https://teco.md/blog"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://teco.md/blog"/>
-    <lastmod>2026-07-21</lastmod>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.65</priority>
   </url>
 
   <url>
-    <loc>https://teco.md/product/6</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/camera-exterior-5mp-wifi-dual-light</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -172,8 +120,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/10</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/camera-dome-4mp-full-color-poe</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -183,8 +131,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/14</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/camera-5mp-ai-pro-poe-starlight</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -194,8 +142,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/15</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/ip-kamera-uniview-ipc2314le-adf28km-wp-4mp-2-8mm-wl30m-mic-msd-poe-ip67</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -205,8 +153,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/17</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/camera-4mp-easystar-0-003lux-poe</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -216,8 +164,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/18</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/camera-4g-lte-4mp-acumulator-solar</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -227,8 +175,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/19</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/ip-kamera-reolink-go-series-g340-8mp-ir10m-mic-speaker-msd-4g-lte-battery-ip65</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -238,8 +186,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/20</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/camera-4g-dual-view-urmarire-automata</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -249,8 +197,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/21</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/nvr-4-canale-ultra-265-1-hdd</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -260,8 +208,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/22</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/nvr-8-canale-ultra-265-1-hdd</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -271,8 +219,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/23</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/nvr-uniview-nvr301-16s3-16ch-8mp-ultra-265-1xhdd</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -282,8 +230,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/24</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/nvr-uniview-nvr302-16b-iq-16ch-12mp-ultra-265-2xhdd</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -293,8 +241,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/25</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/kit-complet-6-camere-imou-poe-nvr-10ch-hdd-1-tb-switch-8-port-cablu-instalare</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -304,8 +252,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/26</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/kit-complet-pro-solar-4g-4-camere-imou-cell-3c</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -315,8 +263,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/27</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/sistem-alarma-wireless-ajax-starter</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -326,8 +274,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/89</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/camera-de-supraveghere-indoor-imou-ranger-dual-3k</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -337,8 +285,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/90</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/camera-de-supraveghere-indoor-imou-ranger-2c-pro-3k</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -348,8 +296,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/94</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/camera-de-supraveghere-imou-bullet-3-5mp</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -359,8 +307,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/95</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/camera-de-supraveghere-outdoor-imou-cruiser-se-2k-5mp</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -370,8 +318,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/96</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/camera-de-supraveghere-outdoor-imou-cruiser-dual-3k-5-5mp</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -381,8 +329,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/97</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/camera-de-supraveghere-outdoor-imou-titan-pro-aurora-6mp</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -392,8 +340,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/98</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/camera-de-supraveghere-outdoor-imou-cruiser-dual-2-pro-aurora-8-mp</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -403,8 +351,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/99</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/imou-outdoor-pt-security-camera-cruiser-triple-3k-3-3-5mp</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -414,8 +362,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/100</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/camera-de-supraveghere-outdoor-imou-cruiser-z-3k-5mp</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -425,8 +373,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/101</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/imou-outdoor-pt-security-camera-cruiser-sc-wi-fi-4g-3k-5mp</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -436,8 +384,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/102</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/camera-de-supraveghere-pentru-exterior-imou-cell-3c-senzor-cmos-3mp-cu-panou-sol</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -447,8 +395,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/103</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/camera-ip-de-supraveghere-pentru-exterior-imou-aov-pt-5mp-conectivitate-wifi-2-4</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -458,8 +406,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/104</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/camera-ip-de-supraveghere-pentru-exterior-imou-aov-dual-5mp-5mp-conectivitate-wi</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -469,8 +417,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/105</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/set-sonerie-video-smart-imou-ds3-camera-panoramica-4mp-wi-fi-gri-negru</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -480,8 +428,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/106</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/vizor-de-usa-cu-camera-5mp-si-cu-ecran-interior-4-3inch-detectare-persoane-wi-fi</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -491,8 +439,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/107</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/nvr-imou-n110w-10-canale-wi-fi-6-microfon-si-difuzor-incorporate-hdmi-vga-negru</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -502,8 +450,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/111</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/camera-de-supraveghere-smart-inteligenta-imou-bullet-3-ipc-s3ep-5m0we-5mp-wi-fi</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -513,8 +461,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/112</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/camera-de-supraveghere-outdoor-smart-imou-de-4k-8mp</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -524,8 +472,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/113</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/camera-de-supraveghere-outdoor-inteligenta-imou-ps7fp-de-5mp</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -535,8 +483,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/115</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/inregistrator-ip-imou-nvr-n110-8a0e-p-10-canale-uhd-4k</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
     <image:image>
@@ -546,8 +494,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/116</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/set-camere-de-supraveghere-8buc-4mp-1-nvr-6-bullet-camera-2-dome-camera</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -557,8 +505,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/117</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/imou-cruiser-dual-10mp-5mp-5mp-ip-camera-set-of-2-with-32gb-memory-cards</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -568,8 +516,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/118</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/sistem-supraveghere-ip-dahua-cu-functii-inteligente-2-camere-rotative-5mp-switch</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -579,8 +527,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/119</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/set-supraveghere-4-camere-uniview-4mp-colornoaptea-card-64gb-switch-poe-si-insta</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -590,8 +538,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/120</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/set-complet-supraveghere-4-camere-uniview-4mp-colornoaptea-nvr-4k-hdd-1tb-switch</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -601,8 +549,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/121</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/set-supraveghere-video-4-camere-ip-poe-5mp-fullcolor-smart-ai</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>
@@ -612,8 +560,8 @@
   </url>
 
   <url>
-    <loc>https://teco.md/product/122</loc>
-    <lastmod>2026-07-21</lastmod>
+    <loc>https://teco.md/product/set-complet-tiandy-tri-light-4-camere-2mp-ir50m-color-night-nvr-5-canale-hdd-1tb</loc>
+    <lastmod>2026-07-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
     <image:image>

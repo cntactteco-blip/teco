@@ -318,10 +318,19 @@ function WriteReviewForm({ productId, lang }: { productId: number; lang: string 
 // ── Main component ───────────────────────────────────────────────────
 export default function ProductDetail() {
   const { t, lang } = useLang();
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
+  const [, navigate] = useLocation();
   const storeProducts = useStore(s => s.products);
   const adminPhone = useStore(s => s.settings.general.adminPhone);
-  const product = storeProducts.find(p => p.id === Number(id));
+  const isNumeric = /^\d+$/.test(slug ?? "");
+  const product = isNumeric
+    ? storeProducts.find(p => p.id === Number(slug))
+    : storeProducts.find(p => p.slug === slug);
+  useEffect(() => {
+    if (isNumeric && product?.slug) {
+      navigate(`/product/${product.slug}`, { replace: true });
+    }
+  }, [isNumeric, product?.slug, navigate]);
 
   const addItem = useCart(s => s.addItem);
   const openCart = useCart(s => s.openCart);
@@ -470,7 +479,7 @@ export default function ProductDetail() {
     setQty(1);
     setActiveImageIndex(0);
     if (carouselRef.current) carouselRef.current.scrollTo({ left: 0, behavior: "instant" as ScrollBehavior });
-  }, [id]);
+  }, [slug]);
   useEffect(() => {
     const iv = setInterval(() => {
       setTimeLeft(p => {
@@ -482,7 +491,7 @@ export default function ProductDetail() {
       });
     }, 1000);
     return () => clearInterval(iv);
-  }, [id]);
+  }, [slug]);
 
   if (!product) {
     return <ProductNotFound />;
@@ -560,14 +569,19 @@ export default function ProductDetail() {
   const stockLeft = 4 + (product.id * 3) % 7;
   const stockPct = Math.round((stockLeft / 15) * 100);
 
-  const r = ratingFor(product.id);
-  const allReviewsForSchema = [
-    ...userReviews.map(ur => ({ name: ur.name, rating: ur.rating, text: ur.text, date: ur.date })),
-    ...reviews.map(sr => ({ name: sr.name, rating: sr.r, text: sr.text, date: sr.date })),
-  ].slice(0, 5);
+  const realReviewsForSchema = userReviews
+    .map(ur => ({ name: ur.name, rating: ur.rating, text: ur.text, date: ur.date }))
+    .slice(0, 5);
+  const realRatingForSchema = userReviews.length > 0
+    ? {
+        ratingValue: Number((userReviews.reduce((sum, ur) => sum + ur.rating, 0) / userReviews.length).toFixed(1)),
+        reviewCount: userReviews.length,
+      }
+    : undefined;
   const jsonLd = [
     schemas.product({
       id: product.id,
+      slug: product.slug,
       name: product.name,
       brand: product.brand,
       description: product.description,
@@ -576,13 +590,13 @@ export default function ProductDetail() {
       imageUrl: product.imageUrl,
       category: product.category,
       inStock: product.inStock !== false,
-      rating: { ratingValue: r.r, reviewCount: r.n + userReviews.length },
-      reviews: allReviewsForSchema,
+      ...(realRatingForSchema ? { rating: realRatingForSchema } : {}),
+      ...(realReviewsForSchema.length > 0 ? { reviews: realReviewsForSchema } : {}),
     }),
     schemas.breadcrumb([
       { name: lang === "ru" ? "Главная" : "Acasă", url: "https://teco.md/" },
       { name: lang === "ru" ? "Продукты" : "Produse", url: "https://teco.md/produse" },
-      { name: product.name, url: `https://teco.md/product/${product.id}` },
+      { name: product.name, url: `https://teco.md/product/${product.slug || product.id}` },
     ]),
   ];
   const metaTitle = `${product.name} — ${product.price.toLocaleString()} MDL | ${product.brand} | Teco.md`;
@@ -590,7 +604,7 @@ export default function ProductDetail() {
 
   return (
     <>
-      <SEO title={metaTitle} description={metaDesc} keywords={`${product.brand}, ${product.category}, ${product.model}, ${product.name}, Moldova, Teco.md`} ogType="product" canonical={`/product/${product.id}`} lang={lang} jsonLd={jsonLd} />
+      <SEO title={metaTitle} description={metaDesc} keywords={`${product.brand}, ${product.category}, ${product.model}, ${product.name}, Moldova, Teco.md`} ogType="product" canonical={`/product/${product.slug || product.id}`} lang={lang} jsonLd={jsonLd} />
       <main className="flex-1 w-full bg-[#FAFAFA] pb-[80px] md:pb-0" role="main" aria-label={product.name}>
 
       {/* BREADCRUMB */}
