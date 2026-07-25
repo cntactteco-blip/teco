@@ -386,7 +386,7 @@ export default function Products() {
 
   const jsonLd = [
     schemas.collectionPage(
-      filtered.map(p => ({ id: p.id, name: p.name, imageUrl: p.imageUrl, price: p.price, inStock: p.inStock })),
+      filtered.map(p => ({ id: p.id, slug: p.slug, name: p.name, imageUrl: p.imageUrl, price: p.price, inStock: p.inStock })),
       { name: seo.title, url: `https://teco.md${canonicalUrl}`, description: seo.desc }
     ),
     schemas.breadcrumb(breadcrumbItems),
