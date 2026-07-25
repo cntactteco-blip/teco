@@ -199,33 +199,11 @@ export default function Home() {
           ══════════════════════════════════════════════ */}
       <section className="relative bg-white overflow-hidden border-b border-zinc-100">
 
-        {/* ── Ticker tape ── */}
-        <div className="bg-[#FF4F00] text-white text-[11px] font-semibold py-1.5 overflow-hidden select-none">
-          <div className="ticker-track whitespace-nowrap">
-            {[1,2].map(n => (
-              <span key={n} className="inline-flex items-center gap-6 px-6">
-                {tickerItems.map((item, i) => (
-                  <span key={i} className="inline-flex items-center gap-6">
-                    <span>{item}</span>
-                    <span className="opacity-40">•</span>
-                  </span>
-                ))}
-              </span>
-            ))}
-          </div>
-        </div>
-
         {/* ── Main hero body ── */}
         <div className="max-w-7xl mx-auto px-5 py-10 md:py-16 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-8 items-center">
 
           {/* LEFT — copy */}
-          <div className="flex flex-col gap-5">
-
-            {/* Eyebrow */}
-            <div className="inline-flex items-center gap-2 self-start bg-orange-50 border border-orange-100 rounded-full px-3 py-1 animate-fade-in">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#FF4F00] animate-pulse" />
-              <span className="text-[#FF4F00] text-[11px] font-bold tracking-wide uppercase">{t("hero.badge")}</span>
-            </div>
+          <div className="flex flex-col gap-5 order-1 lg:order-none lg:col-start-1 lg:row-start-1">
 
             {/* Headline */}
             <h1 className="font-black leading-[0.9] tracking-tight text-[#09090B]"
@@ -240,6 +218,12 @@ export default function Home() {
                 {t("hero.subtitle")}
               </span>
             </h1>
+
+          </div>
+
+          {/* RIGHT — seturi dinamice apar aici pe mobil (order-2) */}
+
+          <div className="flex flex-col gap-5 order-3 lg:order-none lg:col-start-1 lg:row-start-2">
 
             {/* Stats row */}
             <div className="flex items-center gap-0 animate-fade-in" style={{ animationDelay: "0.28s" }}>
@@ -272,19 +256,10 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Trust pills */}
-            <div className="flex flex-wrap gap-x-5 gap-y-2 animate-fade-in" style={{ animationDelay: "0.44s" }}>
-              {[t("hero.trust1"), t("hero.trust2"), t("hero.trust3")].map(pill => (
-                <span key={pill} className="flex items-center gap-1.5 text-zinc-500 text-xs font-medium">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
-                  {pill}
-                </span>
-              ))}
-            </div>
           </div>
 
-          {/* RIGHT — product showcase */}
-          <div className="relative flex items-center justify-center lg:justify-end">
+          {/* RIGHT — product showcase (seturi dinamice) */}
+          <div className="relative flex items-center justify-center lg:justify-end order-2 lg:order-none lg:col-start-2 lg:row-start-1 lg:row-span-2">
 
             <div className="absolute w-72 h-72 bg-[#FF4F00] rounded-full blur-[100px] opacity-10 pointer-events-none" />
 
