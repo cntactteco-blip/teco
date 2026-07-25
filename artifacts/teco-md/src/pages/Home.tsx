@@ -199,6 +199,22 @@ export default function Home() {
           ══════════════════════════════════════════════ */}
       <section className="relative bg-white overflow-hidden border-b border-zinc-100">
 
+        {/* ── Ticker tape ── */}
+        <div className="bg-[#FF4F00] text-white text-[11px] font-semibold py-1.5 overflow-hidden select-none">
+          <div className="ticker-track whitespace-nowrap">
+            {[1,2].map(n => (
+              <span key={n} className="inline-flex items-center gap-6 px-6">
+                {tickerItems.map((item, i) => (
+                  <span key={i} className="inline-flex items-center gap-6">
+                    <span>{item}</span>
+                    <span className="opacity-40">•</span>
+                  </span>
+                ))}
+              </span>
+            ))}
+          </div>
+        </div>
+
         {/* ── Main hero body ── */}
         <div className="max-w-7xl mx-auto px-5 py-10 md:py-16 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-8 items-center">
 
