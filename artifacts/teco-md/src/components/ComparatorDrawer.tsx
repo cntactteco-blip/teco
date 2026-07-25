@@ -81,7 +81,7 @@ export function ComparatorDrawer() {
                           >
                             <X className="w-3 h-3" />
                           </button>
-                          <Link href={`/product/${p.id}`} onClick={() => setOpen(false)}>
+                          <Link href={`/product/${p.slug || p.id}`} onClick={() => setOpen(false)}>
                             <img src={p.imageUrl} alt={p.name} className="w-20 h-20 object-cover rounded-xl mx-auto mb-2 border border-zinc-100" />
                           </Link>
                           <p className="font-bold text-[#09090B] text-xs leading-tight line-clamp-2">{p.name}</p>

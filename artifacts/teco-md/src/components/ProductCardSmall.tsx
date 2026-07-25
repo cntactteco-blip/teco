@@ -37,7 +37,7 @@ export function ProductCardSmall({ product }: { product: StoreProduct }) {
     : null;
 
   return (
-    <Link href={`/product/${product.id}`}
+    <Link href={`/product/${product.slug || product.id}`}
       className="group block w-[170px] md:w-[210px] bg-white border border-zinc-100 rounded-2xl overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex-shrink-0 cursor-pointer"
       data-testid={`card-product-${product.id}`}>
 

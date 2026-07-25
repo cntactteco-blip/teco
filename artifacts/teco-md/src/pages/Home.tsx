@@ -302,7 +302,7 @@ export default function Home() {
                 setIsDragging(false);
               }}
             >
-              <Link href={`/product/${heroProduct.id}`} className="block overflow-hidden rounded-3xl">
+              <Link href={`/product/${heroProduct.slug || heroProduct.id}`} className="block overflow-hidden rounded-3xl">
                 <img
                   key={heroProduct.id}
                   src={heroProduct.imageUrl || "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=85&auto=format&fit=crop"}
@@ -330,7 +330,7 @@ export default function Home() {
               )}
 
               {/* Countdown card */}
-              <Link href={`/product/${heroProduct.id}`}
+              <Link href={`/product/${heroProduct.slug || heroProduct.id}`}
                 className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-[90%] bg-white/95 backdrop-blur-md border border-zinc-100 rounded-2xl shadow-xl px-4 py-3 flex items-center gap-3 hover:shadow-2xl transition-shadow cursor-pointer">
                 <div className="w-9 h-9 bg-orange-50 rounded-xl flex items-center justify-center flex-shrink-0">
                   <Camera className="w-[18px] h-[18px] text-[#FF4F00]" />

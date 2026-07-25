@@ -116,7 +116,7 @@ function ProductCard({ product }: { product: StoreProduct }) {
   const brandClass = BRAND_COLORS[product.brand] ?? "text-zinc-600 bg-zinc-100";
 
   return (
-    <Link href={`/product/${product.id}`} className="bg-white rounded-2xl border border-[#E4E4E7] overflow-hidden flex flex-col hover:shadow-md hover:border-zinc-300 transition-all duration-200 group cursor-pointer">
+    <Link href={`/product/${product.slug || product.id}`} className="bg-white rounded-2xl border border-[#E4E4E7] overflow-hidden flex flex-col hover:shadow-md hover:border-zinc-300 transition-all duration-200 group cursor-pointer">
       <div className="relative h-40 bg-zinc-50 overflow-hidden">
         {!imgError ? (
           <img

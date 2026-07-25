@@ -342,7 +342,7 @@ export default function ProductDetail() {
   const [timeLeft, setTimeLeft] = useState({ h: 3, m: 47, s: 22 });
   const [imgError, setImgError] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const viewers = useViewerCount(Number(id));
+  const viewers = useViewerCount(product?.id ?? 0);
   const animatedPrice = useCountUp(product?.price ?? 0, product?.oldPrice ?? undefined);
   const addBtnRef = useRef<HTMLButtonElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -1118,7 +1118,7 @@ export default function ProductDetail() {
                   {[...similarProducts, ...similarProducts, ...similarProducts].map((p, idx) => (
                     <Link
                       key={`${p.id}-${idx}`}
-                      href={`/product/${p.id}`}
+                      href={`/product/${p.slug || p.id}`}
                       className="bg-white rounded-xl border border-[#E4E4E7] overflow-hidden hover:shadow-md transition-all group flex-shrink-0 w-36 md:w-44"
                     >
                       <div className="relative h-28 bg-zinc-50 overflow-hidden">

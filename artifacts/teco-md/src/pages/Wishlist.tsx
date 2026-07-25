@@ -61,7 +61,7 @@ export default function Wishlist() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {wishlisted.map((p) => (
                 <div key={p.id} className="bg-white rounded-2xl border border-zinc-200 overflow-hidden group hover:shadow-lg transition-all">
-                  <Link href={`/product/${p.id}`} className="block relative h-44 bg-zinc-50 overflow-hidden">
+                  <Link href={`/product/${p.slug || p.id}`} className="block relative h-44 bg-zinc-50 overflow-hidden">
                     <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     {p.badge && (
                       <span className="absolute top-2 left-2 bg-[#FF4F00] text-white text-[10px] font-black px-2.5 py-1 rounded-full">
@@ -71,7 +71,7 @@ export default function Wishlist() {
                   </Link>
                   <div className="p-4">
                     <p className="text-xs text-zinc-400 mb-0.5">{p.brand}</p>
-                    <Link href={`/product/${p.id}`}>
+                    <Link href={`/product/${p.slug || p.id}`}>
                       <h3 className="font-bold text-[#09090B] text-sm leading-snug mb-2 hover:text-[#FF4F00] transition-colors line-clamp-2">{p.name}</h3>
                     </Link>
                     <div className="flex items-center gap-2 mb-4">

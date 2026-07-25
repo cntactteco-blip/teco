@@ -2683,7 +2683,7 @@ function AdminAITab({ leads, products, orders }: { leads: Lead[]; products: Stor
       { loc: `${BASE}/blog`, prio: "0.7", freq: "weekly" },
     ];
     const productUrls = products.map((p) => ({
-      loc: `${BASE}/product/${p.id}`, prio: "0.8", freq: "weekly",
+      loc: `${BASE}/product/${p.slug || p.id}`, prio: "0.8", freq: "weekly",
     }));
     const allUrls = [...staticUrls, ...productUrls];
     const urlTags = allUrls.map(({ loc, prio, freq }) =>
