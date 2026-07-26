@@ -731,9 +731,10 @@ function restoreBase64FromCache(fromD1: ModuleSettings, cached: ModuleSettings):
 // Apelat din initStore când cache-ul e vechi; actualizează starea fără să blocheze UI.
 async function _backgroundRefreshFromD1(): Promise<void> {
   try {
-    const [prodsRes, settingsRes] = await Promise.all([
+    const [prodsRes, settingsRes, blogRes] = await Promise.all([
       fetch(_API + "/api/products").then((r) => r.ok ? r.json() : null).catch(() => null),
       fetch(_API + "/api/settings").then((r) => r.ok ? r.json() : null).catch(() => null),
+      fetch(_API + "/api/blog-posts").then((r) => r.ok ? r.json() : null).catch(() => null),
     ]);
 
     const products: any[] = prodsRes?.data ?? [];
@@ -741,6 +742,15 @@ async function _backgroundRefreshFromD1(): Promise<void> {
       const mapped = products.map(dbProductToStore);
       cacheProducts(mapped);
       setState((s) => ({ ...s, products: mapped }));
+    }
+
+    // Blog: D1 e sursa de adevar si pentru vizitatori, nu doar pentru Admin.
+    // Fara asta, site-ul public ramanea blocat pe DEFAULT_BLOG_POSTS hardcodat in cod.
+    const blogRows: any[] = blogRes?.data ?? null;
+    if (blogRows) {
+      const mappedBlog = blogRows.map(dbBlogPostToStore);
+      try { localStorage.setItem("teco_blog_cache", JSON.stringify(mappedBlog)); } catch {}
+      setState((s) => ({ ...s, blogPosts: mappedBlog }));
     }
 
     if (settingsRes?.data) {
