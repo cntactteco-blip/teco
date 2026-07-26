@@ -11,6 +11,7 @@ import { handle } from "hono/cloudflare-pages";
 
 interface Env {
   DB: D1Database;
+  SITE_IMAGES: KVNamespace;
   TELEGRAM_BOT_TOKEN?: string;
   TELEGRAM_CHAT_ID?: string;
   SESSION_SECRET?: string;
@@ -314,6 +315,29 @@ app.post("/settings", async (c) => {
   return c.json({ ok: true });
 });
 
+// ─── Site Images (KV) — imagini homepage/hero/categorii/module ───────────────
+// Stocare permanentă pentru imagini incarcate din Admin (nu mai raman doar in localStorage).
+app.post("/site-image/:key", async (c) => {
+  const key = c.req.param("key");
+  const contentType = c.req.header("content-type") || "application/octet-stream";
+  const bytes = await c.req.arrayBuffer();
+  if (bytes.byteLength === 0) return c.json({ error: "empty body" }, 400);
+  if (bytes.byteLength > 5 * 1024 * 1024) return c.json({ error: "imagine prea mare (max 5MB)" }, 413);
+  await c.env.SITE_IMAGES.put(key, bytes, { metadata: { contentType } });
+  return c.json({ ok: true, url: `/api/site-image/${key}` });
+});
+app.get("/site-image/:key", async (c) => {
+  const key = c.req.param("key");
+  const obj = await c.env.SITE_IMAGES.getWithMetadata(key, "arrayBuffer");
+  if (!obj || !obj.value) return c.text("Not found", 404);
+  const contentType = (obj.metadata as { contentType?: string } | null)?.contentType || "application/octet-stream";
+  return new Response(obj.value, {
+    headers: {
+      "content-type": contentType,
+      "cache-control": "public, max-age=31536000, immutable",
+    },
+  });
+});
 // ─── Products ─────────────────────────────────────────────────────────────────
 
 app.get("/products", async (c) => {
