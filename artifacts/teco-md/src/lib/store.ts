@@ -840,9 +840,9 @@ function cacheProducts(products: StoreProduct[]) {
 }
 
 // ─── URL api-server (VITE_API_URL sau same-origin) ──────────────────
-const _API = typeof import.meta !== "undefined"
-  ? ((import.meta as any).env?.VITE_API_URL ?? "")
-  : "";
+// CRUD-ul (produse, setari, leaduri, blog) traieste pe teco.md prin Cloudflare Pages Functions,
+// NU pe Worker-ul separat (care are doar rute AI/chat/notify). De aceea ramane mereu relativ.
+const _API = "";
 
 // ─── Strip base64 din settings înainte de D1 (D1 are limita ~1MB per row) ─────
 // Imaginile base64 rămân în localStorage; D1 stochează doar configurația text.
