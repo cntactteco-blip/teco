@@ -156,6 +156,10 @@ overrides:
 importers:
 
   .:
+    dependencies:
+      hono:
+        specifier: ^4.12.31
+        version: 4.12.31
     devDependencies:
       prettier:
         specifier: ^3.8.3
