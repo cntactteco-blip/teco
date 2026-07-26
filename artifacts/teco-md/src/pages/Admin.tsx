@@ -1476,7 +1476,8 @@ function BlogTab({ posts }: { posts: BlogPost[] }) {
     setBlogImageUploading(true);
     try {
       const compressed = await compressImage(file, 1200, 0.85);
-      setForm((prev) => ({ ...prev, imageUrl: compressed }));
+      const url = await uploadSiteImage(compressed, "blog");
+      setForm((prev) => ({ ...prev, imageUrl: url }));
     } catch {
       alert("Eroare la procesarea imaginii");
     } finally {
