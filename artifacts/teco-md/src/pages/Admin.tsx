@@ -145,6 +145,23 @@ const EMPTY_FORM: ProductFormData = {
   imageUrl: "", description: "", longDescription: "", techSpecs: "", inStock: true,
 };
 
+async function uploadSiteImage(dataUrl: string, keyPrefix: string): Promise<string> {
+  try {
+    const blob = await (await fetch(dataUrl)).blob();
+    const key = `${keyPrefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const res = await fetch(`/api/site-image/${key}`, {
+      method: "POST",
+      headers: { "Content-Type": blob.type || "image/jpeg" },
+      body: blob,
+    });
+    if (!res.ok) throw new Error("upload failed");
+    const json = await res.json();
+    return json.url as string;
+  } catch {
+    return dataUrl;
+  }
+}
+
 async function compressImage(file: File, maxPx = 1200, quality = 0.82): Promise<string> {
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -250,8 +267,14 @@ function MediaUploadSlot({
 
     setUploading(true);
     try {
-      const result = isVid ? await toBase64(file) : await compressImage(file, 1600, 0.82);
-      onChange(result);
+      if (isVid) {
+        const result = await toBase64(file);
+        onChange(result);
+      } else {
+        const compressed = await compressImage(file, 1600, 0.82);
+        const url = await uploadSiteImage(compressed, "module");
+        onChange(url);
+      }
     } finally {
       setUploading(false);
     }
@@ -385,10 +408,11 @@ function ProductModal({ product, onClose, categories }: { product: StoreProduct 
   const handleFile = async (file: File, target: "primary" | number) => {
     setUploadingIdx(target === "primary" ? -1 : target);
     const compressed = await compressImage(file);
+    const url = await uploadSiteImage(compressed, "product");
     if (target === "primary") {
-      set("imageUrl", compressed);
+      set("imageUrl", url);
     } else {
-      setExtraImages((prev) => { const n = [...prev]; n[target] = compressed; return n; });
+      setExtraImages((prev) => { const n = [...prev]; n[target] = url; return n; });
     }
     setUploadingIdx(null);
   };
