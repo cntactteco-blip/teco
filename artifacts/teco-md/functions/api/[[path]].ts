@@ -14,6 +14,7 @@ interface Env {
   SITE_IMAGES: KVNamespace;
   TELEGRAM_BOT_TOKEN?: string;
   TELEGRAM_CHAT_ID?: string;
+  TELEGRAM_CHAT_ID_ORDERS?: string;
   SESSION_SECRET?: string;
   GROQ_API_KEY?: string;
   GOOGLE_API_KEY?: string;
@@ -157,16 +158,16 @@ async function checkRateLimit(
 
 // ─── Telegram ────────────────────────────────────────────────────────────────
 
-async function sendTelegram(env: Env, text: string): Promise<void> {
+async function sendTelegram(env: Env, text: string, chatId?: string): Promise<void> {
   const token = env.TELEGRAM_BOT_TOKEN;
-  const chatId = env.TELEGRAM_CHAT_ID;
-  if (!token || !chatId) return;
+  const targetChatId = chatId || env.TELEGRAM_CHAT_ID;
+  if (!token || !targetChatId) return;
   try {
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        chat_id: chatId,
+        chat_id: targetChatId,
         text: text.slice(0, 4096),
         parse_mode: "HTML",
         disable_web_page_preview: true,
@@ -249,7 +250,7 @@ async function notifyLeadChat(env: Env, payload: {
     `─────────────────`,
     transcript,
     `─────────────────`,
-  ].join("\n"));
+  ].join("\n"), env.TELEGRAM_CHAT_ID_ORDERS);
 }
 
 async function notifyLeadCalculator(env: Env, payload: {
@@ -283,7 +284,7 @@ async function notifyLeadCalculator(env: Env, payload: {
     `• <b>Total: ~${totalCost.toLocaleString("ro-MD")} MDL</b>`,
     ``,
     `📄 Pagini: <i>${esc(pagesSummary)}</i>`,
-  ].join("\n"));
+  ].join("\n"), env.TELEGRAM_CHAT_ID_ORDERS);
 }
 
 
@@ -804,7 +805,7 @@ app.post("/notify/lead", async (c) => {
     notes ? `📝 ${esc(notes)}` : "",
   ].filter(Boolean).join("\n");
 
-  await sendTelegram(c.env, lines);
+  await sendTelegram(c.env, lines, c.env.TELEGRAM_CHAT_ID_ORDERS);
   return c.json({ ok: true });
 });
 
@@ -840,7 +841,7 @@ app.post("/notify/order", async (c) => {
     `💳 <b>Total: ${Number(total).toLocaleString("ro-MD")} MDL</b>`,
   ].filter(Boolean).join("\n");
 
-  await sendTelegram(c.env, lines);
+  await sendTelegram(c.env, lines, c.env.TELEGRAM_CHAT_ID_ORDERS);
   return c.json({ ok: true });
 });
 
