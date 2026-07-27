@@ -308,9 +308,9 @@ function tgDur(s: number): string {
   if (s < 60) return `${s}s`; const m = Math.floor(s / 60); const r = s % 60; return r ? `${m}m ${r}s` : `${m}m`;
 }
 
-async function tgSend(env: any, text: string): Promise<void> {
+async function tgSend(env: any, text: string, chatIdOverride?: string): Promise<void> {
   const token = (env.TELEGRAM_BOT_TOKEN as string | undefined)?.trim();
-  const chatId = (env.TELEGRAM_CHAT_ID as string | undefined)?.trim();
+  const chatId = (chatIdOverride || (env.TELEGRAM_CHAT_ID as string | undefined))?.trim();
   if (!token || !chatId) { console.error("Telegram: missing BOT_TOKEN or CHAT_ID"); return; }
   try {
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
@@ -465,7 +465,7 @@ async function sendTgLeadChat(env: any, p: { name: string; phone: string; messag
     transcript,
     `─────────────────`,
     tgAiBlock(aiMsg, phone),
-  ].join("\n"));
+  ].join("\n"), env.TELEGRAM_CHAT_ID_ORDERS);
 }
 
 async function sendTgCalculator(env: any, p: { name: string; phone: string; selections: any; equipmentCost: number; installCost: number; totalCost: number; session: any }): Promise<void> {
@@ -501,7 +501,7 @@ async function sendTgCalculator(env: any, p: { name: string; phone: string; sele
     ``,
     `📄 Pagini: <i>${tgEsc(pagesSum)}</i>`,
     tgAiBlock(aiMsg, phone),
-  ].join("\n"));
+  ].join("\n"), env.TELEGRAM_CHAT_ID_ORDERS);
 }
 
 async function sendTgLead(env: any, p: { name: string; phone: string; source: string; notes?: string; session: any }): Promise<void> {
@@ -526,7 +526,7 @@ async function sendTgLead(env: any, p: { name: string; phone: string; source: st
     `🌐 Sursă traffic: ${tgEsc(src)}  |  ⏱ ${tgDur(s.duration ?? 0)} pe site`,
     tgAiBlock(aiMsg, phone),
   );
-  await tgSend(env, lines.join("\n"));
+  await tgSend(env, lines.join("\n"), env.TELEGRAM_CHAT_ID_ORDERS);
 }
 
 async function sendTgOrder(env: any, p: { orderId: string; name: string; phone: string; address: string; delivery: string; items: any[]; subtotal: number; shippingCost: number; total: number; session: any }): Promise<void> {
@@ -564,7 +564,7 @@ async function sendTgOrder(env: any, p: { orderId: string; name: string; phone: 
     shippingCost > 0 ? `  🚚 Livrare: ${shippingCost} MDL` : `  🚚 Livrare: GRATUITĂ`,
     `💰 <b>Total: ${Number(total).toLocaleString("ro-MD")} MDL</b>`,
     tgAiBlock(aiMsg, phone),
-  ].join("\n"));
+  ].join("\n"), env.TELEGRAM_CHAT_ID_ORDERS);
 }
 
 function buildSystemPrompt(products: any[], lang?: string): string {
