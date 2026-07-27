@@ -112,5 +112,14 @@
 /echipamente-retea     /produse            301
 /hdmi-extender         /produse            301
 
+# ── Articole vechi despre reparatii, indexate de Google ────────────────
+/repar-camere-care-nu-nregistreaza-dvr-nvr-hdd-setari-alimentare/  /servicii/chisinau  301
+/repar-camere-care-nu-nregistreaza-dvr-nvr-hdd-setari-alimentare   /servicii/chisinau  301
+/ru/repar-camere-de-supraveghere-n-chiinau-i-suburbii-rapid-sigur-i-la-pre-corect/  /servicii/chisinau  301
+/ru/repar-camere-de-supraveghere-n-chiinau-i-suburbii-rapid-sigur-i-la-pre-corect   /servicii/chisinau  301
+
+# ── Fallback general pentru orice alt URL vechi tip /ru/... care nu mai exista
+/ru/*  /servicii/chisinau  301
+
 # ── SPA fallback ───────────────────────────────────────────────────────
 /*  /index.html  200
