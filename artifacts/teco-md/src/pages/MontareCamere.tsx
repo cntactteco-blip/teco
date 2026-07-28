@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { SEO, schemas } from "@/components/SEO";
 import { useLang } from "@/contexts/LangContext";
+import { useStore } from "@/lib/store";
 
 function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
@@ -29,11 +30,11 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 }
 
 const PRICES = [
-  { cameras: 2, label: "2 Camere", price: "de la 600 MDL", priceNum: 600, note: "Casă mică, apartament" },
-  { cameras: 4, label: "4 Camere", price: "de la 1.200 MDL", priceNum: 1200, note: "Casă standard, vilă" },
-  { cameras: 6, label: "6 Camere", price: "de la 1.800 MDL", priceNum: 1800, note: "Casă mare, curte extinsă", popular: true },
-  { cameras: 8, label: "8 Camere", price: "de la 2.400 MDL", priceNum: 2400, note: "Afacere mică, depozit" },
-  { cameras: 16, label: "16 Camere", price: "de la 4.800 MDL", priceNum: 4800, note: "Afacere mare, complex" },
+  { cameras: 2, label: "2 Camere", price: "de la 1,400".replace(",", ".") + " MDL", priceNum: 1400, note: "Casă mică, apartament" },
+  { cameras: 4, label: "4 Camere", price: "de la 2,700".replace(",", ".") + " MDL", priceNum: 2700, note: "Casă standard, vilă" },
+  { cameras: 6, label: "6 Camere", price: "de la 4,000".replace(",", ".") + " MDL", priceNum: 4000, note: "Casă mare, curte extinsă", popular: true },
+  { cameras: 8, label: "8 Camere", price: "de la 5,300".replace(",", ".") + " MDL", priceNum: 5300, note: "Afacere mică, depozit" },
+  { cameras: 16, label: "16 Camere", price: "de la 10,500".replace(",", ".") + " MDL", priceNum: 10500, note: "Afacere mare, complex" },
 ];
 
 const STEPS = [
@@ -61,7 +62,7 @@ const FEATURES = [
 const FAQS = [
   {
     q: "Cât costă montarea camerelor de supraveghere în Moldova?",
-    a: "Prețul de montare a camerelor de supraveghere în Moldova pornește de la 300 MDL per cameră, incluzând cablare, fixare și configurare. Un sistem de 4 camere costă în total (echipament + montaj) de la 6.000 MDL. Contactați-ne pentru o ofertă personalizată gratuită.",
+    a: "Prețul de montare a camerelor de supraveghere în Moldova este 750 MDL pentru prima cameră și 650 MDL pentru fiecare cameră suplimentară, incluzând cablare, fixare și configurare. Doar montajul pentru 4 camere costă 2.700 MDL. Contactați-ne pentru o ofertă personalizată gratuită.",
   },
   {
     q: "Cât durează instalarea unui sistem de supraveghere?",
@@ -111,9 +112,11 @@ const FAQS = [
 
 export default function MontareCamere() {
   const { lang } = useLang();
+  const sp = useStore(s => s.settings.servicePrices);
+  const montajPrice = sp?.montaj?.replace(/^de la /i, "") || "750 MDL/cameră";
 
   const title = "Montare Camere Supraveghere Moldova | Instalare Profesională 24h | Teco.md";
-  const description = "Montare și instalare sisteme de supraveghere în Moldova. Tehnicieni certificați, garanție 2–5 ani. Prețuri de la 300 MDL/cameră. Programează azi — instalăm în 24h oriunde în Moldova. ☎ +373 67 200 463";
+  const description = "Montare și instalare sisteme de supraveghere în Moldova. Tehnicieni certificați, garanție 2–5 ani. Prețuri de la 750 MDL/cameră. Programează azi — instalăm în 24h oriunde în Moldova. ☎ +373 67 200 463";
   const keywords = "montare camere supraveghere moldova, instalare sistem supraveghere chisinau, montaj camere ip wifi, instalare nvr dahua uniview, montare camere exterior, pret montaj camera supraveghere moldova, instalare sisteme securitate chisinau, teco.md montaj";
 
   const jsonLd = [
@@ -206,7 +209,7 @@ export default function MontareCamere() {
             </h1>
             <p className="text-zinc-300 text-base md:text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
               Tehnicieni certificați instalează camerele la adresa ta în 24–48h.
-              Garanție 2–5 ani la montaj. Prețuri de la <strong className="text-white">300 MDL/cameră</strong>.
+              Garanție 2–5 ani la montaj. Prețuri de la <strong className="text-white">{montajPrice}</strong>.
             </p>
             {/* Stars */}
             <div className="flex items-center justify-center gap-2 mb-8">

@@ -38,6 +38,8 @@ const FAQS = [
 export default function CamereChisinau() {
   const { lang } = useLang();
   const storeProducts = useStore(s => s.products);
+  const sp = useStore(s => s.settings.servicePrices);
+  const montajPrice = sp?.montaj?.replace(/^de la /i, "") || "750 MDL/cameră";
   const topProducts = storeProducts.filter(p => p.inStock !== false && p.price > 0).slice(0, 4);
 
   const title = "Camere Supraveghere Chișinău | Instalare și Montaj | Teco.md";
@@ -92,7 +94,7 @@ export default function CamereChisinau() {
               <span className="block text-[#FF4F00] mt-1">în Chișinău</span>
             </h1>
             <p className="text-zinc-300 text-base md:text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
-              Instalare profesională în toate sectoarele Chișinăului. Tehnicianul vine la tine în <strong className="text-white">24h</strong>. Garanție 2–5 ani. Prețuri de la <strong className="text-white">300 MDL/cameră</strong>.
+              Instalare profesională în toate sectoarele Chișinăului. Tehnicianul vine la tine în <strong className="text-white">24h</strong>. Garanție 2–5 ani. Prețuri de la <strong className="text-white">{montajPrice}</strong>.
             </p>
             <div className="flex items-center justify-center gap-2 mb-8">
               <div className="flex">{[1,2,3,4,5].map(i => <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />)}</div>
