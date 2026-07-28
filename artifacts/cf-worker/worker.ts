@@ -419,14 +419,18 @@ REGULI STRICTE:
 function tgAiBlock(aiMsg: string, phone: string): string {
   const num = phone.replace(/\D/g, "");
   const waLink = `https://wa.me/${num}?text=${encodeURIComponent(aiMsg)}`;
-  const viberLink = `viber://chat?number=%2B${num}`;
+  // Viber nu are un link universal "chat cu numar X + mesaj precompletat" ca WhatsApp.
+  // viber://forward deschide un ecran de trimitere cu mesajul precompletat,
+  // dar contactul se alege manual din lista Viber (limitare a platformei Viber, nu a codului).
+  const viberLink = `viber://forward?text=${encodeURIComponent(aiMsg)}`;
   return [
     ``,
     `━━━━━━━━━━━━━━━━━━━━`,
     `🤖 <b>Mesaj AI gata de trimis:</b>`,
     `<i>${tgEsc(aiMsg)}</i>`,
     ``,
-    `<a href="${waLink}">💬 1 Tap → WhatsApp</a>  ·  <a href="${viberLink}">📲 Viber</a>`,
+    `<a href="${waLink}">💬 1 Tap → WhatsApp</a>  ·  <a href="${viberLink}">📲 Viber (alege contactul)</a>`,
+    `📞 Telefon client: <code>${tgEsc(phone)}</code>`,
   ].join("\n");
 }
 
