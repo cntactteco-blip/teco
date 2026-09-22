@@ -9,13 +9,6 @@ import { SEO, schemas } from "@/components/SEO";
 
 // ── Pagina "Produs negăsit" cu auto-redirect ─────────────────────────
 function ProductNotFound() {
-  const [, navigate] = useLocation();
-  const [sec, setSec] = useState(4);
-  useEffect(() => {
-    if (sec <= 0) { navigate("/produse"); return; }
-    const t = setTimeout(() => setSec(s => s - 1), 1000);
-    return () => clearTimeout(t);
-  }, [sec, navigate]);
   return (
     <>
       <SEO title="Produs Negăsit — Teco.md" noIndex />
@@ -25,7 +18,7 @@ function ProductNotFound() {
           <h1 className="text-2xl font-black text-[#09090B] mb-2">Produsul nu a fost găsit</h1>
           <p className="text-sm text-zinc-500 mb-6">
             Acest produs a fost retras sau URL-ul este vechi.<br/>
-            Te redirecționăm la catalog în <span className="font-bold text-[#FF4F00]">{sec}s</span>…
+            Poți alege un produs disponibil din catalog.
           </p>
           <Link
             href="/produse"
@@ -38,32 +31,6 @@ function ProductNotFound() {
     </>
   );
 }
-
-// ── Rating data (deterministic, varied per product) ──────────────────
-const RATING_DATA = [
-  { r: 4.7, n: 23 }, { r: 4.9, n: 89 }, { r: 4.8, n: 34 },
-  { r: 4.6, n: 17 }, { r: 4.9, n: 67 }, { r: 4.7, n: 41 },
-  { r: 4.8, n: 28 }, { r: 5.0, n: 156 }, { r: 4.7, n: 19 },
-  { r: 4.8, n: 73 }, { r: 4.9, n: 44 }, { r: 4.6, n: 11 },
-  { r: 4.9, n: 58 }, { r: 4.7, n: 32 }, { r: 4.8, n: 97 },
-  { r: 4.9, n: 22 }, { r: 4.7, n: 63 }, { r: 4.8, n: 51 },
-];
-const ratingFor = (id: number) => RATING_DATA[(id - 1) % RATING_DATA.length];
-
-// ── Fake reviews pool ────────────────────────────────────────────────
-const REVIEW_POOL = [
-  { name: "Alexandru M.", loc: "Chișinău", r: 5, date: "12 mai 2026", text: "Cameră excelentă! Am instalat-o singur în 30 min, imaginea e super clară zi și noapte. Detecția de persoane funcționează impecabil — primesc notificări instant pe telefon.", helpful: 14 },
-  { name: "Elena V.", loc: "Bălți", r: 5, date: "3 mai 2026", text: "Foarte mulțumită de achiziție. Teco.md a livrat a doua zi și tot echipamentul era exact cum am comandat. Calitate excelentă față de preț.", helpful: 8 },
-  { name: "Ion C.", loc: "Orhei", r: 4, date: "28 apr 2026", text: "Produs bun, am comandat pentru biroul meu. Instalarea rapidă, aplicația merge excelent, văd camerele de pe telefon de oriunde. Recomand!", helpful: 6 },
-  { name: "Natalia P.", loc: "Cahul", r: 5, date: "15 apr 2026", text: "A doua cameră cumpărată de la Teco.md. De fiecare dată — calitate și service excelent. Nu am de ce să cumpăr de altundeva.", helpful: 19 },
-  { name: "Andrei L.", loc: "Chișinău", r: 5, date: "8 apr 2026", text: "Imagine super clară, chiar și pe timp de ploaie. Setarea a durat 15 minute cu ajutorul instrucțiunilor video. Sistemul funcționează stabil de 2 luni.", helpful: 11 },
-  { name: "Maria T.", loc: "Soroca", r: 4, date: "1 apr 2026", text: "Ușor de configurat. Văd camera de pe telefon oriunde în lume. Soțul a instalat-o fără ajutor suplimentar. Mulțumit de achiziție.", helpful: 5 },
-  { name: "Victor B.", loc: "Strășeni", r: 5, date: "20 mar 2026", text: "Am luat kit complet pentru casă. Totul funcționează perfect, imaginile sunt clare și noaptea. Echipa Teco.md a răspuns rapid la întrebări.", helpful: 22 },
-  { name: "Alina R.", loc: "Ungheni", r: 5, date: "14 mar 2026", text: "Produs de calitate superioară. IP66 chiar rezistă la ploaie, imaginea nocturnă e impresionantă. Recomand cu încredere tuturor.", helpful: 9 },
-  { name: "Dumitru G.", loc: "Chișinău", r: 4, date: "5 mar 2026", text: "Raport calitate-preț excelent. Am monitorizat și gardul casei — camera funcționează fără probleme iarna și vara. Satisfăcut 100%.", helpful: 7 },
-];
-const reviewsFor = (id: number) =>
-  [0, 1, 2].map((i) => REVIEW_POOL[(id + i) % REVIEW_POOL.length]);
 
 // ── Warranty by brand ────────────────────────────────────────────────
 const WARRANTY: Record<string, string> = {
@@ -93,24 +60,6 @@ const BRAND_COLORS: Record<string, string> = {
   "Teco.md": "text-orange-700 bg-orange-50 border-orange-200",
   "Ajax Systems": "text-zinc-900 bg-zinc-100 border-zinc-300",
 };
-
-// ── Avatar initials color ────────────────────────────────────────────
-const AVATAR_COLORS = [
-  "bg-orange-500", "bg-blue-500", "bg-green-600",
-  "bg-purple-500", "bg-rose-500", "bg-teal-500",
-];
-
-function useViewerCount(id: number) {
-  const [count, setCount] = useState(() => 11 + (id * 7) % 23);
-  useEffect(() => {
-    const timer = setTimeout(
-      () => setCount(c => Math.max(8, c + (Math.random() > 0.5 ? 1 : -1))),
-      9000 + Math.random() * 10000
-    );
-    return () => clearTimeout(timer);
-  }, [count]);
-  return count;
-}
 
 // ── Stars renderer ───────────────────────────────────────────────────
 function Stars({ r, size = "sm" }: { r: number; size?: "sm" | "xs" }) {
@@ -342,7 +291,6 @@ export default function ProductDetail() {
   const [timeLeft, setTimeLeft] = useState({ h: 3, m: 47, s: 22 });
   const [imgError, setImgError] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const viewers = useViewerCount(product?.id ?? 0);
   const animatedPrice = useCountUp(product?.price ?? 0, product?.oldPrice ?? undefined);
   const addBtnRef = useRef<HTMLButtonElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -548,9 +496,8 @@ export default function ProductDetail() {
   const parsedBadge = product.badge ? { text: product.badge.split("|")[0].trim(), color: product.badge.includes("|") ? product.badge.split("|")[1].trim() : "#09090B" } : null;
   const brandClass = BRAND_COLORS[product.brand] ?? "text-zinc-600 bg-zinc-100 border-zinc-200";
   const specChips = product.specs.split(" | ");
-  const { r: rating, n: reviewCount } = ratingFor(product.id);
-  const seedReviews = reviewsFor(product.id);
-  const reviews = seedReviews;
+  const reviewCount = userReviews.length;
+  const rating = reviewCount ? Number((userReviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount).toFixed(1)) : 0;
 
   const techSpecRows = product.techSpecs
     ? product.techSpecs.split("\n").map(l => l.split(": ")).filter(p => p.length === 2)
@@ -566,18 +513,7 @@ export default function ProductDetail() {
     .concat(storeProducts.filter(p => p.id !== product.id && p.category !== product.category))
     .slice(0, 4);
 
-  const stockLeft = 4 + (product.id * 3) % 7;
-  const stockPct = Math.round((stockLeft / 15) * 100);
-
-  const realReviewsForSchema = userReviews
-    .map(ur => ({ name: ur.name, rating: ur.rating, text: ur.text, date: ur.date }))
-    .slice(0, 5);
-  const realRatingForSchema = userReviews.length > 0
-    ? {
-        ratingValue: Number((userReviews.reduce((sum, ur) => sum + ur.rating, 0) / userReviews.length).toFixed(1)),
-        reviewCount: userReviews.length,
-      }
-    : undefined;
+  // Browser-local feedback is not a public, verified product rating.
   const jsonLd = [
     schemas.product({
       id: product.id,
@@ -590,8 +526,6 @@ export default function ProductDetail() {
       imageUrl: product.imageUrl,
       category: product.category,
       inStock: product.inStock !== false,
-      ...(realRatingForSchema ? { rating: realRatingForSchema } : {}),
-      ...(realReviewsForSchema.length > 0 ? { reviews: realReviewsForSchema } : {}),
     }),
     schemas.breadcrumb([
       { name: lang === "ru" ? "Главная" : "Acasă", url: "https://teco.md/" },
@@ -748,11 +682,6 @@ export default function ProductDetail() {
                 </div>
               )}
 
-              {/* Viewers — mobile */}
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 md:hidden z-10 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1.5 flex items-center gap-1.5 text-white text-xs font-medium">
-                <Eye className="w-3.5 h-3.5 text-green-400" />
-                <span>{viewers} {t("pd.viewers")}</span>
-              </div>
             </div>
 
             {/* Thumbnails strip */}
@@ -834,18 +763,8 @@ export default function ProductDetail() {
             )}
             {!savings && <p className="text-[11px] text-zinc-400 mb-3">{t("pd.no_fees")}</p>}
 
-            {/* 5. Stock urgency */}
-            <div className="bg-zinc-50 border border-zinc-100 rounded-xl px-3.5 py-2.5 mb-4">
-              <div className="flex items-center justify-between text-xs mb-1.5">
-                <span className="flex items-center gap-1.5 text-zinc-600 font-semibold">
-                  <Package className="w-3.5 h-3.5 text-[#FF4F00]" /> {t("pd.in_stock")}
-                </span>
-                <span className="text-[#FF4F00] font-black">{t("pd.only_left", { n: stockLeft })}</span>
-              </div>
-              <div className="w-full bg-zinc-200 h-1.5 rounded-full overflow-hidden mb-1.5">
-                <div className="bg-gradient-to-r from-[#FF4F00] to-orange-400 h-full rounded-full stock-bar-grow" style={{ width: `${stockPct}%` }} />
-              </div>
-              <p className="text-[10px] text-zinc-500 flex items-center gap-1"><Flame className="w-3 h-3 text-[#FF4F00]" /> {2 + (product.id % 4)} {t("pd.bought_24h")}</p>
+            <div className="bg-zinc-50 border border-zinc-100 rounded-xl px-3.5 py-3 mb-4 text-sm font-semibold">
+              {product.inStock ? (lang === "ru" ? "В наличии" : "În stoc") : (lang === "ru" ? "Нет в наличии" : "Stoc indisponibil")}
             </div>
 
             {/* 6. Spec chips */}
@@ -953,13 +872,13 @@ export default function ProductDetail() {
           <section className="reveal-section bg-white rounded-2xl border border-[#E4E4E7] p-5 md:p-7">
             <div className="flex items-center gap-5 mb-6 pb-5 border-b border-zinc-100">
               <div className="text-center">
-                <p className="text-5xl font-black text-[#09090B]">{rating}</p>
+<p className="text-5xl font-black text-[#09090B]">{reviewCount ? rating : "—"}</p>
                 <Stars r={rating} />
                 <p className="text-xs text-zinc-400 mt-1">{reviewCount} {t("pd.reviews_count")}</p>
               </div>
               <div className="flex-1">
                 {[5,4,3,2,1].map(s => {
-                  const pct = s === 5 ? 72 : s === 4 ? 20 : s === 3 ? 5 : s === 2 ? 2 : 1;
+const pct = reviewCount ? (userReviews.filter(review => review.rating === s).length / reviewCount) * 100 : 0;
                   return (
                     <div key={s} className="flex items-center gap-2 mb-1">
                       <span className="text-[10px] w-3 text-zinc-500 font-semibold">{s}</span>
@@ -987,7 +906,6 @@ export default function ProductDetail() {
                       <div>
                         <div className="flex items-center gap-1.5">
                           <p className="font-bold text-sm text-[#09090B]">{rev.name}</p>
-                          <span className="text-[10px] bg-green-100 text-green-700 font-semibold px-1.5 py-0.5 rounded-full">{lang === "ru" ? "Verificat" : "Verificat"} ✓</span>
                         </div>
                         <span className="text-[10px] text-zinc-400">{rev.date}</span>
                       </div>
@@ -1004,33 +922,7 @@ export default function ProductDetail() {
                   </button>
                 </div>
               ))}
-              {/* Seed reviews */}
-              {reviews.map((rev, i) => (
-                <div key={i} className="border border-zinc-100 rounded-xl p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-9 h-9 rounded-full ${AVATAR_COLORS[(product.id + i) % AVATAR_COLORS.length]} flex items-center justify-center text-white font-black text-sm flex-shrink-0`}>
-                        {rev.name[0]}
-                      </div>
-                      <div>
-                        <p className="font-bold text-sm text-[#09090B]">{rev.name}</p>
-                        <div className="flex items-center gap-1.5">
-                          <MapPin className="w-3 h-3 text-zinc-400" />
-                          <span className="text-[10px] text-zinc-400">{rev.loc}</span>
-                          <span className="text-zinc-200">·</span>
-                          <span className="text-[10px] text-zinc-400">{rev.date}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <Stars r={rev.r} size="xs" />
-                  </div>
-                  <p className="text-xs text-zinc-600 leading-relaxed mb-2.5">{rev.text}</p>
-                  <div className="flex items-center gap-1.5 text-[10px] text-zinc-400">
-                    <ThumbsUp className="w-3 h-3" />
-                    <span>{rev.helpful} {t("pd.helpful")}</span>
-                  </div>
-                </div>
-              ))}
+              {reviewCount === 0 && <p className="text-sm text-zinc-500">{lang === "ru" ? "Отзывов пока нет." : "Încă nu sunt recenzii."}</p>}
             </div>
 
             {/* Write-review form */}
@@ -1135,10 +1027,6 @@ export default function ProductDetail() {
                       </div>
                       <div className="p-2.5">
                         <p className="text-xs font-bold text-[#09090B] leading-tight line-clamp-2 mb-1">{p.name}</p>
-                        <div className="flex items-center gap-1 mb-1">
-                          <Stars r={ratingFor(p.id).r} size="xs" />
-                          <span className="text-[9px] text-zinc-400">({ratingFor(p.id).n})</span>
-                        </div>
                         <p className="font-mono font-black text-sm text-[#FF4F00]">{p.price.toLocaleString()} MDL</p>
                       </div>
                     </Link>

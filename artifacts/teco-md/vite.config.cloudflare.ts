@@ -5,6 +5,8 @@ import path from "path";
 
 export default defineConfig({
   base: "/",
+  // Cloudflare Pages serves every API through its own /api Functions.
+  define: { "import.meta.env.VITE_API_URL": JSON.stringify("") },
   plugins: [
     react(),
     tailwindcss(),

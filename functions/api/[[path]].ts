@@ -55,7 +55,7 @@ const COUNTRY_NAME: Record<string, string> = {
   NL: "Olanda", BE: "Belgia", AT: "Austria", CH: "Elveția",
   CA: "Canada", AU: "Australia", PL: "Polonia", CZ: "Cehia",
   SK: "Slovacia", HU: "Ungaria", BG: "Bulgaria", GR: "Grecia",
-  TR: "Turcia", AE: "Emirates", GB: "UK",
+  TR: "Turcia", AE: "Emiratele Arabe Unite",
 };
 
 function flagFromCode(code: string): string {
@@ -579,15 +579,18 @@ app.post("/sessions", async (c) => {
   const s = await c.req.json();
   if (!s?.session_id && !s?.sessionId) return c.json({ ok: true });
   const sid = s.session_id ?? s.sessionId;
+  const session: SessionInfo = mergeGeo(s, cfGeo(c.req.raw));
   const today = chisinauDate();
   await c.env.DB.prepare(
     `INSERT INTO sessions (session_id, date, referrer, utm_source, utm_medium, country, device_type, pages, is_lead, lead_type)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(session_id) DO UPDATE SET
-       pages=excluded.pages, is_lead=excluded.is_lead, lead_type=excluded.lead_type`,
+       pages=excluded.pages,
+       is_lead=MAX(sessions.is_lead, excluded.is_lead),
+       lead_type=COALESCE(excluded.lead_type, sessions.lead_type)`,
   ).bind(
     sid, today, s.referrer ?? null, s.utm_source ?? s.utmSource ?? null,
-    s.utm_medium ?? s.utmMedium ?? null, s.country ?? null, s.device_type ?? s.deviceType ?? null,
+    s.utm_medium ?? s.utmMedium ?? null, session.country ?? null, s.device_type ?? s.deviceType ?? null,
     JSON.stringify(s.pages ?? []),
     s.is_lead ?? s.isLead ? 1 : 0, s.lead_type ?? s.leadType ?? null,
   ).run();
@@ -899,52 +902,7 @@ app.post("/notify/daily-report", async (c) => {
 // ─── AI — Groq + Gemini fallback ─────────────────────────────────────────────
 // ============================================
 
-const GROQ_API        = "https://api.groq.com/openai/v1/chat/completions";
-const GROQ_MODEL_MAIN = "llama-3.3-70b-versatile";   // primar — calitate mai bună, 100K tok/zi
-const GROQ_MODEL_FAST = "llama-3.1-8b-instant";       // rezervă — 500K tok/zi, preia când 70b e la limită
-
-type GMsg = { role: "system" | "user" | "assistant"; content: string };
-
-async function groqCall(apiKey: string, model: string, messages: GMsg[], maxTokens = 1024): Promise<{ ok: boolean; content: string; rate_limited: boolean }> {
-  try {
-    const resp = await fetch(GROQ_API, {
-      method: "POST",
-      headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model, messages, max_tokens: maxTokens, stream: false }),
-    });
-    if (resp.ok) {
-      const data = await resp.json() as any;
-      return { ok: true, content: data?.choices?.[0]?.message?.content ?? "", rate_limited: false };
-    }
-    return { ok: false, content: "", rate_limited: resp.status === 429 };
-  } catch {
-    return { ok: false, content: "", rate_limited: false };
-  }
-}
-
-async function callAI(groqKey: string | undefined, _geminiKey: string | undefined, messages: GMsg[], maxTokens = 1024): Promise<{ content: string }> {
-  if (!groqKey) throw new Error("No GROQ_API_KEY");
-
-  // Încearcă 70b (calitate mai bună)
-  const main = await groqCall(groqKey, GROQ_MODEL_MAIN, messages, maxTokens);
-  if (main.ok) return { content: main.content };
-
-  // Dacă 70b e rate-limited → încearcă 8b
-  if (main.rate_limited) {
-    const fast = await groqCall(groqKey, GROQ_MODEL_FAST, messages, maxTokens);
-    if (fast.ok) return { content: fast.content };
-  }
-
-  throw new Error("AI unavailable");
-}
-
-// wrapper simplu pentru rutele non-chat
-async function groqJSON(apiKey: string, messages: GMsg[], maxTokens = 1024): Promise<string> {
-  const r = await groqCall(apiKey, GROQ_MODEL_MAIN, messages, maxTokens);
-  if (r.ok) return r.content;
-  const r2 = await groqCall(apiKey, GROQ_MODEL_FAST, messages, maxTokens);
-  return r2.content;
-}
+import { AIProviderError, callAI, groqJSON, type GMsg } from "../../artifacts/teco-md/src/server/ai-provider";
 
 // ─── Catalog builder (identic cu api-server) ─────────────────────────────────
 
@@ -1090,8 +1048,9 @@ function buildTecoBotPrompt(catalog: string, s: StoreSettings, lang?: string): s
 // ─── AI: chat (JSON, fără streaming — mai fiabil în CF Workers) ───────────────
 
 app.post("/ai/chat", async (c) => {
-  const key = c.env.GROQ_API_KEY;
-  if (!key) return c.json({ error: "GROQ_API_KEY not configured" }, 503);
+  if (!c.env.GROQ_API_KEY && !c.env.GOOGLE_API_KEY) {
+    return c.json({ error: "AI provider not configured", code: "AI_AUTH_ERROR" }, 503);
+  }
 
   const body = await c.req.json().catch(() => ({}));
   const { messages = [], lang = "ro", products = [], storeSettings = {} } = body as {
@@ -1118,7 +1077,9 @@ app.post("/ai/chat", async (c) => {
     );
     return c.json({ content });
   } catch (err) {
-    return c.json({ content: "A apărut o eroare tehnică. Sună-ne direct: **+373 67 200 463**." });
+    const failure = err instanceof AIProviderError ? err : new AIProviderError("AI_PROVIDER_ERROR", 502);
+    console.error("[ai/chat] provider failure", { code: failure.code, status: failure.status });
+    return c.json({ error: "AI temporarily unavailable", code: failure.code }, failure.status as 429 | 502 | 503 | 504);
   }
 });
 
@@ -1366,7 +1327,7 @@ export const onRequest = handle(app);
 
 export const onScheduled: PagesFunction<Env> = async (context) => {
   const env = context.env as unknown as Env;
-  if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) return;
+  if (!env.TELEGRAM_BOT_TOKEN || !env.TELEGRAM_CHAT_ID) return new Response(null, { status: 204 });
 
   const today = chisinauDate(0);
   const yesterday = chisinauDate(-1);
@@ -1418,4 +1379,5 @@ export const onScheduled: PagesFunction<Env> = async (context) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ chat_id: env.TELEGRAM_CHAT_ID, text: lines, parse_mode: "HTML" }),
   });
+  return new Response(null, { status: 204 });
 };

@@ -1,8 +1,9 @@
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef } from "react";
 import { Switch, Route, Router as WouterRouter, useRoute, useLocation } from "wouter";
 import { initSession, trackPage, getSessionPayload } from "@/lib/session";
+import { isAnalyticsAllowed } from "@/lib/consent";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { HelmetProvider } from "react-helmet-async";
+import { HelmetProvider, type HelmetServerState } from "react-helmet-async";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LangProvider } from "@/contexts/LangContext";
@@ -10,7 +11,6 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { CartDrawer } from "@/components/CartDrawer";
-import { SocialProof } from "@/components/SocialProof";
 import { BottomNav } from "@/components/BottomNav";
 import { FloatingContact } from "@/components/FloatingContact";
 import { TecoBot } from "@/components/TecoBot";
@@ -30,6 +30,7 @@ import Termeni from "@/pages/Termeni";
 import Confidentialitate from "@/pages/Confidentialitate";
 import Garantii from "@/pages/Garantii";
 import Livrare from "@/pages/Livrare";
+import SearchLanding from "@/pages/SearchLanding";
 const MontareCamere = lazy(() => import("@/pages/MontareCamere"));
 const CamereChisinau = lazy(() => import("@/pages/CamereChinau"));
 const SistemeSupraveghereCasa = lazy(() => import("@/pages/SistemeSupraveghereCasa"));
@@ -50,27 +51,45 @@ function ScrollToTop() {
   return null;
 }
 
-const API = typeof import.meta !== "undefined" ? (import.meta.env.VITE_API_URL || "") : "";
-
 function SessionTracker() {
   const [location] = useLocation();
+  const notifiedRef = useRef(false);
 
-  // Inițializează sesiunea și trimite notificarea de vizitator nou (o singură dată)
-  useEffect(() => {
-    initSession().then((session) => {
-      trackPage(window.location.pathname, document.title);
-      fetch(API + "/api/notify/visitor", {
+  const syncSession = useCallback(async (notifyVisitor: boolean) => {
+    if (!isAnalyticsAllowed()) return;
+    const payload = getSessionPayload();
+    const requests: Promise<Response>[] = [
+      fetch("/api/sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session: getSessionPayload() }),
-      }).catch(() => {});
-    });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+        body: JSON.stringify(payload),
+      }),
+    ];
+    if (notifyVisitor && !notifiedRef.current) {
+      notifiedRef.current = true;
+      requests.push(fetch("/api/notify/visitor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session: payload }),
+      }));
+    }
+    await Promise.allSettled(requests);
+  }, []);
 
-  // Trackează fiecare schimbare de pagină
+  // Înregistrează pagina doar după ce vizitatorul permite analytics.
   useEffect(() => {
-    trackPage(location, document.title);
-  }, [location]);
+    initSession().then(() => {
+      trackPage(location, document.title);
+      void syncSession(true);
+    });
+  }, [location, syncSession]);
+
+  // Dacă acordul este dat după încărcarea paginii, sincronizează sesiunea imediat.
+  useEffect(() => {
+    const onConsent = () => { void syncSession(true); };
+    window.addEventListener("teco_consent_updated", onConsent);
+    return () => window.removeEventListener("teco_consent_updated", onConsent);
+  }, [syncSession]);
 
   return null;
 }
@@ -94,6 +113,9 @@ function ShopRoutes() {
         <Route path="/camere-supraveghere-chisinau" component={CamereChisinau} />
         <Route path="/sisteme-supraveghere-casa" component={SistemeSupraveghereCasa} />
         <Route path="/camere-supraveghere-exterior" component={CamereExterior} />
+        <Route path="/camere-supraveghere-moldova" component={SearchLanding} />
+        <Route path="/reparatii-camere-supraveghere" component={SearchLanding} />
+        <Route path="/contact" component={SearchLanding} />
         <Route path="/product/:slug" component={ProductDetail} />
         <Route path="/servicii" component={Services} />
         <Route path="/servicii/:city" component={ServiceCity} />
@@ -124,7 +146,6 @@ function ShopShell() {
       <Footer />
       <CartDrawer />
       <ComparatorDrawer />
-      <SocialProof />
       <BottomNav />
       <FloatingContact />
       <TecoBot />
@@ -146,13 +167,13 @@ function AppRouter() {
   return <ShopShell />;
 }
 
-function App() {
+function App({ ssrPath, helmetContext }: { ssrPath?: string; helmetContext?: { helmet?: HelmetServerState } } = {}) {
   return (
-    <HelmetProvider>
+    <HelmetProvider context={helmetContext}>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <LangProvider>
-            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")} ssrPath={ssrPath}>
               <AppRouter />
             </WouterRouter>
             <Toaster />

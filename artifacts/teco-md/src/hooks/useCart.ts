@@ -93,5 +93,5 @@ function createStore() {
 const store = createStore();
 
 export function useCart<T>(selector: (state: CartState) => T): T {
-  return useSyncExternalStore(store.subscribe, () => selector(store.getSnapshot()));
+  return useSyncExternalStore(store.subscribe, () => selector(store.getSnapshot()), () => selector(store.getSnapshot()));
 }

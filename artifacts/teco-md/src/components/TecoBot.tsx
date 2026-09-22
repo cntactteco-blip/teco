@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Bot, X, Send, Loader2, Sparkles, User, ShoppingCart } from "lucide-react";
 import { useLang } from "@/contexts/LangContext";
 import { storeActions, useStore } from "@/lib/store";
 import { useCart } from "@/hooks/useCart";
 import { getSessionPayload } from "@/lib/session";
+import { readChatResponse } from "@/lib/chat-response";
 
 interface Message {
   role: "user" | "assistant";
@@ -22,6 +23,11 @@ const GREET: Record<string, string> = {
 
 function renderMarkdown(text: string) {
   return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#039;")
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.*?)\*/g, "<em>$1</em>")
     .replace(/\n/g, "<br/>");
@@ -35,13 +41,13 @@ function extractProductIds(text: string): number[] {
 export function TecoBot() {
   const { lang } = useLang();
   const allProducts = useStore((s) => s.products);
-  const products = allProducts.map((p) => ({
+  const products = useMemo(() => allProducts.map((p) => ({
     id: p.id, name: p.name, brand: p.brand,
     price: p.price, oldPrice: p.oldPrice,
     specs: p.specs, category: p.category,
     badge: p.badge, inStock: p.inStock,
     imageUrl: (p as any).imageUrl || (p as any).image_url || "",
-  }));
+  })), [allProducts]);
   const cartAddItem = useCart((s) => s.addItem);
   const cartOpen = useCart((s) => s.openCart);
   const adminPhone = useStore((s) => s.settings.general?.adminPhone ?? "");
@@ -52,7 +58,7 @@ export function TecoBot() {
   const [streaming, setStreaming] = useState(false);
   const [leadCaptured, setLeadCaptured] = useState(false);
   const [unread, setUnread] = useState(0);
-  const [vpHeight, setVpHeight] = useState<number>(() => window.visualViewport?.height ?? window.innerHeight);
+  const [vpHeight, setVpHeight] = useState<number>(() => typeof window === "undefined" ? 640 : window.visualViewport?.height ?? window.innerHeight);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -120,8 +126,10 @@ export function TecoBot() {
     const botMsg: Message = { role: "assistant", content: "", ts: Date.now() };
     setMessages([...allMessages, botMsg]);
     abortRef.current = new AbortController();
+    let timeout: number | undefined;
     try {
-      const res = await fetch((import.meta.env.VITE_API_URL || "") + "/api/ai/chat", {
+      timeout = window.setTimeout(() => abortRef.current?.abort(), 30000);
+      const res = await fetch("/api/ai/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -130,41 +138,20 @@ export function TecoBot() {
         }),
         signal: abortRef.current.signal,
       });
-      if (!res.ok || !res.body) throw new Error("Network error");
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let accumulated = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const lines = decoder.decode(value, { stream: true }).split("\n");
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          try {
-            const data = JSON.parse(line.slice(6));
-            if (data.done) break;
-            if (data.error) { accumulated += "\n\n⚠️ Eroare. Sunați-ne: +373 67 200 463"; break; }
-            if (data.content) {
-              accumulated += data.content;
-              const recMatch = accumulated.match(RECOMMEND_RE);
-              const cleaned = extractLead(accumulated.replace(RECOMMEND_RE, "").trim());
-              const pids = recMatch
-                ? [parseInt(recMatch[1]), parseInt(recMatch[2]), parseInt(recMatch[3])]
-                : extractProductIds(cleaned);
-              setMessages((prev) => {
-                const updated = [...prev];
-                updated[updated.length - 1] = {
-                  ...botMsg,
-                  content: cleaned,
-                  products: pids,
-                  isRecommendation: !!recMatch,
-                };
-                return updated;
-              });
-            }
-          } catch {}
-        }
-      }
+      const showResponse = (value: string) => {
+        const recMatch = value.match(RECOMMEND_RE);
+        const cleaned = value.replace(RECOMMEND_RE, "").replace(/LEAD_CAPTURED:[^\n]*/g, "").trim();
+        const pids = recMatch
+          ? [parseInt(recMatch[1]), parseInt(recMatch[2]), parseInt(recMatch[3])]
+          : extractProductIds(cleaned);
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = { ...botMsg, content: cleaned, products: pids, isRecommendation: !!recMatch };
+          return updated;
+        });
+      };
+      const accumulated = await readChatResponse(res, showResponse);
+      extractLead(accumulated);
 
       // Dacă AI-ul a capturat un lead (LEAD_CAPTURED în răspuns), trimite notificare Telegram
       const leadMatch = accumulated.match(/LEAD_CAPTURED:name=([^,\n]+),phone=([^\n]+)/);
@@ -186,17 +173,17 @@ export function TecoBot() {
         }).catch(() => {});
       }
     } catch (err: unknown) {
-      if (err instanceof Error && err.name === "AbortError") return;
       setMessages((prev) => {
         const updated = [...prev];
-        updated[updated.length - 1] = { ...botMsg, content: "Eroare de conexiune. Sunați-ne: **+373 67 200 463**" };
+        updated[updated.length - 1] = { ...botMsg, content: `Momentan nu pot răspunde. Sunați-ne: **+${phone}**` };
         return updated;
       });
     } finally {
+      if (timeout !== undefined) window.clearTimeout(timeout);
       setStreaming(false);
       if (!open) setUnread((n) => n + 1);
     }
-  }, [input, messages, streaming, lang, open, extractLead]);
+  }, [input, messages, streaming, lang, open, extractLead, products, phone]);
 
   const handleKey = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }

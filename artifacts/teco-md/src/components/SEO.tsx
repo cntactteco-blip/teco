@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { absoluteImage, canonicalUrl } from "@/lib/seo-url";
 
 /* ─────────────────────────────────────────────────────────────
    SEO 2026–2027  |  Teco.md
@@ -21,12 +22,12 @@ const BASE_URL = "https://teco.md";
 const DEFAULT_META = {
   ro: {
     title: "Teco.md — Montare și Instalare Sisteme de Securitate Moldova | Camere de Supraveghere",
-    description: "Lider în montare și instalare sisteme de supraveghere în Moldova. Seturi complete camere video, NVR-uri, alarme. Instalare profesională în 24h oriunde în Moldova. ☎ +373 67 200 463",
+    description: "Camere de supraveghere, seturi video, NVR-uri și alarme în Moldova. Consultanță, montaj și reparații. Compară echipamentele și solicită o ofertă în MDL.",
     keywords: "montare instalare sisteme securitate Moldova, camere supraveghere Chisinau, seturi supraveghere video complete, instalare camere exterior, NVR DVR Moldova, sisteme alarma, reparatii camere supraveghere, teco.md",
   },
   ru: {
     title: "Teco.md — Установка и Монтаж Систем Безопасности Молдова | Камеры Видеонаблюдения",
-    description: "Лидер по установке и монтажу систем видеонаблюдения в Молдове. Комплекты камер, видеорегистраторы, сигнализации. Профессиональная установка за 24 часа. ☎ +373 67 200 463",
+    description: "Камеры видеонаблюдения, комплекты, видеорегистраторы и сигнализации в Молдове. Подбор оборудования, монтаж и ремонт. Запросите предложение в MDL.",
     keywords: "установка монтаж системы безопасности Молдова, камеры видеонаблюдения Кишинев, комплекты видеонаблюдения, установка уличных камер, NVR DVR Молдова, системы сигнализации, ремонт камер, teco.md",
   },
 };
@@ -46,9 +47,8 @@ export function SEO({
   const finalTitle = title || meta.title;
   const finalDesc = description || meta.description;
   const finalKeywords = keywords || meta.keywords;
-  const finalUrl = canonical ? `${BASE_URL}${canonical}` : BASE_URL;
-  const altLang = lang === "ro" ? "ru" : "ro";
-  const altCanonical = canonical ? `${BASE_URL}${canonical}` : BASE_URL;
+  const finalUrl = canonicalUrl(canonical || "/");
+  const imageUrl = absoluteImage(ogImage);
 
   return (
     <Helmet>
@@ -57,11 +57,9 @@ export function SEO({
       <title>{finalTitle}</title>
       <meta name="description" content={finalDesc} />
       <meta name="keywords" content={finalKeywords} />
-      <link rel="canonical" href={finalUrl} />
-      <link rel="alternate" hrefLang={lang} href={finalUrl} />
-      <link rel="alternate" hrefLang={altLang} href={altCanonical} />
-      <link rel="alternate" hrefLang="x-default" href={finalUrl} />
-      <meta name="robots" content={noIndex ? "noindex, nofollow" : "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"} />
+      {!noIndex && <link rel="canonical" href={finalUrl} />}
+      {/* Separate language URLs are required before adding hreflang. */}
+      <meta name="robots" content={noIndex ? "noindex, follow" : "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"} />
       <meta name="author" content="Teco.md" />
       <meta name="publisher" content="Teco.md" />
       <meta name="revisit-after" content="7 days" />
@@ -90,7 +88,7 @@ export function SEO({
       <meta property="og:site_name" content="Teco.md" />
       <meta property="og:locale" content={lang === "ro" ? "ro_MD" : "ru_MD"} />
       <meta property="og:locale:alternate" content={lang === "ro" ? "ru_MD" : "ro_MD"} />
-      <meta property="og:image" content={`${BASE_URL}${ogImage}`} />
+      <meta property="og:image" content={imageUrl} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
       <meta property="og:image:type" content="image/jpeg" />
@@ -110,12 +108,8 @@ export function SEO({
       <meta name="twitter:creator" content="@teco_md" />
       <meta name="twitter:title" content={finalTitle} />
       <meta name="twitter:description" content={finalDesc} />
-      <meta name="twitter:image" content={`${BASE_URL}${ogImage}`} />
+      <meta name="twitter:image" content={imageUrl} />
       <meta name="twitter:image:alt" content="Teco.md — Sisteme de Supraveghere Moldova" />
-      <meta name="twitter:label1" content="Preț" />
-      <meta name="twitter:data1" content="De la 500 MDL" />
-      <meta name="twitter:label2" content="Disponibilitate" />
-      <meta name="twitter:data2" content="În Stoc" />
 
       {/* PWA / App */}
       <link rel="manifest" href={typeof window !== "undefined" && window.location.pathname.startsWith("/admin") ? "/manifest-admin.json" : "/manifest.json"} />
@@ -133,7 +127,7 @@ export function SEO({
       {/* JSON-LD structured data */}
       {jsonLd?.map((data, i) => (
         <script key={i} type="application/ld+json">
-          {JSON.stringify(data)}
+          {JSON.stringify(data).replace(/</g, "\\u003c")}
         </script>
       ))}
     </Helmet>
@@ -168,78 +162,12 @@ export const schemas = {
   localBusiness(lang: "ro" | "ru" = "ro") {
     return {
       "@context": "https://schema.org",
-      "@type": ["LocalBusiness", "Store", "ElectronicsStore"],
+      "@type": "Organization",
       "@id": "https://teco.md/#business",
-      name: "Teco.md — Sisteme de Supraveghere",
-      alternateName: ["Teco Moldova", "Teco Supraveghere"],
-      slogan: lang === "ro" ? "Sisteme de supraveghere profesionale în Moldova" : "Профессиональные системы видеонаблюдения в Молдове",
-      description: lang === "ro"
-        ? "Montare și instalare sisteme de supraveghere video, camere IP, NVR-uri, kituri complete și sisteme de alarmă în Moldova. Tehnicienii noștri certificați instalează în 24h oriunde în Moldova."
-        : "Монтаж и установка систем видеонаблюдения, IP-камер, видеорегистраторов, комплектов и систем сигнализации в Молдове. Наши сертифицированные техники устанавливают за 24ч по всей Молдове.",
-      url: "https://teco.md",
-      telephone: "+37367200463",
-      email: "info@teco.md",
-      image: ["https://teco.md/opengraph.jpg", "https://teco.md/logo.png"],
-      logo: { "@type": "ImageObject", url: "https://teco.md/logo.png", width: 200, height: 60 },
-      priceRange: "MDL 500–50000",
-      currenciesAccepted: "MDL",
-      paymentAccepted: "Cash, Card, Transfer bancar",
-      openingHours: ["Mo-Fr 09:00-19:00", "Sa 09:00-17:00"],
-      openingHoursSpecification: [
-        { "@type": "OpeningHoursSpecification", dayOfWeek: ["Monday","Tuesday","Wednesday","Thursday","Friday"], opens: "09:00", closes: "19:00" },
-        { "@type": "OpeningHoursSpecification", dayOfWeek: "Saturday", opens: "09:00", closes: "17:00" },
-      ],
-      areaServed: [
-        { "@type": "Country", name: "Moldova" },
-        { "@type": "City", name: "Chișinău" },
-        { "@type": "City", name: "Bălți" },
-        { "@type": "City", name: "Cahul" },
-        { "@type": "City", name: "Orhei" },
-        { "@type": "City", name: "Ungheni" },
-        { "@type": "City", name: "Strășeni" },
-      ],
-      address: {
-        "@type": "PostalAddress",
-        streetAddress: "Chișinău",
-        addressLocality: "Chișinău",
-        addressRegion: "Chișinău",
-        postalCode: "MD-2001",
-        addressCountry: "MD",
-      },
-      geo: {
-        "@type": "GeoCoordinates",
-        latitude: 47.0105,
-        longitude: 28.8638,
-      },
-      hasMap: "https://maps.google.com/?q=Chisinau+Moldova",
-      sameAs: [
-        "https://www.facebook.com/teco.md",
-        "https://teco.md",
-      ],
-      foundingDate: "2020",
-      numberOfEmployees: { "@type": "QuantitativeValue", value: 10 },
-      knowsAbout: [
-        "Sisteme de supraveghere video",
-        "Camere IP WiFi",
-        "Camere PoE profesionale",
-        "NVR DVR înregistratoare",
-        "Sisteme de alarmă Ajax",
-        "Montare camere supraveghere",
-        "Instalare sisteme securitate",
-        "Camere 4G Solar autonome",
-      ],
-      hasOfferCatalog: {
-        "@type": "OfferCatalog",
-        name: "Catalog Sisteme de Supraveghere Teco.md",
-        url: "https://teco.md/produse",
-        itemListElement: [
-          { "@type": "Offer", itemOffered: { "@type": "Service", name: "Montare Camere Supraveghere", url: "https://teco.md/montare-camere-supraveghere" } },
-          { "@type": "Offer", itemOffered: { "@type": "Service", name: "Camere IP WiFi Moldova", url: "https://teco.md/produse?cat=wifi" } },
-          { "@type": "Offer", itemOffered: { "@type": "Service", name: "Seturi Complete Supraveghere", url: "https://teco.md/produse?cat=kituri" } },
-          { "@type": "Offer", itemOffered: { "@type": "Service", name: "Înregistratoare NVR", url: "https://teco.md/produse?cat=nvr" } },
-          { "@type": "Offer", itemOffered: { "@type": "Service", name: "Camere 4G Solar Autonome", url: "https://teco.md/produse?cat=4g" } },
-        ],
-      },
+      name: "TECO.md", url: "https://teco.md/", telephone: "+37367200463",
+      description: lang === "ro" ? "Echipamente de supraveghere, instalare și reparații în Moldova." : "Оборудование видеонаблюдения, монтаж и ремонт в Молдове.",
+      areaServed: { "@type": "Country", name: "Moldova" },
+      logo: "https://teco.md/logo.png",
     };
   },
 
@@ -247,28 +175,10 @@ export const schemas = {
     return {
       "@context": "https://schema.org",
       "@type": "Organization",
-      "@id": "https://teco.md/#org",
-      name: "Teco.md",
-      url: "https://teco.md",
+      "@id": "https://teco.md/#business",
+      name: "TECO.md", url: "https://teco.md/", telephone: "+37367200463",
       logo: "https://teco.md/logo.png",
-      telephone: "+37367200463",
-      email: "info@teco.md",
-      address: {
-        "@type": "PostalAddress",
-        streetAddress: "Chișinău",
-        addressLocality: "Chișinău",
-        postalCode: "MD-2001",
-        addressCountry: "MD",
-      },
-      sameAs: ["https://www.facebook.com/teco.md"],
-      contactPoint: {
-        "@type": "ContactPoint",
-        telephone: "+37367200463",
-        contactType: "Sales",
-        availableLanguage: ["Romanian", "Russian"],
-        areaServed: "MD",
-        hoursAvailable: "Mo-Sa 09:00-19:00",
-      },
+      areaServed: { "@type": "Country", name: "Moldova" },
     };
   },
 
@@ -292,23 +202,17 @@ export const schemas = {
       name: p.name,
       brand: { "@type": "Brand", name: p.brand },
       description: p.description,
-      image: p.imageUrl,
+      image: absoluteImage(p.imageUrl),
       sku: `TECO-${p.id}`,
       category: p.category,
       offers: {
         "@type": "Offer",
-        url: `https://teco.md/product/${p.slug || p.id}`,
+        url: canonicalUrl(`/product/${p.slug || p.id}`),
         price: p.price,
         priceCurrency: "MDL",
-        priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
         availability: p.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
         itemCondition: "https://schema.org/NewCondition",
-        seller: {
-          "@type": "LocalBusiness",
-          name: "Teco.md",
-          telephone: "+37367200463",
-          priceRange: "MDL 500–50000",
-        },
+        seller: { "@type": "Organization", "@id": "https://teco.md/#business", name: "TECO.md" },
         ...(p.oldPrice ? { priceSpecification: {
           "@type": "PriceSpecification",
           priceType: "https://schema.org/SalePrice",
@@ -355,12 +259,11 @@ export const schemas = {
       name: opts?.name ?? "Catalog Produse — Teco.md",
       url: opts?.url ?? "https://teco.md/produse",
       description: opts?.description ?? "Catalog complet sisteme de supraveghere, camere IP, NVR-uri, kituri și alarme în Moldova.",
-      itemList: {
+      mainEntity: {
         "@type": "ItemList",
         numberOfItems: validItems.length,
         itemListElement: validItems.map((item, i) => {
           const slugOrId = item.slug || item.id;
-          const priceValidUntil = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
           return {
             "@type": "ListItem",
             position: i + 1,
@@ -375,7 +278,6 @@ export const schemas = {
                 url: `https://teco.md/product/${slugOrId}`,
                 price: String(item.price),
                 priceCurrency: "MDL",
-                priceValidUntil,
                 availability: (item.inStock !== false) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
                 itemCondition: "https://schema.org/NewCondition",
                 seller: { "@type": "Organization", name: "Teco.md", url: "https://teco.md" },

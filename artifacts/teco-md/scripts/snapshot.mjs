@@ -76,18 +76,15 @@ try {
 
   const snapshot = {
     products: prods,
+    blogPosts: d1Query("SELECT * FROM blog_posts WHERE published = 1 ORDER BY published_at DESC"),
     settings,
     generatedAt: new Date().toISOString(),
   };
   writeFileSync(OUT, JSON.stringify(snapshot));
   console.log(`[snapshot] OK — ${prods.length} produse din D1, ${extracted} imagini extrase, settings: ${settings ? "yes" : "no"}`);
 
-  try {
-    const sitemapScript = path.join(__dirname, "generate-sitemap.mjs");
-    execFileSync(process.execPath, [sitemapScript], { stdio: "inherit" });
-  } catch (sitemapErr) {
-    console.warn("[sitemap] Eroare la generare sitemap:", sitemapErr.message);
-  }
+  // The final build generates sitemap.xml from the actual rendered routes.
 } catch (err) {
-  console.warn("[snapshot] Exception — keeping existing snapshot:", err.message);
+  console.error("[snapshot] Build oprit: catalogul actual nu a putut fi citit din D1.", err.message);
+  process.exitCode = 1;
 }
