@@ -13,8 +13,20 @@ const report = {
 };
 
 for (const [name, command, args] of stages) {
-  const result = spawnSync(command, args, { stdio: "inherit" });
-  report.stages.push({ name, status: result.status, signal: result.signal });
+  const result = spawnSync(command, args, {
+    encoding: "utf8",
+    maxBuffer: 20 * 1024 * 1024,
+  });
+  process.stdout.write(result.stdout ?? "");
+  process.stderr.write(result.stderr ?? "");
+  report.stages.push({
+    name,
+    status: result.status,
+    signal: result.signal,
+    error: result.status === 0
+      ? undefined
+      : `${result.stdout ?? ""}\n${result.stderr ?? ""}`.slice(-20_000),
+  });
   if (result.status !== 0) break;
 }
 
