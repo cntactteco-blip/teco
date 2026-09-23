@@ -14,15 +14,15 @@ const t = {
     "nav.results_found": "rezultate pentru",
 
     // ── Announcement Bar ───────────────────────────────────────────
-    "ann.free_delivery": "Livrare GRATUITA la comenzi peste 5,000 MDL",
-    "ann.limited_stock": "Stoc limitat: Kit Pro-Solar — Ultimele 5 bucati disponibile",
-    "ann.free_install": "Instalare profesionala GRATUITA la orice kit complet",
+    "ann.free_delivery": "Livrare în Moldova — verifică opțiunile pentru adresa ta",
+    "ann.limited_stock": "Produsele disponibile și stocul actual sunt afișate în catalog",
+    "ann.free_install": "Instalare profesională disponibilă la solicitare",
 
     // ── Hero ───────────────────────────────────────────────────────
-    "hero.badge": "Moldova #1 în Securitate",
+    "hero.badge": "Sisteme de securitate pentru casă și afacere",
     "hero.title1": "Securitate",
     "hero.title2": "fără limite.",
-    "hero.subtitle": "Instalare în 24h oriunde în Moldova.",
+    "hero.subtitle": "Echipamente, instalare și reparații în Moldova.",
     "hero.stat_installs": "Instalări",
     "hero.stat_rating": "Rating Google",
     "hero.stat_delivery": "Livrare",
@@ -31,10 +31,10 @@ const t = {
     "hero.trust1": "Garanție 2–5 ani",
     "hero.trust2": "Instalare gratuită la kituri",
     "hero.trust3": "Plată la livrare",
-    "hero.badge_install": "INSTALARE GRATUITĂ 🎁",
-    "hero.limited_offer": "⚡ Ofertă Limitată",
+    "hero.badge_install": "Montaj disponibil la solicitare",
+    "hero.limited_offer": "Produs recomandat",
     "hero.add": "Adaugă",
-    "hero.ticker": "✓ Livrare gratuită peste 5.000 MDL • ⚡ 847 instalări finalizate • ★ 4.9 din 5 – clienți mulțumiți • 🛡 Garanție 2–5 ani pe toate produsele • 📦 Stoc fizic în Chișinău • ✓ Instalare GRATUITĂ la orice kit complet • ⚡ Plată comodă la livrare",
+    "hero.ticker": "Camere de supraveghere • Kituri complete • Sisteme de alarmă • Instalare profesională • Diagnosticare și reparații • Consultanță pentru alegerea sistemului",
 
     // ── Home sections ──────────────────────────────────────────────
     "home.trust.installs": "Instalări",
@@ -263,15 +263,15 @@ const t = {
     "nav.results_found": "результатов для",
 
     // ── Announcement Bar ───────────────────────────────────────────
-    "ann.free_delivery": "БЕСПЛАТНАЯ доставка при заказе от 5,000 MDL",
-    "ann.limited_stock": "Ограниченный запас: Kit Pro-Solar — Осталось 5 штук",
-    "ann.free_install": "БЕСПЛАТНАЯ профессиональная установка при покупке комплекта",
+    "ann.free_delivery": "Доставка по Молдове — проверьте варианты для вашего адреса",
+    "ann.limited_stock": "Доступные товары и актуальные остатки указаны в каталоге",
+    "ann.free_install": "Профессиональная установка доступна по запросу",
 
     // ── Hero ───────────────────────────────────────────────────────
-    "hero.badge": "Молдова #1 в Безопасности",
+    "hero.badge": "Системы безопасности для дома и бизнеса",
     "hero.title1": "Безопасность",
     "hero.title2": "без границ.",
-    "hero.subtitle": "Установка за 24ч по всей Молдове.",
+    "hero.subtitle": "Оборудование, установка и ремонт в Молдове.",
     "hero.stat_installs": "Установок",
     "hero.stat_rating": "Рейтинг Google",
     "hero.stat_delivery": "Доставка",
@@ -280,10 +280,10 @@ const t = {
     "hero.trust1": "Гарантия 2–5 лет",
     "hero.trust2": "Бесплатная установка комплектов",
     "hero.trust3": "Оплата при получении",
-    "hero.badge_install": "БЕСПЛАТНАЯ УСТАНОВКА 🎁",
-    "hero.limited_offer": "⚡ Ограниченное предложение",
+    "hero.badge_install": "Установка по запросу",
+    "hero.limited_offer": "Рекомендуемый товар",
     "hero.add": "Добавить",
-    "hero.ticker": "✓ Бесплатная доставка от 5,000 MDL • ⚡ 847 выполненных установок • ★ 4.9 из 5 — довольных клиентов • 🛡 Гарантия 2–5 лет на все товары • 📦 Физический склад в Кишинёве • ✓ БЕСПЛАТНАЯ установка любого комплекта • ⚡ Удобная оплата при доставке",
+    "hero.ticker": "Камеры видеонаблюдения • Готовые комплекты • Системы сигнализации • Профессиональная установка • Диагностика и ремонт • Помощь с выбором системы",
 
     // ── Home sections ──────────────────────────────────────────────
     "home.trust.installs": "Установок",

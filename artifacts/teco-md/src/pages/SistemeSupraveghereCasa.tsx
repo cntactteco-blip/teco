@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { Home, Phone, Star, ChevronDown, Camera, Shield, Clock, CheckCircle2, Wifi, Server, Zap, ArrowRight } from "lucide-react";
+import { Home, Phone, ChevronDown, Camera, Shield, Clock, CheckCircle2, Wifi, Server, Zap, ArrowRight } from "lucide-react";
 import { SEO, schemas } from "@/components/SEO";
 import { useLang } from "@/contexts/LangContext";
 import { useStore } from "@/lib/store";
@@ -61,7 +61,6 @@ export default function SistemeSupraveghereCasa() {
       provider: { "@type": "LocalBusiness", "@id": "https://teco.md/#business", name: "Teco.md" },
       areaServed: { "@type": "Country", name: "Moldova" },
       serviceType: "Home Security System Installation",
-      aggregateRating: { "@type": "AggregateRating", ratingValue: "4.9", reviewCount: "213", bestRating: "5", worstRating: "1" },
     },
     schemas.faq(FAQS.slice(0, 6).map(f => ({ question: f.q, answer: f.a }))),
     ...(kits.length > 0 ? [schemas.collectionPage(kits.map(p => ({ id: p.id, name: p.name, imageUrl: p.imageUrl, price: p.price, inStock: p.inStock })), { name: "Seturi Complete Supraveghere Casă", url: "https://teco.md/sisteme-supraveghere-casa", description: "Kituri complete de supraveghere pentru casă în Moldova" })] : []),
@@ -94,10 +93,7 @@ export default function SistemeSupraveghereCasa() {
             <p className="text-zinc-300 text-base md:text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
               Pachete complete de camere video pentru casă și curte în Moldova. De la <strong className="text-white">3.200 MDL</strong> cu montaj profesional inclus. Garanție 2–5 ani.
             </p>
-            <div className="flex items-center justify-center gap-2 mb-8">
-              <div className="flex">{[1,2,3,4,5].map(i => <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />)}</div>
-              <span className="text-zinc-300 text-sm"><strong className="text-white">4.9</strong> din 213 recenzii</span>
-            </div>
+            <p className="text-zinc-300 text-sm mb-8">Pachete complete de supraveghere configurate pentru locuințe.</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <a href="tel:+37367200463" className="inline-flex items-center justify-center gap-2 bg-[#FF4F00] text-white font-bold px-7 py-3.5 rounded-xl text-base hover:opacity-90 transition-all shadow-lg">
                 <Phone className="w-4 h-4" /> Sună: 067 200 463
