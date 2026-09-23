@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { trackAddToCart } from "@/lib/analytics";
 
 export interface CartItem {
   id: number;
@@ -14,7 +15,7 @@ interface CartState {
   isOpen: boolean;
   count: number;
   total: number;
-  addItem: (product: { id: number; name: string; price: number; icon?: string; imageUrl?: string }) => void;
+  addItem: (product: { id: number; name: string; price: number; icon?: string; imageUrl?: string; category?: string }) => void;
   removeItem: (id: number) => void;
   updateQty: (id: number, qty: number) => void;
   clearCart: () => void;
@@ -31,6 +32,8 @@ function createStore() {
     count: 0,
     total: 0,
     addItem: (product) => {
+      // Centralize this event so every storefront entry point is measured once.
+      trackAddToCart({ id: product.id, name: product.name, price: product.price, qty: 1, category: product.category });
       const existing = state.items.find((i) => i.id === product.id);
       let newItems: CartItem[];
       if (existing) {
