@@ -1,11 +1,27 @@
 import { Link, useLocation } from "wouter";
-import { ArrowRight, Phone } from "lucide-react";
+import { AlertTriangle, ArrowRight, CheckCircle2, HardDrive, MessageCircle, Phone, Wifi } from "lucide-react";
 import { SEO, schemas } from "@/components/SEO";
 import { useLang } from "@/contexts/LangContext";
 import { useStore } from "@/lib/store";
 import { canonicalUrl } from "@/lib/seo-url";
 
 type Copy = { title: string; description: string; heading: string; intro: string; sections: Array<{ title: string; text: string }>; links: Array<{ href: string; label: string }> };
+type FAQ = { question: string; answer: string };
+
+const REPAIR_FAQS: Record<"ro" | "ru", FAQ[]> = {
+  ro: [
+    { question: "Reparați camere care nu mai afișează imagine?", answer: "Da. Diagnosticarea verifică alimentarea, cablul, conectorii, rețeaua și camera. Spune-ne dacă problema afectează o singură cameră sau întregul sistem." },
+    { question: "Ce fac dacă DVR-ul sau NVR-ul nu mai înregistrează?", answer: "Nu formata HDD-ul dacă ai nevoie de înregistrările existente. Notează mesajul de eroare și modelul înregistratorului, apoi solicită o diagnosticare." },
+    { question: "Puteți restabili accesul camerelor de pe telefon?", answer: "Putem verifica aplicația, conectivitatea și configurarea sistemului. Menționează dacă ai schimbat recent routerul, parola WiFi sau telefonul." },
+    { question: "Cât costă reparația unei camere de supraveghere?", answer: "Costul depinde de cauza defecțiunii, accesul la echipamente și piesele necesare. Primești diagnosticul și devizul înainte să confirmi reparația." },
+  ],
+  ru: [
+    { question: "Вы ремонтируете камеры, на которых пропало изображение?", answer: "Да. При диагностике проверяются питание, кабель, разъёмы, сеть и сама камера. Сообщите, не работает одна камера или вся система." },
+    { question: "Что делать, если DVR или NVR перестал записывать?", answer: "Не форматируйте HDD, если нужны существующие записи. Запишите сообщение об ошибке и модель регистратора, затем запросите диагностику." },
+    { question: "Можно восстановить просмотр камер с телефона?", answer: "Мы можем проверить приложение, подключение и настройки системы. Сообщите, менялись ли недавно роутер, пароль WiFi или телефон." },
+    { question: "Сколько стоит ремонт камеры видеонаблюдения?", answer: "Стоимость зависит от причины неисправности, доступа к оборудованию и необходимых деталей. Диагноз и смета согласовываются до ремонта." },
+  ],
+};
 const PAGES: Record<string, { ro: Copy; ru: Copy }> = {
   "/camere-supraveghere-moldova": {
     ro: {
@@ -18,7 +34,7 @@ const PAGES: Record<string, { ro: Copy; ru: Copy }> = {
         { title: "Înregistrare și acces de pe telefon", text: "Verifică dacă modelul ales înregistrează pe card, NVR sau într-un serviciu cloud. Perioada păstrată depinde de capacitatea stocării, rezoluție, compresie și programul de înregistrare. Pentru un sistem cu mai multe camere, compatibilitatea dintre camere, NVR și alimentare se verifică înainte de cumpărare." },
         { title: "Ce intră în oferta de instalare", text: "Trimite localitatea, tipul obiectului, numărul aproximativ de camere și câteva fotografii ale zonelor importante. Devizul poate include camerele, stocarea, cablul, conectorii, sursele de alimentare, manopera și configurarea aplicației. Confirmăm condițiile și disponibilitatea montajului pentru adresa ta." },
       ],
-      links: [{ href: "/produse?cat=wifi", label: "Camere WiFi" }, { href: "/produse?cat=poe", label: "Camere PoE" }, { href: "/produse?cat=4g", label: "Camere 4G" }, { href: "/seturi-camere-supraveghere", label: "Seturi complete" }, { href: "/montare-camere-supraveghere", label: "Montaj și instalare" }],
+      links: [{ href: "/produse?cat=wifi", label: "Camere WiFi" }, { href: "/produse?cat=poe", label: "Camere PoE" }, { href: "/produse?cat=4g", label: "Camere 4G" }, { href: "/seturi-camere-supraveghere", label: "Seturi complete" }, { href: "/montare-camere-supraveghere", label: "Preț instalare camere" }],
     },
     ru: {
       title: "Камеры видеонаблюдения в Молдове: каталог и монтаж | TECO.md",
@@ -35,8 +51,8 @@ const PAGES: Record<string, { ro: Copy; ru: Copy }> = {
   },
   "/reparatii-camere-supraveghere": {
     ro: {
-      title: "Reparații camere de supraveghere, DVR și NVR | TECO.md",
-      description: "Diagnosticare camere fără imagine, DVR/NVR care nu înregistrează și probleme de acces de pe telefon. Solicită evaluarea sistemului tău la TECO.md.",
+      title: "Reparații Camere Supraveghere în Moldova | TECO.md",
+      description: "Diagnosticare și reparații camere de supraveghere, DVR și NVR în Chișinău și Moldova. Probleme de imagine, înregistrare sau acces de pe telefon.",
       heading: "Reparații camere de supraveghere, DVR și NVR",
       intro: "Camera nu mai are imagine, înregistrarea s-a oprit sau aplicația nu se conectează? Începem cu diagnosticarea sistemului, ca să stabilim dacă problema ține de alimentare, cablare, rețea, stocare sau echipament.",
       sections: [
@@ -91,11 +107,29 @@ export default function SearchLanding() {
   const { lang } = useLang();
   const copy = PAGES[path]?.[lang] ?? PAGES["/contact"][lang];
   const phone = useStore(s => s.settings.general?.adminPhone || "37367200463").replace(/\D/g, "");
+  const isRepair = path === "/reparatii-camere-supraveghere";
+  const repairFaqs = REPAIR_FAQS[lang];
+  const jsonLd: Record<string, unknown>[] = [
+    schemas.breadcrumb([{ name: "TECO.md", url: canonicalUrl("/") }, { name: copy.heading, url: canonicalUrl(path) }]),
+    { "@context": "https://schema.org", "@type": path === "/contact" ? "ContactPage" : "WebPage", name: copy.heading, url: canonicalUrl(path), description: copy.description },
+  ];
+  if (isRepair) {
+    jsonLd.push(
+      {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        name: copy.heading,
+        description: copy.description,
+        url: canonicalUrl(path),
+        serviceType: "Security Camera Repair and Maintenance",
+        provider: { "@type": "Organization", "@id": "https://teco.md/#business", name: "TECO.md", telephone: `+${phone}` },
+        areaServed: { "@type": "Country", name: "Moldova" },
+      },
+      schemas.faq(repairFaqs),
+    );
+  }
   return <>
-    <SEO title={copy.title} description={copy.description} canonical={path} lang={lang} jsonLd={[
-      schemas.breadcrumb([{ name: "TECO.md", url: canonicalUrl("/") }, { name: copy.heading, url: canonicalUrl(path) }]),
-      { "@context": "https://schema.org", "@type": path === "/contact" ? "ContactPage" : "WebPage", name: copy.heading, url: canonicalUrl(path), description: copy.description },
-    ]} />
+    <SEO title={copy.title} description={copy.description} canonical={path} lang={lang} jsonLd={jsonLd} />
     <main className="flex-1 bg-[#FAFAFA] pb-20 md:pb-0">
       <section className="bg-zinc-950 text-white py-14 md:py-20">
         <div className="max-w-5xl mx-auto px-5 md:px-8">
@@ -103,13 +137,28 @@ export default function SearchLanding() {
           <h1 className="text-3xl md:text-5xl font-black leading-tight max-w-3xl">{copy.heading}</h1>
           <p className="mt-6 text-zinc-300 text-lg leading-relaxed max-w-3xl">{copy.intro}</p>
           <div className="flex flex-wrap gap-3 mt-8">
-            <Link href="/oferta" className="inline-flex items-center gap-2 rounded-xl bg-[#FF4F00] px-6 py-3 font-bold">{lang === "ro" ? "Solicită o ofertă" : "Запросить предложение"}<ArrowRight size={18} /></Link>
+            <Link href="/oferta" className="inline-flex items-center gap-2 rounded-xl bg-[#FF4F00] px-6 py-3 font-bold">{isRepair ? (lang === "ro" ? "Solicită diagnosticare" : "Запросить диагностику") : (lang === "ro" ? "Solicită o ofertă" : "Запросить предложение")}<ArrowRight size={18} /></Link>
             <a href={`tel:+${phone}`} className="inline-flex items-center gap-2 rounded-xl border border-zinc-600 px-6 py-3 font-bold"><Phone size={18} />+{phone}</a>
+            {isRepair && <a href={`https://wa.me/${phone}?text=${encodeURIComponent(lang === "ro" ? "Bună ziua! Am nevoie de diagnosticarea unui sistem de supraveghere." : "Здравствуйте! Нужна диагностика системы видеонаблюдения.")}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-zinc-600 px-6 py-3 font-bold"><MessageCircle size={18} />WhatsApp</a>}
           </div>
         </div>
       </section>
       <div className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16 space-y-6">
+        {isRepair && <>
+          <section className="grid gap-4 md:grid-cols-3" aria-label={lang === "ro" ? "Probleme frecvente" : "Частые проблемы"}>
+            {[
+              { icon: CheckCircle2, ro: "Cameră fără imagine", ru: "Нет изображения", roText: "Verificăm alimentarea, conexiunile și camera.", ruText: "Проверяем питание, соединения и камеру." },
+              { icon: HardDrive, ro: "NVR / DVR nu înregistrează", ru: "NVR / DVR не записывает", roText: "Verificăm stocarea, setările și erorile sistemului.", ruText: "Проверяем накопитель, настройки и ошибки." },
+              { icon: Wifi, ro: "Nu vezi camerele pe telefon", ru: "Нет доступа с телефона", roText: "Verificăm rețeaua, aplicația și accesul remote.", ruText: "Проверяем сеть, приложение и удалённый доступ." },
+            ].map(item => <article key={item.ro} className="rounded-2xl bg-white border border-zinc-200 p-6"><item.icon className="h-6 w-6 text-[#FF4F00]" /><h2 className="mt-4 font-bold text-zinc-950">{lang === "ro" ? item.ro : item.ru}</h2><p className="mt-2 text-sm leading-relaxed text-zinc-600">{lang === "ro" ? item.roText : item.ruText}</p></article>)}
+          </section>
+          <aside className="flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-relaxed text-amber-950">
+            <AlertTriangle className="h-5 w-5 flex-none" />
+            <p><strong>{lang === "ro" ? "Ai nevoie de înregistrări?" : "Нужны существующие записи?"}</strong> {lang === "ro" ? "Nu formata HDD-ul și nu reseta înregistratorul înainte de diagnosticare." : "Не форматируйте HDD и не сбрасывайте регистратор до диагностики."}</p>
+          </aside>
+        </>}
         {copy.sections.map(section => <section key={section.title} className="rounded-2xl bg-white border border-zinc-200 p-6 md:p-8"><h2 className="text-xl md:text-2xl font-bold text-zinc-950">{section.title}</h2><p className="mt-4 text-zinc-600 leading-relaxed">{section.text}</p></section>)}
+        {isRepair && <section className="rounded-2xl bg-white border border-zinc-200 p-6 md:p-8"><h2 className="text-xl md:text-2xl font-bold text-zinc-950">{lang === "ro" ? "Întrebări despre reparații" : "Вопросы о ремонте"}</h2><div className="mt-6 divide-y divide-zinc-200">{repairFaqs.map(item => <details key={item.question} className="group py-4"><summary className="cursor-pointer list-none font-semibold text-zinc-950">{item.question}<span className="float-right text-[#FF4F00] group-open:rotate-45">+</span></summary><p className="mt-3 pr-8 text-sm leading-relaxed text-zinc-600">{item.answer}</p></details>)}</div></section>}
         <nav aria-label={lang === "ro" ? "Produse și servicii relevante" : "Оборудование и услуги"} className="flex flex-wrap gap-3 pt-5">
           {copy.links.map(link => <Link key={link.href} href={link.href} className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-semibold hover:border-[#FF4F00]">{link.label}</Link>)}
         </nav>

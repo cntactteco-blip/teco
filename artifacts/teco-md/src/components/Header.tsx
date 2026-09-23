@@ -10,15 +10,11 @@ import { useLang } from "@/contexts/LangContext";
 const BundleBuilder = lazy(() => import("./BundleBuilder"));
 
 function OnlineIndicator() {
-  const { t } = useLang();
-  const [count] = useState(() => 2 + Math.floor(Math.random() * 4));
+  const { lang } = useLang();
   return (
     <div className="hidden md:flex items-center gap-1.5 bg-zinc-50 border border-zinc-200 rounded-full px-3 py-1.5 text-xs font-medium text-zinc-600 select-none">
-      <span className="relative flex h-2 w-2">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-      </span>
-      {count} {t("nav.technicians")}
+      <span className="inline-flex rounded-full h-2 w-2 bg-green-500" />
+      {lang === "ru" ? "Консультация RO / RU" : "Consultanță RO / RU"}
     </div>
   );
 }
