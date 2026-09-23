@@ -5,6 +5,7 @@ import { useCart } from "@/hooks/useCart";
 import { storeActions, getState } from "@/lib/store";
 import { useLang } from "@/contexts/LangContext";
 import { SEO } from "@/components/SEO";
+import { trackPurchase } from "@/lib/analytics";
 import { ConsentCheckbox } from "@/components/ConsentCheckbox";
 
 // ── Shipping config (prices only — labels from translations) ────────────────
@@ -97,6 +98,7 @@ export default function Checkout() {
       items: items.map((i) => ({ id: i.id, name: i.name, price: i.price, qty: i.qty })),
       total,
     });
+    if (order) trackPurchase(order.id, total, items.map((i) => ({ id: i.id, name: i.name, price: i.price, qty: i.qty })));
     const shortId = order!.id.slice(0, 8).toUpperCase();
     setOrderId(shortId);
     clearCart?.();

@@ -2,6 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useRef } from "react";
 import { Switch, Route, Router as WouterRouter, useRoute, useLocation } from "wouter";
 import { initSession, trackPage, getSessionPayload } from "@/lib/session";
 import { isAnalyticsAllowed } from "@/lib/consent";
+import { initializeAnalytics, trackPageView } from "@/lib/analytics";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider, type HelmetServerState } from "react-helmet-async";
 import { Toaster } from "@/components/ui/toaster";
@@ -80,16 +81,21 @@ function SessionTracker() {
   useEffect(() => {
     initSession().then(() => {
       trackPage(location, document.title);
+      trackPageView(location, document.title);
       void syncSession(true);
     });
   }, [location, syncSession]);
 
   // Dacă acordul este dat după încărcarea paginii, sincronizează sesiunea imediat.
   useEffect(() => {
-    const onConsent = () => { void syncSession(true); };
+    const onConsent = () => {
+      initializeAnalytics();
+      trackPageView(location, document.title);
+      void syncSession(true);
+    };
     window.addEventListener("teco_consent_updated", onConsent);
     return () => window.removeEventListener("teco_consent_updated", onConsent);
-  }, [syncSession]);
+  }, [location, syncSession]);
 
   return null;
 }

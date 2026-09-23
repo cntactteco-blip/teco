@@ -44,6 +44,7 @@ export default function RequestQuote() {
   const [cameras, setCameras] = useState<CameraCount | null>(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [locality, setLocality] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -59,7 +60,8 @@ export default function RequestQuote() {
     setError("");
     setSubmitting(true);
     try {
-      const leadNotes = `${ro ? PROPERTY_LABELS_RO[property!] : PROPERTY_LABELS_RU[property!]}, ${cameras} ${ro ? "camere" : "камеры"}`;
+      const projectNotes = `${ro ? PROPERTY_LABELS_RO[property!] : PROPERTY_LABELS_RU[property!]}, ${cameras} ${ro ? "camere" : "камеры"}`;
+      const leadNotes = locality.trim() ? `${projectNotes}, ${ro ? "Localitate" : "Населённый пункт"}: ${locality.trim()}` : projectNotes;
       await storeActions.addLead({
         name: name.trim(),
         phone: phone.trim(),
@@ -233,6 +235,18 @@ export default function RequestQuote() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+373 __ ___ ___"
+                    className="w-full border-2 border-zinc-200 rounded-xl px-4 py-3.5 text-base font-medium text-[#09090B] placeholder:text-zinc-400 focus:outline-none focus:border-[#FF4F00] transition-colors bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-zinc-500 uppercase tracking-wide block mb-1.5">
+                    {ro ? "Sat / localitate (opțional)" : "Село / населённый пункт (необязательно)"}
+                  </label>
+                  <input
+                    type="text"
+                    value={locality}
+                    onChange={(e) => setLocality(e.target.value)}
+                    placeholder={ro ? "Localitatea unde va fi instalat sistemul" : "Где нужно установить систему"}
                     className="w-full border-2 border-zinc-200 rounded-xl px-4 py-3.5 text-base font-medium text-[#09090B] placeholder:text-zinc-400 focus:outline-none focus:border-[#FF4F00] transition-colors bg-white"
                   />
                 </div>
