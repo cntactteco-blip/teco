@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 15251)
-Total output lines: 1156
-
 import { useParams, Link, useLocation } from "wouter";
 import { useStore, storeActions } from "@/lib/store";
 import { useCart } from "@/hooks/useCart";
@@ -530,7 +527,241 @@ export default function ProductDetail() {
   const metaTitle = `${product.name} — ${product.price.toLocaleString()} MDL | ${product.brand} | Teco.md`;
   const metaDesc = product.description.slice(0, 160) || `${product.name}. Preț: ${product.price.toLocaleString()} MDL. Brand: ${product.brand}. Livrare în 24h. Garanție 2–5 ani.`;
 
-  ret…3251 tokens truncated…               className="w-10 h-11 flex items-center justify-center text-zinc-500 hover:bg-zinc-50 rounded-r-xl transition-colors text-lg font-bold">+</button>
+  return (
+    <>
+      <SEO title={metaTitle} description={metaDesc} keywords={`${product.brand}, ${product.category}, ${product.model}, ${product.name}, Moldova, Teco.md`} ogType="product" canonical={`/product/${product.slug || product.id}`} lang={lang} jsonLd={jsonLd} />
+      <main className="flex-1 w-full bg-[#FAFAFA] pb-[80px] md:pb-0" role="main" aria-label={product.name}>
+
+      {/* BREADCRUMB */}
+      <div className="bg-white border-b border-[#E4E4E7] px-4 py-2.5">
+        <nav className="max-w-7xl mx-auto flex items-center gap-1 text-xs text-zinc-400 font-medium">
+          <Link href="/" className="hover:text-zinc-700 transition-colors">{t("pd.breadcrumb_home")}</Link>
+          <ChevronRight className="w-3 h-3" />
+          <Link href="/produse" className="hover:text-zinc-700 transition-colors">{t("pd.breadcrumb_products")}</Link>
+          <ChevronRight className="w-3 h-3" />
+          <span className="text-zinc-600 truncate max-w-[160px]">{product.name}</span>
+        </nav>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-0 md:px-6 md:py-8">
+        <div className="md:grid md:grid-cols-12 md:gap-10">
+
+          {/* ── IMAGE ────────────────────────────────────────────── */}
+          <div className="md:col-span-6 lg:col-span-7">
+            {/* Main carousel */}
+            <div className="relative bg-white md:bg-white md:rounded-2xl overflow-hidden h-80 md:h-auto md:aspect-[4/3] group md:border md:border-zinc-100 md:shadow-sm">
+              {/* Scrollable strip */}
+              <div
+                ref={carouselRef}
+                onScroll={handleCarouselScroll}
+                onMouseMove={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  setHoverZoomPos({
+                    x: ((e.clientX - rect.left) / rect.width) * 100,
+                    y: ((e.clientY - rect.top) / rect.height) * 100,
+                  });
+                  setIsHoveringCarousel(true);
+                }}
+                onMouseLeave={() => setIsHoveringCarousel(false)}
+                className="flex w-full h-full overflow-x-scroll snap-x snap-mandatory scroll-smooth no-scrollbar cursor-zoom-in"
+              >
+                {imageList.length > 0 ? imageList.map((img, i) => (
+                  <div
+                    key={i}
+                    className="w-full h-full flex-shrink-0 snap-start overflow-hidden"
+                    onClick={() => openLightbox(i)}
+                  >
+                    <img
+                      src={img}
+                      alt={`${product.name} ${i + 1}`}
+                      className="w-full h-full object-contain md:object-cover"
+                      style={i === activeImageIndex && isHoveringCarousel ? {
+                        transform: `scale(2.2)`,
+                        transformOrigin: `${hoverZoomPos.x}% ${hoverZoomPos.y}%`,
+                        transition: "transform 0.12s ease",
+                      } : { transition: "transform 0.3s ease" }}
+                      onError={(e) => { if (i === 0) setImgError(true); (e.target as HTMLImageElement).style.opacity = "0"; }}
+                      loading={i === 0 ? "eager" : "lazy"}
+                    />
+                  </div>
+                )) : (
+                  <div className="w-full h-full flex-shrink-0 flex items-center justify-center bg-zinc-800">
+                    <ShoppingCart className="w-20 h-20 text-zinc-600" />
+                  </div>
+                )}
+              </div>
+
+              <div className="absolute inset-0 pointer-events-none" />
+
+              {/* Zoom hint — bottom-left, desktop only */}
+              <div className="hidden md:flex absolute bottom-14 left-4 z-10 items-center gap-1.5 bg-black/55 backdrop-blur-sm text-white text-[11px] font-semibold px-3 py-1.5 rounded-full pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <ZoomIn className="w-3.5 h-3.5" />
+                <span>Hover zoom · Click pentru fullscreen</span>
+              </div>
+
+              {/* Zoom hint — mobile, top right corner */}
+              <div className="md:hidden absolute top-4 right-4 z-10 w-8 h-8 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center">
+                <Maximize2 className="w-4 h-4 text-white" />
+              </div>
+
+              {/* Back button (mobile) */}
+              <Link href="/produse"
+                className="md:hidden absolute top-4 left-4 z-10 w-9 h-9 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center text-white">
+                <ChevronLeft className="w-5 h-5" />
+              </Link>
+
+              {/* Badge */}
+              {parsedBadge && (
+                <span className="absolute top-4 right-4 z-10 text-xs font-black px-3 py-1 rounded-full text-white"
+                  style={{ backgroundColor: parsedBadge.color }}>
+                  {parsedBadge.text}
+                </span>
+              )}
+
+              {/* Prev / Next arrows — desktop */}
+              {hasGallery && (
+                <>
+                  <button
+                    onClick={handlePrev}
+                    disabled={activeImageIndex === 0}
+                    className="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-black/50 backdrop-blur-sm rounded-full items-center justify-center text-white hover:bg-black/75 disabled:opacity-30 transition-all opacity-0 group-hover:opacity-100"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={handleNext}
+                    disabled={activeImageIndex === imageList.length - 1}
+                    className="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 bg-black/50 backdrop-blur-sm rounded-full items-center justify-center text-white hover:bg-black/75 disabled:opacity-30 transition-all opacity-0 group-hover:opacity-100"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </>
+              )}
+
+              {/* Dot indicators — mobile */}
+              {hasGallery && (
+                <div className="absolute bottom-14 left-1/2 -translate-x-1/2 z-10 flex gap-1.5 md:hidden">
+                  {imageList.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => scrollToImage(i)}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${i === activeImageIndex ? "w-4 bg-white" : "w-1.5 bg-white/50"}`}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Image counter — desktop */}
+              {hasGallery && (
+                <div className="hidden md:flex absolute top-4 left-4 z-10 bg-black/50 backdrop-blur-sm rounded-full px-3 py-1 text-white text-xs font-semibold gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span>{activeImageIndex + 1}</span>
+                  <span className="text-white/50">/</span>
+                  <span className="text-white/70">{imageList.length}</span>
+                </div>
+              )}
+
+            </div>
+
+            {/* Thumbnails strip */}
+            {hasGallery && (
+              <div className="mt-3 overflow-x-auto no-scrollbar">
+                <div ref={thumbsRef} className="flex gap-2 px-0">
+                  {imageList.map((img, i) => (
+                    <button
+                      key={i}
+                      onClick={() => scrollToImage(i)}
+                      className={`relative flex-shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border-2 transition-all duration-200 ${
+                        i === activeImageIndex ? "border-[#FF4F00] ring-2 ring-[#FF4F00]/20" : "border-transparent hover:border-zinc-300"
+                      }`}
+                    >
+                      <img
+                        src={img}
+                        alt={`${product.name} ${i + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                        loading="lazy"
+                      />
+                      {i === activeImageIndex && (
+                        <div className="absolute inset-0 bg-[#FF4F00]/10 pointer-events-none" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Desktop trust strip */}
+            <div className="hidden md:grid grid-cols-3 gap-3 mt-4">
+              {[
+                { icon: Truck, color: "text-[#FF4F00]", title: `${t("pd.delivery")} ${t("pd.delivery_sub")}`, sub: "comenzi peste 5.000 MDL" },
+                { icon: ShieldCheck, color: "text-[#10B981]", title: `${t("pd.warranty")} ${warranty}`, sub: t("pd.benefit3") },
+                { icon: Wrench, color: "text-blue-500", title: t("pd.installation"), sub: t("pd.install_sub") },
+              ].map(({ icon: Icon, color, title, sub }) => (
+                <div key={title} className="bg-white rounded-xl p-3 border border-[#E4E4E7] flex items-center gap-3">
+                  <Icon className={`w-5 h-5 ${color} flex-shrink-0`} />
+                  <div><p className="text-xs font-bold text-[#09090B]">{title}</p><p className="text-[10px] text-zinc-500">{sub}</p></div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── INFO ─────────────────────────────────────────────── */}
+          <div className="md:col-span-6 lg:col-span-5 px-4 md:px-0 pt-4 md:pt-0 flex flex-col gap-0">
+
+            {/* 1. Brand + rating */}
+            <div className="flex items-center justify-between mb-3">
+              <span className={`text-xs font-bold px-3 py-1 rounded-full border ${brandClass}`}>{product.brand}</span>
+              <div className="flex items-center gap-1.5">
+                <Stars r={rating} />
+                <span className="text-xs text-zinc-500">{rating} <span className="text-zinc-400">({reviewCount})</span></span>
+              </div>
+            </div>
+
+            {/* 2. Title + model */}
+            <h1 className="text-xl md:text-2xl font-black text-[#09090B] leading-tight mb-0.5">{product.name}</h1>
+            <p className="text-[11px] font-mono text-zinc-400 mb-3">{product.brand} · {product.model}</p>
+
+            {/* 3. PRICE — prominent + count-up */}
+            <div className="mb-1 flex items-baseline gap-3 flex-wrap">
+              <span className="font-mono font-black text-[2rem] text-[#09090B] leading-none price-glow">
+                {animatedPrice.toLocaleString()}
+                <span className="text-base font-bold text-zinc-400 ml-1.5">MDL</span>
+              </span>
+              {product.oldPrice && (
+                <span className="font-mono text-sm text-zinc-400 line-through">{product.oldPrice.toLocaleString()} MDL</span>
+              )}
+              {savings > 0 && (
+                <span className="text-xs font-black text-white bg-[#FF4F00] px-2 py-0.5 rounded-full">-{discountPct}%</span>
+              )}
+            </div>
+            {savings > 0 && (
+              <p className="text-xs text-emerald-600 font-semibold mb-3">
+                {t("pd.save", { n: savings.toLocaleString() })}
+              </p>
+            )}
+            {!savings && <p className="text-[11px] text-zinc-400 mb-3">{t("pd.no_fees")}</p>}
+
+            <div className="bg-zinc-50 border border-zinc-100 rounded-xl px-3.5 py-3 mb-4 text-sm font-semibold">
+              {product.inStock ? (lang === "ru" ? "В наличии" : "În stoc") : (lang === "ru" ? "Нет в наличии" : "Stoc indisponibil")}
+            </div>
+
+            {/* 6. Spec chips */}
+            <div className="flex flex-wrap gap-1.5 mb-4">
+              {specChips.map((chip, i) => (
+                <span key={i} className="bg-white text-zinc-600 text-[10px] font-mono font-semibold px-2.5 py-1 rounded-lg border border-zinc-200">
+                  {chip}
+                </span>
+              ))}
+            </div>
+
+            {/* 7. Qty + primary CTA */}
+            <div className="flex items-center gap-2.5 mb-2.5">
+              <div className="flex items-center border border-zinc-200 rounded-xl bg-white select-none flex-shrink-0">
+                <button onClick={() => setQty(q => Math.max(1, q - 1))}
+                  className="w-10 h-11 flex items-center justify-center text-zinc-500 hover:bg-zinc-50 rounded-l-xl transition-colors text-lg font-bold">−</button>
+                <span className="w-7 text-center font-bold text-sm">{qty}</span>
+                <button onClick={() => setQty(q => q + 1)}
+                  className="w-10 h-11 flex items-center justify-center text-zinc-500 hover:bg-zinc-50 rounded-r-xl transition-colors text-lg font-bold">+</button>
               </div>
               <button ref={addBtnRef} onClick={handleAdd} disabled={!product.inStock}
                 className={`relative overflow-hidden flex-1 h-11 rounded-xl font-bold text-sm transition-all active:scale-95 flex items-center justify-center gap-2 ${
