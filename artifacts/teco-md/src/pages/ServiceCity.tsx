@@ -131,8 +131,8 @@ export default function ServiceCity() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { n: city.eta_ro, n_ru: city.eta_ru, ro: "Timp de ajuns", ru: "Время приезда" },
-                { n: "847+", n_ru: "847+", ro: "Instalări totale", ru: "Монтажей всего" },
-                { n: "4.9★", n_ru: "4.9★", ro: "Rating Google", ru: "Рейтинг Google" },
+                { n: ro ? "Instalare" : "Монтаж", n_ru: "Монтаж", ro: "serviciu disponibil", ru: "услуга доступна" },
+                { n: ro ? "Reparații" : "Ремонт", n_ru: "Ремонт", ro: "și diagnosticare", ru: "и диагностика" },
                 { n: "12 luni", n_ru: "12 мес.", ro: "Garanție lucrare", ru: "Гарантия работ" },
               ].map(({ n, n_ru, ro: roLabel, ru: ruLabel }) => (
                 <div key={roLabel} className="text-center py-2">

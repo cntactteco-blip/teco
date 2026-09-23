@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { Sun, Phone, Star, ChevronDown, Camera, Shield, CheckCircle2, Wifi, Zap, ArrowRight, Cloud, Thermometer } from "lucide-react";
+import { Sun, Phone, ChevronDown, Camera, Shield, CheckCircle2, Wifi, Zap, ArrowRight, Cloud, Thermometer } from "lucide-react";
 import { SEO, schemas } from "@/components/SEO";
 import { useLang } from "@/contexts/LangContext";
 import { useStore } from "@/lib/store";
@@ -58,7 +58,6 @@ export default function CamereExterior() {
       provider: { "@type": "LocalBusiness", "@id": "https://teco.md/#business", name: "Teco.md" },
       areaServed: { "@type": "Country", name: "Moldova" },
       serviceType: "Outdoor Security Camera Installation",
-      aggregateRating: { "@type": "AggregateRating", ratingValue: "4.9", reviewCount: "213", bestRating: "5", worstRating: "1" },
     },
     schemas.faq(FAQS.slice(0, 6).map(f => ({ question: f.q, answer: f.a }))),
     ...(exteriorProducts.length > 0 ? [schemas.collectionPage(exteriorProducts.map(p => ({ id: p.id, name: p.name, imageUrl: p.imageUrl, price: p.price, inStock: p.inStock })), { name: "Camere Supraveghere Exterior Moldova", url: "https://teco.md/camere-supraveghere-exterior" })] : []),
@@ -97,10 +96,7 @@ export default function CamereExterior() {
                 <span key={b} className="px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-zinc-200 border border-white/10">{b}</span>
               ))}
             </div>
-            <div className="flex items-center justify-center gap-2 mb-8">
-              <div className="flex">{[1,2,3,4,5].map(i => <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />)}</div>
-              <span className="text-zinc-300 text-sm"><strong className="text-white">4.9</strong> din 213 recenzii</span>
-            </div>
+            <p className="text-zinc-300 text-sm mb-8">Soluții pentru supravegherea curții, intrărilor și spațiilor exterioare.</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link href="/produse" className="inline-flex items-center justify-center gap-2 bg-[#FF4F00] text-white font-bold px-7 py-3.5 rounded-xl text-base hover:opacity-90 transition-all shadow-lg">
                 <Camera className="w-4 h-4" /> Vezi Toate Camerele

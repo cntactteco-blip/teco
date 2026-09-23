@@ -1,7 +1,7 @@
 import { useParams, Link, useLocation } from "wouter";
 import { useStore, storeActions } from "@/lib/store";
 import { useCart } from "@/hooks/useCart";
-import { ShoppingCart, Check, ChevronLeft, Star, Truck, ShieldCheck, Wrench, Eye, Flame, CircleCheck as CheckCircle2, Phone, ChevronRight, Package, ChevronDown, ThumbsUp, MapPin, MessageCircle, ZoomIn, X, ZoomOut, Maximize2 } from "lucide-react";
+import { ShoppingCart, Check, ChevronLeft, Star, Truck, ShieldCheck, Wrench, Eye, CircleCheck as CheckCircle2, Phone, ChevronRight, Package, ChevronDown, ThumbsUp, MapPin, MessageCircle, ZoomIn, X, ZoomOut, Maximize2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLang } from "@/contexts/LangContext";
@@ -288,7 +288,6 @@ export default function ProductDetail() {
 
   const [added, setAdded] = useState(false);
   const [qty, setQty] = useState(1);
-  const [timeLeft, setTimeLeft] = useState({ h: 3, m: 47, s: 22 });
   const [imgError, setImgError] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const animatedPrice = useCountUp(product?.price ?? 0, product?.oldPrice ?? undefined);
@@ -428,19 +427,6 @@ export default function ProductDetail() {
     setActiveImageIndex(0);
     if (carouselRef.current) carouselRef.current.scrollTo({ left: 0, behavior: "instant" as ScrollBehavior });
   }, [slug]);
-  useEffect(() => {
-    const iv = setInterval(() => {
-      setTimeLeft(p => {
-        let { h, m, s } = p; s--;
-        if (s < 0) { s = 59; m--; }
-        if (m < 0) { m = 59; h--; }
-        if (h < 0) return p;
-        return { h, m, s };
-      });
-    }, 1000);
-    return () => clearInterval(iv);
-  }, [slug]);
-
   if (!product) {
     return <ProductNotFound />;
   }
@@ -666,19 +652,6 @@ export default function ProductDetail() {
                   <span>{activeImageIndex + 1}</span>
                   <span className="text-white/50">/</span>
                   <span className="text-white/70">{imageList.length}</span>
-                </div>
-              )}
-
-              {/* Promo countdown */}
-              {parsedBadge?.text?.toUpperCase() === "PROMO" && (
-                <div className="absolute bottom-0 left-0 right-0 z-10 bg-black/70 backdrop-blur-sm px-4 py-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-white">
-                    <Flame className="w-4 h-4 text-[#FF4F00] animate-pulse" />
-                    <span className="text-xs font-semibold">{t("pd.promo_expires")}</span>
-                  </div>
-                  <span className="font-mono font-black text-[#FF4F00] text-sm tracking-wider">
-                    {String(timeLeft.h).padStart(2,"0")}:{String(timeLeft.m).padStart(2,"0")}:{String(timeLeft.s).padStart(2,"0")}
-                  </span>
                 </div>
               )}
 

@@ -236,10 +236,10 @@ const SERVICES = [
         <div className="max-w-5xl mx-auto px-4 md:px-6 py-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { n: "847+", ro: "Instalări finalizate", ru: "Выполненных монтажей" },
-              { n: "24h", ro: "Timp de răspuns", ru: "Время ответа" },
-              { n: "4.9★", ro: "Rating clienți", ru: "Рейтинг клиентов" },
-              { n: "5+", ro: "Ani experiență", ru: "Лет опыта" },
+              { n: ro ? "Instalare" : "Монтаж", ro: "Sisteme video", ru: "Видеосистемы" },
+              { n: ro ? "Reparații" : "Ремонт", ro: "și diagnosticare", ru: "и диагностика" },
+              { n: ro ? "Consultanță" : "Консультация", ro: "pentru proiect", ru: "по проекту" },
+              { n: ro ? "Echipamente" : "Оборудование", ro: "și kituri complete", ru: "и готовые комплекты" },
             ].map(({ n, ro: roLabel, ru: ruLabel }) => (
               <div key={n} className="text-center py-2">
                 <div className="font-black text-2xl text-[#FF4F00]">{n}</div>

@@ -81,12 +81,11 @@ export function BentoGrid() {
         <div className="relative h-64 border-r border-b border-zinc-200 bg-zinc-50 flex items-center justify-center p-6 lg:col-span-1 md:col-span-2">
            <div className="flex flex-col w-full">
               <div className="flex items-center space-x-2 mb-4">
-                <span className="w-3 h-3 bg-red-500 animate-pulse" />
-                <span className="font-mono text-xs text-red-500 font-bold uppercase">Stoc Limitat</span>
+                <span className="w-3 h-3 bg-[#FF4F00] rounded-full" />
+                <span className="font-mono text-xs text-[#FF4F00] font-bold uppercase">Catalog produse</span>
               </div>
               <p className="font-mono text-lg text-zinc-900">
-                Ultimele 3 registratoare NVR in stoc cu reducere — 
-                <span className="bg-primary text-white px-2 py-1 ml-2 font-bold">-15%</span>
+                Explorează gama de camere, kituri și echipamente NVR disponibile.
               </p>
            </div>
         </div>
@@ -94,20 +93,20 @@ export function BentoGrid() {
         {/* Block 4 - Trust Metrics */}
         <div className="relative h-64 border-r border-b border-zinc-200 bg-white grid grid-cols-2 grid-rows-2 md:col-span-2 lg:col-span-3">
            <div className="border-r border-b border-zinc-100 flex flex-col items-center justify-center text-center p-4">
-             <span className="font-mono text-3xl md:text-4xl font-bold text-zinc-900">1,200+</span>
-             <span className="font-mono text-xs text-zinc-500 mt-2">Instalari</span>
+             <span className="font-mono text-3xl md:text-4xl font-bold text-zinc-900">Montaj</span>
+             <span className="font-mono text-xs text-zinc-500 mt-2">la cerere</span>
            </div>
            <div className="border-b border-zinc-100 flex flex-col items-center justify-center text-center p-4">
-             <span className="font-mono text-3xl md:text-4xl font-bold text-zinc-900">4.9</span>
-             <span className="font-mono text-xs text-zinc-500 mt-2">Rating</span>
+             <span className="font-mono text-3xl md:text-4xl font-bold text-zinc-900">5.0★</span>
+             <span className="font-mono text-xs text-zinc-500 mt-2">Google · 4 recenzii</span>
            </div>
            <div className="border-r border-zinc-100 flex flex-col items-center justify-center text-center p-4">
-             <span className="font-mono text-3xl md:text-4xl font-bold text-zinc-900">48h</span>
-             <span className="font-mono text-xs text-zinc-500 mt-2">Livrare</span>
+             <span className="font-mono text-3xl md:text-4xl font-bold text-zinc-900">Livrare</span>
+             <span className="font-mono text-xs text-zinc-500 mt-2">în Moldova</span>
            </div>
            <div className="flex flex-col items-center justify-center text-center p-4">
-             <span className="font-mono text-3xl md:text-4xl font-bold text-zinc-900">5 Ani</span>
-             <span className="font-mono text-xs text-zinc-500 mt-2">Garantie</span>
+             <span className="font-mono text-3xl md:text-4xl font-bold text-zinc-900">Reparații</span>
+             <span className="font-mono text-xs text-zinc-500 mt-2">și diagnosticare</span>
            </div>
         </div>
 

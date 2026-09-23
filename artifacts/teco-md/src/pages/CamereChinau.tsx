@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { MapPin, Phone, Star, ChevronDown, Camera, Shield, Clock, CheckCircle2, ArrowRight, Wrench, Zap } from "lucide-react";
+import { MapPin, Phone, ChevronDown, Camera, Shield, Clock, CheckCircle2, ArrowRight, Wrench, Zap } from "lucide-react";
 import { SEO, schemas } from "@/components/SEO";
 import { useLang } from "@/contexts/LangContext";
 import { useStore } from "@/lib/store";
@@ -63,7 +63,6 @@ export default function CamereChisinau() {
         ...SECTORS.map(s => ({ "@type": "Place", name: `${s}, Chișinău` })),
       ],
       serviceType: "Security Camera Installation",
-      aggregateRating: { "@type": "AggregateRating", ratingValue: "4.9", reviewCount: "213", bestRating: "5", worstRating: "1" },
     },
     schemas.faq(FAQS.slice(0, 6).map(f => ({ question: f.q, answer: f.a }))),
     schemas.localBusiness(lang as "ro" | "ru"),
@@ -96,10 +95,7 @@ export default function CamereChisinau() {
             <p className="text-zinc-300 text-base md:text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
               Instalare profesională în toate sectoarele Chișinăului. Tehnicianul vine la tine în <strong className="text-white">24h</strong>. Garanție 2–5 ani. Prețuri de la <strong className="text-white">{montajPrice}</strong>.
             </p>
-            <div className="flex items-center justify-center gap-2 mb-8">
-              <div className="flex">{[1,2,3,4,5].map(i => <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />)}</div>
-              <span className="text-zinc-300 text-sm"><strong className="text-white">4.9</strong> — 213 clienți în Chișinău</span>
-            </div>
+            <p className="text-zinc-300 text-sm mb-8">Servicii de vânzare, instalare și reparație pentru locuințe și afaceri.</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <a href="tel:+37367200463" className="inline-flex items-center justify-center gap-2 bg-[#FF4F00] text-white font-bold px-7 py-3.5 rounded-xl text-base hover:opacity-90 transition-all shadow-lg">
                 <Phone className="w-4 h-4" /> Sună: 067 200 463
@@ -114,7 +110,7 @@ export default function CamereChisinau() {
         {/* Stats */}
         <section className="bg-[#FF4F00] py-8 px-4">
           <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-white text-center">
-            {[{ n: "500+", l: "Sisteme în Chișinău" }, { n: "24h", l: "Instalare rapidă" }, { n: "15", l: "Sectoare acoperite" }, { n: "2–5 ani", l: "Garanție montaj" }].map(s => (
+            {[{ n: "Chișinău", l: "zonă deservită" }, { n: "Instalare", l: "sisteme video" }, { n: "Diagnostic", l: "și reparații" }, { n: "Consultanță", l: "pentru proiect" }].map(s => (
               <div key={s.l}><div className="text-3xl font-black mb-0.5">{s.n}</div><div className="text-orange-100 text-sm">{s.l}</div></div>
             ))}
           </div>
