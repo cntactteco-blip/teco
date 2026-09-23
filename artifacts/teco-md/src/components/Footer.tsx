@@ -22,6 +22,7 @@ export function Footer() {
         <div>
           <h4 className="font-medium text-white mb-5 text-sm uppercase tracking-wider">{t("footer.products")}</h4>
           <ul className="space-y-3 text-sm text-zinc-400">
+            <li><Link href="/camere-supraveghere-moldova" className="hover:text-[#FF4F00] transition-colors">{lang === "ru" ? "Видеонаблюдение в Молдове" : "Supraveghere în Moldova"}</Link></li>
             <li><Link href="/produse?cat=wifi" className="hover:text-[#FF4F00] transition-colors">{t("footer.p.wifi")}</Link></li>
             <li><Link href="/produse?cat=poe" className="hover:text-[#FF4F00] transition-colors">{t("footer.p.poe")}</Link></li>
             <li><Link href="/produse?cat=nvr" className="hover:text-[#FF4F00] transition-colors">{t("footer.p.nvr")}</Link></li>
@@ -33,9 +34,9 @@ export function Footer() {
         <div>
           <h4 className="font-medium text-white mb-5 text-sm uppercase tracking-wider">{t("footer.services")}</h4>
           <ul className="space-y-3 text-sm text-zinc-400">
-            <li><Link href="/servicii" className="hover:text-[#FF4F00] transition-colors">{t("footer.s.install")}</Link></li>
+            <li><Link href="/montare-camere-supraveghere" className="hover:text-[#FF4F00] transition-colors">{t("footer.s.install")}</Link></li>
             <li><Link href="/servicii" className="hover:text-[#FF4F00] transition-colors">{t("footer.s.config")}</Link></li>
-            <li><Link href="/servicii" className="hover:text-[#FF4F00] transition-colors">{t("footer.s.service")}</Link></li>
+            <li><Link href="/reparatii-camere-supraveghere" className="hover:text-[#FF4F00] transition-colors">{t("footer.s.service")}</Link></li>
             <li><Link href="/servicii" className="hover:text-[#FF4F00] transition-colors">{t("footer.s.consult")}</Link></li>
             <li><Link href="/servicii" className="hover:text-[#FF4F00] transition-colors">{t("footer.s.audit")}</Link></li>
           </ul>
@@ -45,6 +46,7 @@ export function Footer() {
           <h4 className="font-medium text-white mb-5 text-sm uppercase tracking-wider">{t("footer.contact")}</h4>
           <ul className="space-y-3 text-sm text-zinc-400">
             <li>Chișinău, Moldova</li>
+            <li><Link href="/contact" className="hover:text-[#FF4F00] transition-colors">{lang === "ru" ? "Связаться с нами" : "Contactează-ne"}</Link></li>
             <li>
               <a href={`tel:+${phone}`} className="hover:text-[#FF4F00] transition-colors">
                 +{phone.slice(0, 3)} {phone.slice(3, 5)} {phone.slice(5, 8)} {phone.slice(8)}

@@ -3,7 +3,7 @@
  * Rulează la fiecare build Cloudflare (cf-build), înainte de vite build.
  * Migrat de la Supabase → D1 (site-ul rulează acum 100% pe Cloudflare).
  */
-import { writeFileSync, mkdirSync } from "fs";
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "fs";
 import { fileURLToPath } from "url";
 import path from "path";
 import { execFileSync } from "child_process";
@@ -12,6 +12,18 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(__dirname, "../src/lib/catalog-snapshot.json");
 const IMG_DIR = path.join(__dirname, "../public/product-images");
 const DB_NAME = "teco-db";
+
+function readExistingSnapshot() {
+  if (!existsSync(OUT)) return null;
+  try {
+    const snapshot = JSON.parse(readFileSync(OUT, "utf8"));
+    return Array.isArray(snapshot?.products) && snapshot.products.length > 0
+      ? snapshot
+      : null;
+  } catch {
+    return null;
+  }
+}
 
 function d1Query(sql) {
   const raw = execFileSync(
@@ -57,6 +69,7 @@ function extractBase64Images(products) {
 }
 
 try {
+  const existingSnapshot = readExistingSnapshot();
   const rawProducts = d1Query("SELECT * FROM products ORDER BY id");
   const prods = rawProducts.map((p) => ({
     ...p,
@@ -74,20 +87,29 @@ try {
     settings = null;
   }
 
+  let blogPosts = existingSnapshot?.blogPosts ?? [];
+  try {
+    blogPosts = d1Query("SELECT * FROM blog_posts WHERE published = 1 ORDER BY published_at DESC");
+  } catch (blogErr) {
+    console.warn("[snapshot] Blogul nu a putut fi citit din D1; se păstrează datele existente.", blogErr.message);
+  }
+
   const snapshot = {
     products: prods,
+    blogPosts,
     settings,
     generatedAt: new Date().toISOString(),
   };
   writeFileSync(OUT, JSON.stringify(snapshot));
   console.log(`[snapshot] OK — ${prods.length} produse din D1, ${extracted} imagini extrase, settings: ${settings ? "yes" : "no"}`);
 
-  try {
-    const sitemapScript = path.join(__dirname, "generate-sitemap.mjs");
-    execFileSync(process.execPath, [sitemapScript], { stdio: "inherit" });
-  } catch (sitemapErr) {
-    console.warn("[sitemap] Eroare la generare sitemap:", sitemapErr.message);
-  }
+  // The final build generates sitemap.xml from the actual rendered routes.
 } catch (err) {
-  console.warn("[snapshot] Exception — keeping existing snapshot:", err.message);
+  const existingSnapshot = readExistingSnapshot();
+  if (existingSnapshot) {
+    console.warn("[snapshot] D1 indisponibil la build; se folosește snapshot-ul valid existent.", err.message);
+  } else {
+    console.error("[snapshot] Build oprit: D1 nu este disponibil și nu există un snapshot valid.", err.message);
+    process.exitCode = 1;
+  }
 }

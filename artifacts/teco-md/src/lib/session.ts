@@ -56,19 +56,6 @@ function detectBrowser(): string {
   return "Other";
 }
 
-async function fetchGeo(): Promise<{ country: string; city: string; isp: string }> {
-  try {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 4000);
-    const res = await fetch("https://ip-api.com/json/?fields=country,city,isp", { signal: ctrl.signal });
-    clearTimeout(timer);
-    const d = await res.json() as { country?: string; city?: string; isp?: string };
-    return { country: d.country || "", city: d.city || "", isp: d.isp || "" };
-  } catch {
-    return { country: "", city: "", isp: "" };
-  }
-}
-
 /** Inițializează sesiunea (o singură dată) și returnează SessionData */
 export async function initSession(): Promise<SessionData> {
   if (_session) return _session;
@@ -76,7 +63,6 @@ export async function initSession(): Promise<SessionData> {
 
   _initPromise = (async () => {
     const params = new URLSearchParams(window.location.search);
-    const geo = await fetchGeo();
 
     _session = {
       sessionId: getSessionId(),
@@ -86,9 +72,10 @@ export async function initSession(): Promise<SessionData> {
       utmSource: params.get("utm_source") || "",
       utmMedium: params.get("utm_medium") || "",
       utmCampaign: params.get("utm_campaign") || "",
-      country: geo.country,
-      city: geo.city,
-      isp: geo.isp,
+      // Locația este completată de Cloudflare pe server, fără un serviciu extern în browser.
+      country: "",
+      city: "",
+      isp: "",
       deviceType: detectDevice(),
       browser: detectBrowser(),
     };

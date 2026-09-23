@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
+import { readStringRecord } from "@/lib/json-response";
 import {
   LayoutDashboard, Package, ShoppingBag, Users, Settings, LogOut,
   ShieldCheck, Eye, EyeOff, Plus, Edit2, Trash2, X, Save, Search,
@@ -155,8 +156,9 @@ async function uploadSiteImage(dataUrl: string, keyPrefix: string): Promise<stri
       body: blob,
     });
     if (!res.ok) throw new Error("upload failed");
-    const json = await res.json();
-    return json.url as string;
+    const json = await readStringRecord(res);
+    if (!json.url) throw new Error("Lipsește adresa imaginii");
+    return json.url;
   } catch {
     return dataUrl;
   }
@@ -430,7 +432,7 @@ function ProductModal({ product, onClose, categories }: { product: StoreProduct 
         body: JSON.stringify({ name: form.name, specs: form.specs, brand: form.brand, price: parseFloat(form.price) || 0, category: form.category }),
       });
       if (!res.ok) throw new Error(await res.text());
-      const data = await res.json();
+      const data = await readStringRecord(res);
       if (data.description) set("description", data.description);
     } catch {}
     finally { setDescGen(false); }
@@ -1449,7 +1451,7 @@ function BlogTab({ posts }: { posts: BlogPost[] }) {
     setAiError("");
     try {
       const res  = await fetch((import.meta.env.VITE_API_URL || "") + "/api/ai/blog-post", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ topic: aiTopic.trim() }) });
-      const data = await res.json();
+      const data = await readStringRecord(res);
       if (!res.ok || data.error) throw new Error(data.error ?? "Eroare server");
       setForm({
         slug: data.slug ?? "", title: data.title ?? "", titleRu: data.titleRu ?? "",
@@ -2488,9 +2490,9 @@ function ImportTab() {
     try {
       const reader = new FileReader();
       const csvData = await new Promise<string>((res, rej) => {
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
           try {
-            const XLSX = (window as any).XLSX;
+            const XLSX = await import("xlsx");
             const wb = XLSX.read(e.target!.result, { type: "array" });
             let csv = "";
             wb.SheetNames.forEach((n: string) => {
@@ -2659,7 +2661,7 @@ function AdminAITab({ leads, products, orders }: { leads: Lead[]; products: Stor
         body: JSON.stringify({ name: prod.name, specs: prod.specs, brand: prod.brand, price: prod.price, category: prod.category }),
       });
       if (!res.ok) throw new Error(await res.text());
-      const data = await res.json();
+      const data = await readStringRecord(res);
       setGeneratedDesc(data.description ?? "");
     } catch (e) {
       setDescError(String(e));
@@ -2698,27 +2700,21 @@ function AdminAITab({ leads, products, orders }: { leads: Lead[]; products: Stor
 
   const [sitemapCopied, setSitemapCopied] = useState(false);
 
-  const generateSitemapXml = useCallback(() => {
-    const BASE = "https://teco.md";
-    const now = new Date().toISOString().split("T")[0];
-    const staticUrls = [
-      { loc: `${BASE}/`, prio: "1.0", freq: "weekly" },
-      { loc: `${BASE}/produse`, prio: "0.9", freq: "daily" },
-      { loc: `${BASE}/servicii`, prio: "0.8", freq: "monthly" },
-      { loc: `${BASE}/blog`, prio: "0.7", freq: "weekly" },
-    ];
-    const productUrls = products.map((p) => ({
-      loc: `${BASE}/product/${p.slug || p.id}`, prio: "0.8", freq: "weekly",
-    }));
-    const allUrls = [...staticUrls, ...productUrls];
-    const urlTags = allUrls.map(({ loc, prio, freq }) =>
-      `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${now}</lastmod>\n    <changefreq>${freq}</changefreq>\n    <priority>${prio}</priority>\n    <xhtml:link rel="alternate" hreflang="ro" href="${loc}"/>\n    <xhtml:link rel="alternate" hreflang="ru" href="${loc}"/>\n  </url>`
-    ).join("\n");
-    return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n        xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urlTags}\n</urlset>`;
-  }, [products]);
+  const [sitemapXml, setSitemapXml] = useState("");
+  useEffect(() => {
+    if (activeSection !== "sitemap") return;
+    const controller = new AbortController();
+    fetch("/sitemap.xml", { signal: controller.signal })
+      .then(response => { if (!response.ok) throw new Error("Sitemap indisponibil"); return response.text(); })
+      .then(setSitemapXml)
+      .catch(() => {});
+    return () => controller.abort();
+  }, [activeSection]);
+  const generateSitemapXml = useCallback(() => sitemapXml, [sitemapXml]);
 
   const downloadSitemap = useCallback(() => {
     const xml = generateSitemapXml();
+    if (!xml) return;
     const blob = new Blob([xml], { type: "application/xml" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -2727,6 +2723,7 @@ function AdminAITab({ leads, products, orders }: { leads: Lead[]; products: Stor
   }, [generateSitemapXml]);
 
   const copySitemap = useCallback(async () => {
+    if (!generateSitemapXml()) return;
     await navigator.clipboard.writeText(generateSitemapXml());
     setSitemapCopied(true);
     setTimeout(() => setSitemapCopied(false), 2000);
@@ -2917,24 +2914,23 @@ function AdminAITab({ leads, products, orders }: { leads: Lead[]; products: Stor
       {activeSection === "sitemap" && (
         <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-5 space-y-4">
           <div>
-            <p className="text-sm font-semibold mb-1">Sitemap.xml dinamic — {products.length} produse</p>
+            <p className="text-sm font-semibold mb-1">Sitemap.xml publicat</p>
             <p className="text-xs text-zinc-500 leading-relaxed">
-              Generează un sitemap.xml actualizat cu toate produsele tale. Descarcă-l și înlocuiește <code className="text-zinc-300 bg-zinc-800 px-1 rounded">public/sitemap.xml</code> în proiect, apoi redeploy pe Cloudflare.
-              Google va indexa automat produsele noi în 1–3 zile.
+              Lista paginilor se actualizează la fiecare publicare a site-ului. După adăugarea produselor sau articolelor, republică site-ul pentru a le include în sitemap. Google decide când și ce pagini indexează.
             </p>
           </div>
 
           <div className="bg-zinc-800 rounded-xl p-3 font-mono text-xs text-zinc-400 max-h-48 overflow-y-auto whitespace-pre-wrap leading-relaxed">
-            {generateSitemapXml().slice(0, 800)}
-            <span className="text-zinc-600">... ({products.length + 4} URL-uri totale)</span>
+            {sitemapXml ? generateSitemapXml().slice(0, 800) : "Sitemap-ul nu este încă disponibil."}
+            {sitemapXml && <span className="text-zinc-600">... ({(sitemapXml.match(/<loc>/g) ?? []).length} URL-uri totale)</span>}
           </div>
 
           <div className="flex gap-2 flex-wrap">
-            <button onClick={downloadSitemap}
+            <button onClick={downloadSitemap} disabled={!sitemapXml}
               className="flex items-center gap-2 px-4 py-2.5 bg-[#FF4F00] text-white rounded-xl text-sm font-bold hover:opacity-90 transition-opacity">
               <Download className="w-4 h-4" /> Descarcă sitemap.xml
             </button>
-            <button onClick={copySitemap}
+            <button onClick={copySitemap} disabled={!sitemapXml}
               className="flex items-center gap-2 px-4 py-2.5 bg-zinc-800 text-white rounded-xl text-sm font-semibold hover:bg-zinc-700 transition-colors">
               <Copy className="w-4 h-4" /> {sitemapCopied ? "Copiat!" : "Copiază XML"}
             </button>
@@ -2943,9 +2939,9 @@ function AdminAITab({ leads, products, orders }: { leads: Lead[]; products: Stor
           <div className="bg-zinc-800/50 rounded-xl p-3 space-y-2">
             <p className="text-[11px] text-zinc-500 font-semibold uppercase tracking-wide">Pași de actualizare SEO</p>
             {[
-              "Descarcă sitemap.xml de mai sus",
-              "Înlocuiește artifacts/teco-md/public/sitemap.xml cu fișierul descărcat",
-              "Redeploy pe Cloudflare Pages (sau push pe GitHub dacă e conectat)",
+              "Salvează modificările produselor și articolelor",
+              "Republică site-ul pentru a actualiza paginile și sitemap-ul",
+              "Verifică paginile noi și sitemap-ul după publicare",
               "În Google Search Console → Sitemaps → Trimite https://teco.md/sitemap.xml",
             ].map((step, i) => (
               <div key={i} className="flex items-start gap-2">

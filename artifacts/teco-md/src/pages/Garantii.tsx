@@ -7,6 +7,7 @@ export default function Page() {
     <>
       <SEO
         title="Garanții și Retur — Teco.md"
+        canonical="/garantii/"
         description="Politica de garanție și retur pentru produsele de supraveghere Teco.md. Garanție 2–5 ani producător."
       />
       <main className="max-w-3xl mx-auto px-5 py-12 pb-[64px] md:pb-12">

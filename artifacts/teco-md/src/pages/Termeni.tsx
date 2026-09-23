@@ -7,6 +7,7 @@ export default function Page() {
     <>
       <SEO
         title="Termeni și Condiții — Teco.md"
+        canonical="/termeni/"
         description="Termenii și condițiile de utilizare a magazinului online Teco.md. Sisteme de supraveghere în Moldova."
       />
       <main className="max-w-3xl mx-auto px-5 py-12 pb-[64px] md:pb-12">

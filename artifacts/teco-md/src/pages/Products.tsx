@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from "react";
-import { Link, useRoute, useSearch } from "wouter";
+import { Link, useLocation, useRoute, useSearch } from "wouter";
 import { Search, ShoppingCart, SlidersHorizontal, X, ChevronDown, Check, ArrowUpDown, Heart, BarChart2, LayoutGrid } from "lucide-react";
 import { getCatIconDef } from "@/components/CatIcons";
 import { useCart } from "@/hooks/useCart";
@@ -9,18 +9,7 @@ import { useLang } from "@/contexts/LangContext";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useComparator } from "@/hooks/useComparator";
 import { SEO, schemas } from "@/components/SEO";
-
-function useLiveViewers(id: number) {
-  const [count, setCount] = useState(() => 3 + (id * 5 + 11) % 17);
-  useEffect(() => {
-    const timer = setTimeout(
-      () => setCount(c => Math.max(2, c + (Math.random() > 0.5 ? 1 : -1))),
-      9000 + Math.random() * 11000
-    );
-    return () => clearTimeout(timer);
-  }, [count]);
-  return count;
-}
+import { resolveCategorySlug } from "@/lib/category-routing";
 
 const IMAGE_MAP: Record<string, string> = {
   indoor:          "https://images.unsplash.com/photo-1562813733-b31f71025d54?w=400&q=80&auto=format&fit=crop",
@@ -86,7 +75,6 @@ function ProductCard({ product }: { product: StoreProduct }) {
   const { toggle: toggleWish, has: hasWish } = useWishlist();
   const { toggle: toggleComp, has: hasComp } = useComparator();
   const [imgError, setImgError] = useState(false);
-  const viewers = useLiveViewers(product.id);
   const wished = hasWish(product.id);
   const compared = hasComp(product.id);
 
@@ -144,10 +132,6 @@ function ProductCard({ product }: { product: StoreProduct }) {
         >
           <Heart className={`w-3.5 h-3.5 transition-all ${wished ? "text-white fill-white" : "text-zinc-500"}`} />
         </button>
-        <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-black/50 backdrop-blur-sm rounded-full px-2 py-0.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
-          <span className="text-white text-[9px] font-medium">{viewers} {t("pd.viewers")}</span>
-        </div>
       </div>
 
       <div className="p-4 flex flex-col flex-1">
@@ -195,9 +179,11 @@ function ProductCard({ product }: { product: StoreProduct }) {
 export default function Products() {
   const [isKitRoute] = useRoute("/seturi-camere-supraveghere");
   const searchStr = useSearch();
+  const [, navigate] = useLocation();
   const { t, lang } = useLang();
   const products = useStore((s) => s.products);
   const storeCategories = useStore((s) => s.settings.categories);
+  const productCategories = useMemo(() => [...new Set(products.map((product) => product.category))], [products]);
 
   // TABS dinamic din store — se actualizează automat când adminul adaugă/șterge categorii
   const TABS = [
@@ -210,19 +196,27 @@ export default function Products() {
   ];
 
   const [activeCategory, setActiveCategory] = useState<string>(() => {
-    if (isKitRoute) return "kituri";
+    if (isKitRoute) return resolveCategorySlug("kituri", storeCategories, productCategories);
     const params = new URLSearchParams(searchStr);
-    return params.get("cat") ?? "all";
+    return resolveCategorySlug(params.get("cat") ?? "all", storeCategories, productCategories);
   });
 
   // Sincronizează categoria când URL-ul se schimbă (ex: navigare între /produse?cat=wifi și ?cat=poe)
   useEffect(() => {
-    if (isKitRoute) return;
+    if (isKitRoute) {
+      setActiveCategory(resolveCategorySlug("kituri", storeCategories, productCategories));
+      return;
+    }
     const params = new URLSearchParams(searchStr);
     const cat = params.get("cat") ?? "all";
-    setActiveCategory(cat);
-  }, [searchStr, isKitRoute]);
-  const [search, setSearch] = useState("");
+    setActiveCategory(resolveCategorySlug(cat, storeCategories, productCategories));
+  }, [searchStr, isKitRoute, storeCategories, productCategories]);
+  const [search, setSearch] = useState(() => new URLSearchParams(searchStr).get("q") || "");
+  useEffect(() => { setSearch(new URLSearchParams(searchStr).get("q") || ""); }, [searchStr]);
+  const selectCategory = (category: string) => {
+    setActiveCategory(resolveCategorySlug(category, storeCategories, productCategories));
+    navigate(category === "all" ? "/produse/" : `/produse/?cat=${encodeURIComponent(category)}`);
+  };
   const [sortBy, setSortBy] = useState<SortKey>("relevance");
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [priceMin, setPriceMin] = useState<number>(0);
@@ -240,6 +234,7 @@ export default function Products() {
     products.forEach(p => { c[p.category] = (c[p.category] || 0) + 1; });
     return c;
   }, [products]);
+  const kitCount = catCounts[resolveCategorySlug("kituri", storeCategories, productCategories)] ?? 0;
 
   const filtered = useMemo(() => {
     let list = activeCategory === "all" ? products : products.filter(p => p.category === activeCategory);
@@ -273,7 +268,7 @@ export default function Products() {
   }, [activeCategory, selectedBrands, priceMin, priceMax, sortBy]);
 
   const clearAll = () => {
-    setActiveCategory("all");
+    selectCategory("all");
     setSelectedBrands([]);
     setPriceMin(0);
     setPriceMax(99999);
@@ -332,10 +327,10 @@ export default function Products() {
             keywords: "nvr видеорегистраторы молдова, nvr dahua, nvr uniview, ip nvr система, teco.md" },
     },
     kituri: {
-      ro: { title: `Seturi Complete Supraveghere — ${catCounts.kituri ?? 0} Kituri | Teco.md Moldova`,
+      ro: { title: `Seturi Complete Supraveghere — ${kitCount} Kituri | Teco.md Moldova`,
             desc: "Seturi complete sisteme de supraveghere NVR + camere, gata de instalat. Prețuri de la 3.500 MDL. Montaj profesional inclus. Cel mai bun raport calitate-preț din Moldova.",
             keywords: "seturi complete supraveghere moldova, kit supraveghere nvr camere, sistem supraveghere complet casa, kituri instalare, teco.md, seturi camere video" },
-      ru: { title: `Комплекты Видеонаблюдения — ${catCounts.kituri ?? 0} Наборов | Teco.md`,
+      ru: { title: `Комплекты Видеонаблюдения — ${kitCount} Наборов | Teco.md`,
             desc: "Готовые комплекты систем видеонаблюдения NVR + камеры. Цены от 3500 MDL. Профессиональный монтаж. Лучшее соотношение цена-качество в Молдове.",
             keywords: "комплекты видеонаблюдения молдова, набор камер nvr, система видеонаблюдения для дома, teco.md" },
     },
@@ -358,7 +353,7 @@ export default function Products() {
   };
 
   // Găsește numele categoriei active din store (pentru categorii noi din admin)
-  const activeCatDef = storeCategories.find((c) => c.slug === activeCategory);
+  const activeCatDef = storeCategories.find((c) => c.slug === activeCategory || c.id === activeCategory);
   const activeCatLabel = activeCatDef
     ? (lang === "ru" ? (activeCatDef.labelRu ?? activeCatDef.label) : activeCatDef.label)
     : "";
@@ -374,9 +369,9 @@ export default function Products() {
       }
     : baseSeo;
 
-  const canonicalUrl = isKitRoute
+  const canonicalUrl = isKitRoute || activeCategory === resolveCategorySlug("kituri", storeCategories, productCategories)
     ? "/seturi-camere-supraveghere"
-    : activeCategory === "all" ? "/produse" : `/produse?cat=${activeCategory}`;
+    : activeCategory === "all" ? "/produse" : `/produse?cat=${encodeURIComponent(activeCategory)}`;
 
   const breadcrumbItems = [
     { name: lang === "ru" ? "Главная" : "Acasă", url: "https://teco.md/" },
@@ -399,7 +394,7 @@ export default function Products() {
 
   return (
     <>
-      <SEO title={seo.title} description={seo.desc} keywords={seo.keywords} canonical={canonicalUrl} lang={lang} jsonLd={jsonLd} />
+      <SEO title={seo.title} description={seo.desc} keywords={seo.keywords} canonical={canonicalUrl} lang={lang} jsonLd={jsonLd} noIndex={!!search.trim()} />
 
       {/* ── Mobile Filter Bottom Sheet ── */}
       {showFilters && (
@@ -449,9 +444,9 @@ export default function Products() {
                     const count = tab.key === "all" ? catCounts["all"] : (catCounts[tab.key] ?? 0);
                     if (tab.key !== "all" && count === 0) return null;
                     return (
-                      <button
+                      <Link
                         key={tab.key}
-                        onClick={() => setActiveCategory(tab.key)}
+                        href={tab.key === "all" ? "/produse/" : `/produse/?cat=${encodeURIComponent(tab.key)}`}
                         className={`flex items-center justify-between px-3 py-2.5 rounded-2xl border text-sm font-semibold transition-all ${
                           activeCategory === tab.key
                             ? "bg-zinc-900 text-white border-zinc-900"
@@ -462,7 +457,7 @@ export default function Products() {
                         <span className={`ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${
                           activeCategory === tab.key ? "bg-white/20 text-white" : "bg-zinc-200 text-zinc-500"
                         }`}>{count}</span>
-                      </button>
+                      </Link>
                     );
                   })}
                 </div>
@@ -573,7 +568,7 @@ export default function Products() {
 
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-lg md:text-3xl font-black text-[#09090B] tracking-tight">{t("products.title")}</h1>
+                <h1 className="text-lg md:text-3xl font-black text-[#09090B] tracking-tight">{activeCatLabel || (isKitRoute ? (lang === "ru" ? "Комплекты видеонаблюдения" : "Seturi camere de supraveghere") : t("products.title"))}</h1>
               </div>
 
               {/* Desktop sort dropdown */}
@@ -646,9 +641,10 @@ export default function Products() {
                   const MainIcon = iconDef?.main;
                   const BadgeIcon = iconDef?.badge;
                   return (
-                    <button
+                    <Link
                       key={tab.key}
-                      onClick={() => { setActiveCategory(tab.key); window.scrollTo({ top: 0, behavior: "instant" }); }}
+                      href={tab.key === "all" ? "/produse/" : `/produse/?cat=${encodeURIComponent(tab.key)}`}
+                      onClick={() => window.scrollTo({ top: 0, behavior: "instant" })}
                       className={`flex-shrink-0 flex flex-col items-center gap-0.5 px-3 py-2 rounded-2xl min-w-[60px] text-center border transition-all ${
                         isActive
                           ? "bg-[#FF4F00] text-white border-[#FF4F00] shadow-md shadow-orange-200/60"
@@ -676,7 +672,7 @@ export default function Products() {
                       <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full leading-tight ${
                         isActive ? "bg-white/25 text-white" : "bg-zinc-100 text-zinc-500"
                       }`}>{count}</span>
-                    </button>
+                    </Link>
                   );
                 })}
               </div>

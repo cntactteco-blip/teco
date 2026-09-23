@@ -28,7 +28,7 @@ function OptionButton({ icon: Icon, label, isActive, onClick, testId }: {
 export default function SmartCostCalculator() {
   const { lang } = useLang();
   const ru = lang === "ru";
-  const s = (ro: string, ru_: string) => ru ? ru_ : ro;
+  const s = <T,>(ro: T, ru_: T): T => ru ? ru_ : ro;
 
   const OBJECTIVES = [
     { icon: Home,      ro: "Casă / Vilă",                 ru: "Дом / Вилла" },

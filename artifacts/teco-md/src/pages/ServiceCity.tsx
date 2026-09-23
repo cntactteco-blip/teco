@@ -3,8 +3,9 @@ import { MapPin, Phone, Wrench, Clock, CheckCircle, ArrowRight } from "lucide-re
 import { useLang } from "@/contexts/LangContext";
 import { useStore } from "@/lib/store";
 import { SEO, schemas } from "@/components/SEO";
+import NotFound from "./not-found";
 
-const CITY_DATA: Record<string, {
+export const CITY_DATA: Record<string, {
   ro: string; ru: string;
   region_ro: string; region_ru: string;
   pop: string;
@@ -48,7 +49,8 @@ export default function ServiceCity() {
   const adminPhone = useStore((s) => s.settings.general?.adminPhone ?? "");
   const phone = (adminPhone || "37367200463").replace(/\D/g, "");
 
-  const city = CITY_DATA[citySlug?.toLowerCase() ?? "chisinau"] ?? CITY_DATA["chisinau"];
+  const city = CITY_DATA[citySlug?.toLowerCase() ?? ""];
+  if (!city) return <NotFound />;
   const cityName = ro ? city.ro : city.ru;
   const services = (ro ? SERVICES_RO : SERVICES_RU).map((s, i) => {
     if (!ro) return s;
@@ -68,16 +70,13 @@ export default function ServiceCity() {
   const jsonLd = [
     {
       "@context": "https://schema.org",
-      "@type": "LocalBusiness",
+      "@type": "Service",
       name: `Teco.md — Montaj Camere ${city.ro}`,
       description: pageDesc,
       url: `https://teco.md/servicii/${citySlug}`,
       telephone: "+37367200463",
       areaServed: { "@type": "City", name: cityName },
-      geo: { "@type": "GeoCoordinates", latitude: city.lat, longitude: city.lng },
-      address: { "@type": "PostalAddress", addressLocality: city.ro, addressCountry: "MD" },
-      priceRange: "MDL 200–50000",
-      openingHours: "Mo-Sa 09:00-19:00",
+      provider: { "@type": "Organization", "@id": "https://teco.md/#business", name: "TECO.md" },
     },
     schemas.service({ name: `Montaj Camere Supraveghere ${city.ro}`, description: pageDesc, url: `https://teco.md/servicii/${citySlug}`, price: "200" }),
     schemas.breadcrumb([

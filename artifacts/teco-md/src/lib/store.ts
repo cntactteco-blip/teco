@@ -1,4 +1,5 @@
 import { useSyncExternalStore, useMemo, useRef } from "react";
+import { jsonRecord } from "./json-response";
 import _snapshot from "./catalog-snapshot.json";
 import { products as seedProducts } from "./products";
 
@@ -526,7 +527,7 @@ let state: StoreState = {
   products: _cachedProducts ?? _snapshotProducts ?? _seedProducts,
   leads: [],
   orders: [],
-  blogPosts: DEFAULT_BLOG_POSTS,
+  blogPosts: Array.isArray((_snapshot as any).blogPosts) ? (_snapshot as any).blogPosts.map(dbBlogPostToStore) : DEFAULT_BLOG_POSTS,
   settings: _cachedSettings ?? _snapshotSettings ?? DEFAULT_SETTINGS,
   userReviews: (() => {
     try { return JSON.parse(localStorage.getItem("teco_user_reviews") ?? "{}"); } catch { return {}; }
@@ -732,12 +733,12 @@ function restoreBase64FromCache(fromD1: ModuleSettings, cached: ModuleSettings):
 async function _backgroundRefreshFromD1(): Promise<void> {
   try {
     const [prodsRes, settingsRes, blogRes] = await Promise.all([
-      fetch(_API + "/api/products").then((r) => r.ok ? r.json() : null).catch(() => null),
-      fetch(_API + "/api/settings").then((r) => r.ok ? r.json() : null).catch(() => null),
-      fetch(_API + "/api/blog-posts").then((r) => r.ok ? r.json() : null).catch(() => null),
+      fetch(_API + "/api/products").then((r) => r.ok ? r.json().then(jsonRecord) : null).catch(() => null),
+      fetch(_API + "/api/settings").then((r) => r.ok ? r.json().then(jsonRecord) : null).catch(() => null),
+      fetch(_API + "/api/blog-posts").then((r) => r.ok ? r.json().then(jsonRecord) : null).catch(() => null),
     ]);
 
-    const products: any[] = prodsRes?.data ?? [];
+    const products = Array.isArray(prodsRes?.data) ? prodsRes.data : [];
     if (products.length > 0) {
       const mapped = products.map(dbProductToStore);
       cacheProducts(mapped);
@@ -746,7 +747,7 @@ async function _backgroundRefreshFromD1(): Promise<void> {
 
     // Blog: D1 e sursa de adevar si pentru vizitatori, nu doar pentru Admin.
     // Fara asta, site-ul public ramanea blocat pe DEFAULT_BLOG_POSTS hardcodat in cod.
-    const blogRows: any[] = blogRes?.data ?? null;
+    const blogRows = Array.isArray(blogRes?.data) ? blogRes.data : null;
     if (blogRows) {
       const mappedBlog = blogRows.map(dbBlogPostToStore);
       try { localStorage.setItem("teco_blog_cache", JSON.stringify(mappedBlog)); } catch {}
@@ -754,7 +755,7 @@ async function _backgroundRefreshFromD1(): Promise<void> {
     }
 
     if (settingsRes?.data) {
-      const fromD1 = mergeSettings(settingsRes.data);
+      const fromD1 = mergeSettings(jsonRecord(settingsRes.data));
       // Restaurează imaginile base64 din localStorage sau snapshot (nu sunt în D1 — prea mari)
       // Fallback la state.settings curent (care vine din snapshot) dacă localStorage e gol
       const imageSource = _cachedSettings ?? state.settings;
@@ -786,18 +787,18 @@ export function initStore(): void {
 export async function refreshFromApiServer(): Promise<void> {
   try {
     const [prodsRes, leadsRes, ordersRes, settingsRes, blogRes] = await Promise.all([
-      fetch(_API + "/api/products").then((r) => r.ok ? r.json() : null).catch(() => null),
-      fetch(_API + "/api/leads").then((r) => r.ok ? r.json() : null).catch(() => null),
-      fetch(_API + "/api/orders").then((r) => r.ok ? r.json() : null).catch(() => null),
-      fetch(_API + "/api/settings").then((r) => r.ok ? r.json() : null).catch(() => null),
-      fetch(_API + "/api/blog-posts").then((r) => r.ok ? r.json() : null).catch(() => null),
+      fetch(_API + "/api/products").then((r) => r.ok ? r.json().then(jsonRecord) : null).catch(() => null),
+      fetch(_API + "/api/leads").then((r) => r.ok ? r.json().then(jsonRecord) : null).catch(() => null),
+      fetch(_API + "/api/orders").then((r) => r.ok ? r.json().then(jsonRecord) : null).catch(() => null),
+      fetch(_API + "/api/settings").then((r) => r.ok ? r.json().then(jsonRecord) : null).catch(() => null),
+      fetch(_API + "/api/blog-posts").then((r) => r.ok ? r.json().then(jsonRecord) : null).catch(() => null),
     ]);
 
-    const products: any[] = prodsRes?.data ?? null;
-    const leads: any[] = leadsRes?.data ?? null;
-    const orders: any[] = ordersRes?.data ?? null;
-    const rawSettings = settingsRes?.data ?? null;
-    const blogRows: any[] = blogRes?.data ?? null;
+    const products = Array.isArray(prodsRes?.data) ? prodsRes.data : null;
+    const leads = Array.isArray(leadsRes?.data) ? leadsRes.data : null;
+    const orders = Array.isArray(ordersRes?.data) ? ordersRes.data : null;
+    const rawSettings = settingsRes?.data ? jsonRecord(settingsRes.data) : null;
+    const blogRows = Array.isArray(blogRes?.data) ? blogRes.data : null;
 
     // ── Settings: D1 este sursa de adevăr pentru config text ────────────────────
     // Imaginile base64 (>10KB) nu sunt în D1 (prea mari); le restaurăm din localStorage sau snapshot.
@@ -817,7 +818,7 @@ export async function refreshFromApiServer(): Promise<void> {
     }
 
     // Dacă D1 e gol (prima rulare), seeds automat produsele din snapshot/localStorage
-    if ((products ?? []).length === 0 && state.products.length > 0) {
+    if (products && products.length === 0 && state.products.length > 0) {
       fetch(_API + "/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -827,9 +828,9 @@ export async function refreshFromApiServer(): Promise<void> {
 
     setState({
       products: mappedProducts.length > 0 ? mappedProducts : state.products,
-      leads: (leads ?? []).map(dbLeadToStore),
-      orders: (orders ?? []).map(dbOrderToStore),
-      blogPosts: (blogRows ?? []).map(dbBlogPostToStore),
+      leads: leads ? leads.map(dbLeadToStore) : state.leads,
+      orders: orders ? orders.map(dbOrderToStore) : state.orders,
+      blogPosts: blogRows ? blogRows.map(dbBlogPostToStore) : state.blogPosts,
       settings: mergedSettings ?? state.settings,
       loaded: true,
     });

@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from "react";
+import { jsonRecord } from "@/lib/json-response";
 import * as XLSX from "xlsx";
 import {
   X, Upload, RefreshCw, ChevronRight, Check, AlertCircle,
@@ -193,12 +194,15 @@ export function ImportModal({ onClose }: { onClose: () => void }) {
     try {
       const res = await fetch("https://open.er-api.com/v6/latest/USD");
       if (!res.ok) throw new Error();
-      const data = await res.json();
-      if (data?.rates?.MDL) setUsdRate(data.rates.MDL.toFixed(4));
-      if (data?.rates?.MDL && data?.rates?.EUR) {
-        const eurMdl = data.rates.MDL / data.rates.EUR;
-        setEurRate(eurMdl.toFixed(4));
+      const rates = jsonRecord(jsonRecord(await res.json()).rates);
+      const mdl = rates.MDL;
+      const eur = rates.EUR;
+      if (typeof mdl !== "number" || !Number.isFinite(mdl) || mdl <= 0 ||
+          typeof eur !== "number" || !Number.isFinite(eur) || eur <= 0) {
+        throw new Error("Curs valutar invalid");
       }
+      setUsdRate(mdl.toFixed(4));
+      setEurRate((mdl / eur).toFixed(4));
     } catch {
       // silently fail — user can type manually
     } finally {

@@ -29,6 +29,8 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
   }
 }
 
+// React 19 owns metadata after mount; remove the static copies to avoid duplicates.
+document.querySelectorAll("[data-teco-prerender]").forEach(element => element.remove());
 createRoot(document.getElementById("root")!).render(
   <ErrorBoundary>
     <App />
