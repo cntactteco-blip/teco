@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Link } from "wouter";
 import {
-  Wrench, CheckCircle2, Phone, Star, ChevronDown, MapPin,
+  Wrench, CheckCircle2, Phone, Calculator, ChevronDown, MapPin,
   Clock, Shield, Award, Zap, Camera, ArrowRight, CalendarCheck
 } from "lucide-react";
 import { SEO, schemas } from "@/components/SEO";
 import { useLang } from "@/contexts/LangContext";
 import { useStore } from "@/lib/store";
+
+const SmartCostCalculator = lazy(() => import("@/components/SmartCostCalculator"));
 
 function FAQItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
@@ -38,8 +40,8 @@ const PRICES = [
 ];
 
 const STEPS = [
-  { n: "01", icon: Phone, title: "Contactezi echipa", desc: "Suni sau scrii pe WhatsApp — răspundem în maxim 30 de minute și programăm vizita." },
-  { n: "02", icon: Camera, title: "Consultație gratuită la fața locului", desc: "Tehnicianul vine la adresa ta, evaluează amplasamentul și recomandă cele mai bune soluții." },
+  { n: "01", icon: Phone, title: "Contactezi echipa", desc: "Suni sau scrii pe WhatsApp, descrii obiectul și stabilim detaliile pentru evaluare." },
+  { n: "02", icon: Camera, title: "Evaluare la fața locului", desc: "Confirmăm condițiile deplasării, evaluăm amplasamentul și recomandăm soluția potrivită." },
   { n: "03", icon: Wrench, title: "Montaj profesional", desc: "Instalăm camerele, tragem cablurile mascat sau mascabil și configurăm NVR-ul." },
   { n: "04", icon: CalendarCheck, title: "Predare cheie în mână", desc: "Testăm totul, configurăm aplicația pe telefonul tău și te instruim cum să folosești sistemul." },
 ];
@@ -51,11 +53,11 @@ const CITIES = [
 ];
 
 const FEATURES = [
-  { icon: Shield, title: "Garanție 2–5 ani la montaj", desc: "Dacă apare orice problemă cu instalarea noastră, revenim gratuit." },
-  { icon: Clock, title: "Instalare în 24–48h", desc: "Programăm vizita pentru ziua următoare, în intervalul orar ales de tine." },
-  { icon: Award, title: "Tehnicieni certificați", desc: "Echipa noastră are experiență în sisteme Dahua, Uniview, IMOU, Ajax." },
+  { icon: Shield, title: "Condiții clare de garanție", desc: "Primești condițiile aplicabile echipamentelor și lucrării înainte de confirmare." },
+  { icon: Clock, title: "Programare confirmată", desc: "Stabilim intervalul disponibil pentru adresa ta înainte de deplasare." },
+  { icon: Award, title: "Soluție adaptată obiectului", desc: "Alegem traseele, camerele și stocarea după spațiu, nu după un pachet generic." },
   { icon: Zap, title: "Configurare completă", desc: "Setăm NVR-ul, aplicația mobilă și alertele — totul funcționează din prima zi." },
-  { icon: MapPin, title: "Toată Moldova", desc: "Deservim Chișinău, Bălți și toate raioanele. Transport inclus în ofertă." },
+  { icon: MapPin, title: "Toată Moldova", desc: "Deservim Chișinău și raioanele, iar deplasarea este confirmată în ofertă." },
   { icon: CheckCircle2, title: "Prețuri transparente", desc: "Oferta detaliată ÎNAINTE de montaj — fără surprize la factură." },
 ];
 
@@ -86,7 +88,7 @@ const FAQS = [
   },
   {
     q: "Oferiți garanție pentru montaj?",
-    a: "Da, oferim garanție 2–5 ani pentru montajul realizat de noi. Dacă apare orice problemă legată de instalare în această perioadă, revenim și remediem gratuit.",
+    a: "Condițiile de garanție pentru echipamente și lucrare sunt prezentate în ofertă înainte de confirmare. Perioada aplicabilă depinde de produsele și serviciile incluse în proiect.",
   },
   {
     q: "Pot vedea camerele de pe telefon de oriunde?",
@@ -115,8 +117,8 @@ export default function MontareCamere() {
   const sp = useStore(s => s.settings.servicePrices);
   const montajPrice = sp?.montaj?.replace(/^de la /i, "") || "750 MDL/cameră";
 
-  const title = "Montare Camere Supraveghere Moldova | Instalare Profesională 24h | Teco.md";
-  const description = "Montare și instalare sisteme de supraveghere în Moldova. Tehnicieni certificați, garanție 2–5 ani. Prețuri de la 750 MDL/cameră. Programează azi — instalăm în 24h oriunde în Moldova. ☎ +373 67 200 463";
+  const title = "Instalare Camere Supraveghere: Prețuri Moldova | TECO.md";
+  const description = "Vezi prețuri orientative pentru instalarea camerelor de supraveghere în Moldova, ce include manopera și calculează online un sistem pentru casă sau afacere.";
   const keywords = "montare camere supraveghere moldova, instalare sistem supraveghere chisinau, montaj camere ip wifi, instalare nvr dahua uniview, montare camere exterior, pret montaj camera supraveghere moldova, instalare sisteme securitate chisinau, teco.md montaj";
 
   const jsonLd = [
@@ -129,7 +131,7 @@ export default function MontareCamere() {
       "@type": "Service",
       "@id": "https://teco.md/montare-camere-supraveghere#service",
       name: "Montare și Instalare Sisteme de Supraveghere Moldova",
-      description: "Serviciu profesional de montare, instalare și configurare sisteme de supraveghere video, camere IP, NVR-uri și sisteme de alarmă în Moldova. Tehnicieni certificați, garanție 2–5 ani.",
+      description: "Serviciu de montare, instalare și configurare sisteme de supraveghere video, camere IP, NVR-uri și sisteme de alarmă în Moldova, cu deviz prezentat înainte de lucrare.",
       url: "https://teco.md/montare-camere-supraveghere",
       image: "https://teco.md/opengraph.jpg",
       provider: {
@@ -153,13 +155,6 @@ export default function MontareCamere() {
           priceCurrency: "MDL",
           eligibleQuantity: { "@type": "QuantitativeValue", value: p.cameras, unitCode: "CAM" },
         })),
-      },
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: "4.9",
-        reviewCount: "213",
-        bestRating: "5",
-        worstRating: "1",
       },
     },
     schemas.faq(FAQS.slice(0, 8).map((f) => ({ question: f.q, answer: f.a }))),
@@ -204,36 +199,29 @@ export default function MontareCamere() {
               Serviciu Profesional
             </div>
             <h1 className="text-3xl md:text-5xl font-black leading-tight mb-5">
-              Montare Camere de Supraveghere
-              <span className="block text-[#FF4F00] mt-1">în Moldova</span>
+              Instalare Camere de Supraveghere
+              <span className="block text-[#FF4F00] mt-1">Prețuri în Moldova</span>
             </h1>
             <p className="text-zinc-300 text-base md:text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
-              Tehnicieni certificați instalează camerele la adresa ta în 24–48h.
-              Garanție 2–5 ani la montaj. Prețuri de la <strong className="text-white">{montajPrice}</strong>.
+              Află cât costă manopera, ce intră în deviz și ce sistem se potrivește obiectului tău.
+              Preț orientativ de la <strong className="text-white">{montajPrice}</strong>.
             </p>
-            {/* Stars */}
-            <div className="flex items-center justify-center gap-2 mb-8">
-              <div className="flex">
-                {[1,2,3,4,5].map(i => <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />)}
-              </div>
-              <span className="text-zinc-300 text-sm"><strong className="text-white">4.9</strong> din 213 recenzii</span>
-            </div>
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <a
-                href="tel:+37367200463"
+                href="#calculator-pret"
                 className="inline-flex items-center justify-center gap-2 bg-[#FF4F00] text-white font-bold px-7 py-3.5 rounded-xl text-base hover:opacity-90 transition-all shadow-lg"
+              >
+                <Calculator className="w-4 h-4" />
+                Calculează Prețul
+              </a>
+              <a
+                href="tel:+37367200463"
+                className="inline-flex items-center justify-center gap-2 border border-zinc-700 text-white font-semibold px-7 py-3.5 rounded-xl text-base hover:bg-zinc-800 transition-all"
               >
                 <Phone className="w-4 h-4" />
                 Sună Acum: 067 200 463
               </a>
-              <Link
-                href="/produse?cat=kituri"
-                className="inline-flex items-center justify-center gap-2 border border-zinc-700 text-white font-semibold px-7 py-3.5 rounded-xl text-base hover:bg-zinc-800 transition-all"
-              >
-                <Camera className="w-4 h-4" />
-                Vezi Seturi Complete
-              </Link>
             </div>
           </div>
         </section>
@@ -242,10 +230,10 @@ export default function MontareCamere() {
         <section className="bg-[#FF4F00] py-8 px-4">
           <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-white text-center">
             {[
-              { n: "500+", label: "Sisteme instalate" },
-              { n: "24h", label: "Timp de răspuns" },
-              { n: "2–5 ani", label: "Garanție montaj" },
-              { n: "100%", label: "Clienți mulțumiți" },
+              { n: "Deviz", label: "înainte de lucrare" },
+              { n: "RO / RU", label: "consultanță" },
+              { n: "Telefon", label: "configurat inclus" },
+              { n: "MD", label: "acoperire națională" },
             ].map((s) => (
               <div key={s.label}>
                 <div className="text-3xl font-black mb-0.5">{s.n}</div>
@@ -314,6 +302,13 @@ export default function MontareCamere() {
             </p>
           </div>
         </section>
+
+        {/* ── Calculator ─────────────────────────────────────────── */}
+        <div id="calculator-pret" className="scroll-mt-24">
+          <Suspense fallback={<div className="h-64 bg-white" aria-hidden="true" />}>
+            <SmartCostCalculator />
+          </Suspense>
+        </div>
 
         {/* ── Procesul ────────────────────────────────────────────── */}
         <section className="py-14 px-4">
@@ -421,7 +416,7 @@ export default function MontareCamere() {
               Gata să instalezi sistemul tău de supraveghere?
             </h2>
             <p className="text-orange-100 text-sm mb-8 max-w-lg mx-auto">
-              Sună-ne sau scrie pe WhatsApp — îți oferim consultație gratuită și programăm instalarea în cel mai scurt timp.
+              Sună-ne sau scrie pe WhatsApp — discutăm obiectul, pregătim devizul și confirmăm programarea.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <a

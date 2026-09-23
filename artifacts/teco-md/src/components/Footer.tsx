@@ -34,7 +34,7 @@ export function Footer() {
         <div>
           <h4 className="font-medium text-white mb-5 text-sm uppercase tracking-wider">{t("footer.services")}</h4>
           <ul className="space-y-3 text-sm text-zinc-400">
-            <li><Link href="/montare-camere-supraveghere" className="hover:text-[#FF4F00] transition-colors">{t("footer.s.install")}</Link></li>
+            <li><Link href="/montare-camere-supraveghere" className="hover:text-[#FF4F00] transition-colors">{lang === "ru" ? "Цены на установку камер" : "Preț instalare camere"}</Link></li>
             <li><Link href="/servicii" className="hover:text-[#FF4F00] transition-colors">{t("footer.s.config")}</Link></li>
             <li><Link href="/reparatii-camere-supraveghere" className="hover:text-[#FF4F00] transition-colors">{t("footer.s.service")}</Link></li>
             <li><Link href="/servicii" className="hover:text-[#FF4F00] transition-colors">{t("footer.s.consult")}</Link></li>
