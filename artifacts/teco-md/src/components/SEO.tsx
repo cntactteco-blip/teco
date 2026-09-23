@@ -94,7 +94,7 @@ export function SEO({
       <meta property="og:image:type" content="image/jpeg" />
       <meta property="og:image:alt" content="Teco.md — Sisteme de Supraveghere Moldova" />
       <meta property="og:phone_number" content="+373-67-200-463" />
-      <meta property="og:email" content="info@teco.md" />
+      <meta property="og:email" content="contact@teco.md" />
       <meta property="og:street-address" content="Chișinău" />
       <meta property="og:locality" content="Chișinău" />
       <meta property="og:country-name" content="Moldova" />
@@ -165,6 +165,16 @@ export const schemas = {
       "@type": "Organization",
       "@id": "https://teco.md/#business",
       name: "TECO.md", url: "https://teco.md/", telephone: "+37367200463",
+      email: "contact@teco.md",
+      contactPoint: {
+        "@type": "ContactPoint",
+        telephone: "+37367200463",
+        email: "contact@teco.md",
+        contactType: "customer service",
+        availableLanguage: ["Romanian", "Russian"],
+        areaServed: "MD",
+        url: "https://teco.md/contact/",
+      },
       description: lang === "ro" ? "Echipamente de supraveghere, instalare și reparații în Moldova." : "Оборудование видеонаблюдения, монтаж и ремонт в Молдове.",
       areaServed: { "@type": "Country", name: "Moldova" },
       logo: "https://teco.md/logo.png",
@@ -177,6 +187,16 @@ export const schemas = {
       "@type": "Organization",
       "@id": "https://teco.md/#business",
       name: "TECO.md", url: "https://teco.md/", telephone: "+37367200463",
+      email: "contact@teco.md",
+      contactPoint: {
+        "@type": "ContactPoint",
+        telephone: "+37367200463",
+        email: "contact@teco.md",
+        contactType: "customer service",
+        availableLanguage: ["Romanian", "Russian"],
+        areaServed: "MD",
+        url: "https://teco.md/contact/",
+      },
       logo: "https://teco.md/logo.png",
       areaServed: { "@type": "Country", name: "Moldova" },
     };
