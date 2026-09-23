@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLang } from "@/contexts/LangContext";
 import { SEO, schemas } from "@/components/SEO";
+import { trackViewProduct } from "@/lib/analytics";
 
 // ── Pagina "Produs negăsit" cu auto-redirect ─────────────────────────
 function ProductNotFound() {
@@ -427,6 +428,9 @@ export default function ProductDetail() {
     setActiveImageIndex(0);
     if (carouselRef.current) carouselRef.current.scrollTo({ left: 0, behavior: "instant" as ScrollBehavior });
   }, [slug]);
+  useEffect(() => {
+    if (product) trackViewProduct({ id: product.id, name: product.name, price: product.price, category: product.category });
+  }, [product?.id, slug]);
   if (!product) {
     return <ProductNotFound />;
   }

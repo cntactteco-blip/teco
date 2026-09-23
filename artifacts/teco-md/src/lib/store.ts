@@ -2,6 +2,7 @@ import { useSyncExternalStore, useMemo, useRef } from "react";
 import { jsonRecord } from "./json-response";
 import _snapshot from "./catalog-snapshot.json";
 import { products as seedProducts } from "./products";
+import { trackLead } from "./analytics";
 
 // ─── Types ─────────────────────────────────────────────────────────
 export interface StoreProduct {
@@ -946,6 +947,7 @@ export const storeActions = {
       status: "new",
     };
     setState((s) => ({ ...s, leads: [newLead, ...s.leads] }));
+    trackLead(newLead.source);
     fetch(_API + "/api/leads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

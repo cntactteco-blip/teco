@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useCart } from "@/hooks/useCart";
 import { X, Shield, Phone, User, CheckCircle } from "lucide-react";
 import { storeActions } from "@/lib/store";
-import { trackLead } from "@/lib/analytics";
 import { ConsentCheckbox } from "@/components/ConsentCheckbox";
 
 const STORAGE_KEY = "teco_exit_shown_at";
@@ -52,7 +51,6 @@ export function ExitIntentPopup() {
     import("@/lib/notify").then(({ notifyLead }) =>
       notifyLead({ name: name.trim(), phone: phone.trim(), source: "Exit Intent Popup", notes: "Captat prin popup exit-intent" })
     );
-    trackLead("exit-intent");
     setSubmitted(true);
     localStorage.setItem(STORAGE_KEY, String(Date.now()));
     setTimeout(dismiss, 3000);

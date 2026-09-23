@@ -8,7 +8,7 @@ type Panel = "bar" | "expanded";
 export function CookieConsent() {
   const [visible, setVisible] = useState(false);
   const [panel, setPanel] = useState<Panel>("bar");
-  const [analytics, setAnalytics] = useState(true);
+  const [analytics, setAnalytics] = useState(false);
   const [marketing, setMarketing] = useState(false);
   const [detailOpen, setDetailOpen] = useState<string | null>(null);
   const { lang } = useLang();
