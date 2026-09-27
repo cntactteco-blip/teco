@@ -1,4 +1,4 @@
-import { canonicalPath } from "../lib/seo-url.ts";
+import { absoluteImage, canonicalPath } from "../lib/seo-url.ts";
 
 export type Manifest = { pages: Record<string, string>; redirects: Record<string, string>; queryRedirects?: Record<string, string> };
 type Environment = { ASSETS: { fetch(request: Request): Promise<Response> }; DB?: D1Database };
@@ -56,12 +56,20 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
         const canonical = canonicalPath(`/${dynamic[1]}/${encodeURIComponent(String(row.slug || row.id))}`);
         if (url.pathname !== canonical) return new Response(null, { status: 301, headers: { Location: canonical + url.search } });
         const title = escapeHtml(row.name || row.title);
-        const description = escapeHtml(row.description || "");
+        const rawDescription = String(row.description || "");
+        const description = escapeHtml(rawDescription);
+        const productImage = String(row.image_url || "").trim();
+        const imageUrl = escapeHtml(productImage && !productImage.startsWith("data:")
+          ? absoluteImage(productImage)
+          : absoluteImage("/opengraph.jpg"));
+        const socialHead = dynamic[1] === "product"
+          ? `<meta property="og:type" content="product"><meta property="og:title" content="${title} | TECO.md"><meta property="og:description" content="${escapeHtml(rawDescription.slice(0, 300))}"><meta property="og:url" content="https://teco.md${escapeHtml(canonical)}"><meta property="og:image" content="${imageUrl}"><meta property="og:image:alt" content="${title}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${title} | TECO.md"><meta name="twitter:description" content="${escapeHtml(rawDescription.slice(0, 300))}"><meta name="twitter:image" content="${imageUrl}">`
+          : "";
         const shell = await readAsset("/app");
         if (!shell.ok) throw new Error("Missing application shell");
         let html = await shell.text();
         html = html.replace(/<meta[^>]*name="robots"[^>]*>/gi, "");
-        html = html.replace("</head>", `<title data-teco-prerender="">${title} | TECO.md</title><meta data-teco-prerender="" name="description" content="${description.slice(0, 300)}"><link data-teco-prerender="" rel="canonical" href="https://teco.md${escapeHtml(canonical)}"></head>`);
+        html = html.replace("</head>", `<title data-teco-prerender="">${title} | TECO.md</title><meta data-teco-prerender="" name="description" content="${escapeHtml(rawDescription.slice(0, 300))}"><link data-teco-prerender="" rel="canonical" href="https://teco.md${escapeHtml(canonical)}">${socialHead}</head>`);
         html = html.replace('<div id="root"></div>', `<div id="root"><main><h1>${title}</h1><p>${description}</p><a href="/produse/">Catalog TECO.md</a></main></div>`);
         return new Response(request.method === "HEAD" ? null : html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache" } });
       }

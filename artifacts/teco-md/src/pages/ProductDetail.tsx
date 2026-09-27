@@ -529,7 +529,7 @@ export default function ProductDetail() {
 
   return (
     <>
-      <SEO title={metaTitle} description={metaDesc} keywords={`${product.brand}, ${product.category}, ${product.model}, ${product.name}, Moldova, Teco.md`} ogType="product" canonical={`/product/${product.slug || product.id}`} lang={lang} jsonLd={jsonLd} />
+      <SEO title={metaTitle} description={metaDesc} keywords={`${product.brand}, ${product.category}, ${product.model}, ${product.name}, Moldova, Teco.md`} ogType="product" ogImage={product.imageUrl || undefined} canonical={`/product/${product.slug || product.id}`} lang={lang} jsonLd={jsonLd} />
       <main className="flex-1 w-full bg-[#FAFAFA] pb-[80px] md:pb-0" role="main" aria-label={product.name}>
 
       {/* BREADCRUMB */}

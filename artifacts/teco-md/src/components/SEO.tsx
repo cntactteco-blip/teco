@@ -89,10 +89,10 @@ export function SEO({
       <meta property="og:locale" content={lang === "ro" ? "ro_MD" : "ru_MD"} />
       <meta property="og:locale:alternate" content={lang === "ro" ? "ru_MD" : "ro_MD"} />
       <meta property="og:image" content={imageUrl} />
-      <meta property="og:image:width" content="1200" />
-      <meta property="og:image:height" content="630" />
-      <meta property="og:image:type" content="image/jpeg" />
-      <meta property="og:image:alt" content="Teco.md — Sisteme de Supraveghere Moldova" />
+      {ogType !== "product" && <meta property="og:image:width" content="1200" />}
+      {ogType !== "product" && <meta property="og:image:height" content="630" />}
+      {ogType !== "product" && <meta property="og:image:type" content="image/jpeg" />}
+      <meta property="og:image:alt" content={ogType === "product" ? finalTitle : "Teco.md — Sisteme de Supraveghere Moldova"} />
       <meta property="og:phone_number" content="+373-67-200-463" />
       <meta property="og:email" content="contact@teco.md" />
       <meta property="og:street-address" content="Chișinău" />
@@ -109,7 +109,7 @@ export function SEO({
       <meta name="twitter:title" content={finalTitle} />
       <meta name="twitter:description" content={finalDesc} />
       <meta name="twitter:image" content={imageUrl} />
-      <meta name="twitter:image:alt" content="Teco.md — Sisteme de Supraveghere Moldova" />
+      <meta name="twitter:image:alt" content={ogType === "product" ? finalTitle : "Teco.md — Sisteme de Supraveghere Moldova"} />
 
       {/* PWA / App */}
       <link rel="manifest" href={typeof window !== "undefined" && window.location.pathname.startsWith("/admin") ? "/manifest-admin.json" : "/manifest.json"} />
