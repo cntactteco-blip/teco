@@ -3,7 +3,7 @@ import { useStore } from "@/lib/store";
 import { useLang } from "@/contexts/LangContext";
 import { X, Plus, Minus, ShoppingBag, ArrowRight, Zap } from "lucide-react";
 import { Link } from "wouter";
-import { trackBeginCheckout, trackAddToCart } from "@/lib/analytics";
+import { trackBeginCheckout } from "@/lib/analytics";
 
 const CAMERA_CATS = new Set(["wifi", "poe", "4g"]);
 const NVR_CATS    = new Set(["nvr"]);
@@ -140,7 +140,6 @@ export function CartDrawer() {
                       <button
                         onClick={() => {
                           addItem({ id: p.id, name: p.name, price: p.price, icon: p.icon, imageUrl: p.imageUrl });
-                          trackAddToCart({ id: p.id, name: p.name, price: p.price, qty: 1, category: p.category });
                         }}
                         className="flex-shrink-0 bg-[#FF4F00] text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg hover:opacity-90 transition-opacity"
                       >

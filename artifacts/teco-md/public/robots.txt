@@ -3,4 +3,20 @@ Allow: /
 Disallow: /admin
 Disallow: /checkout
 
+# Allow retrieval crawlers used for AI search answers.
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /admin
+Disallow: /checkout
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin
+Disallow: /checkout
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /admin
+Disallow: /checkout
+
 Sitemap: https://teco.md/sitemap.xml

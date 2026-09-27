@@ -186,14 +186,14 @@ const SERVICES = [
         { name: "Тестирование и сдача", text: "Полностью тестируем систему, проверяем все камеры, передаём готовую систему и обучаем пользователя. Гарантия 12 месяцев на работу." },
       ],
     }),
-    schemas.faq(FAQ_RO.map((x) => ({ question: x.q, answer: x.a }))),
+    schemas.faq(FAQ.map((x) => ({ question: x.q, answer: x.a }))),
     schemas.breadcrumb([
       { name: ro ? "Acasa" : "Главная", url: "https://teco.md/" },
       { name: ro ? "Servicii" : "Услуги", url: "https://teco.md/servicii" },
     ]),
   ];
   const pageTitle = ro ? "Servicii Montaj, Instalare si Reparatii Camere — Teco.md Moldova" : "Монтаж, Установка и Ремонт Камер Видеонаблюдения — Teco.md Молдова";
-  const pageDesc = ro ? "Montaj și reparatii camere supraveghere in Moldova. Instalare in 24h oriunde in tara. Reparatie NVR, DVR, camere IP si analogice. Garantie 12 luni. Preturi de la 200 MDL." : "Монтаж и ремонт камер видеонаблюдения в Молдове. Установка за 24 часа по всей стране. Ремонт NVR, DVR, IP и аналоговых камер. Гарантия 12 месяцев. Цены от 200 MDL.";
+  const pageDesc = ro ? "Montaj și reparații camere de supraveghere în toată Moldova. Instalare, diagnosticare și reparații NVR, DVR și camere IP. Programarea și oferta se confirmă pentru localitatea ta." : "Монтаж и ремонт камер видеонаблюдения по всей Молдове. Установка, диагностика и ремонт NVR, DVR и IP-камер. Срок и смета подтверждаются для вашего населённого пункта.";
 
   return (
     <>

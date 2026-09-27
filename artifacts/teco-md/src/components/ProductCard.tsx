@@ -25,9 +25,10 @@ export function ProductCard({ product }: { product: StoreProduct }) {
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!product.inStock) return;
     addItem(product);
     setAdded(true);
-    toast({ title: "Adăugat în coș!", description: "Produsul a fost rezervat." });
+    toast({ title: "Adăugat în coș!", description: product.name });
     setTimeout(() => openCart(), 500);
     setTimeout(() => setAdded(false), 2500);
   };
@@ -113,18 +114,21 @@ export function ProductCard({ product }: { product: StoreProduct }) {
         <div className="flex items-center gap-1.5 text-xs font-semibold">
           <div className={`w-1.5 h-1.5 rounded-full ${product.inStock ? 'bg-emerald-500' : 'bg-[#FF4F00]'}`} />
           <span className={product.inStock ? 'text-emerald-600' : 'text-[#FF4F00]'}>
-            {product.inStock ? 'În Stoc' : 'Stoc Limitat'}
+            {product.inStock ? 'În Stoc' : 'Stoc indisponibil'}
           </span>
         </div>
 
         <button
           onClick={handleAdd}
-          className={`w-full py-3 rounded-xl font-bold text-sm transition-all active:scale-95 flex items-center justify-center gap-2 mt-1 ${
-            added ? "bg-emerald-500 text-white" : "bg-[#FF4F00] text-white hover:bg-orange-600"
+          disabled={!product.inStock}
+          className={`w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 mt-1 ${
+            !product.inStock ? "bg-zinc-200 text-zinc-500 cursor-not-allowed" : added ? "bg-emerald-500 text-white active:scale-95" : "bg-[#FF4F00] text-white hover:bg-orange-600 active:scale-95"
           }`}
           data-testid={`btn-add-cart-${product.id}`}
         >
-          {added
+          {!product.inStock
+            ? <>Stoc indisponibil</>
+            : added
             ? <><Check className="w-4 h-4"/> Adăugat în Coș</>
             : <><ShoppingCart className="w-4 h-4"/> Adaugă în Coș</>}
         </button>
