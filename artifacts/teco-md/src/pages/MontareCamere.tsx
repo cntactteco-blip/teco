@@ -117,8 +117,8 @@ export default function MontareCamere() {
   const sp = useStore(s => s.settings.servicePrices);
   const montajPrice = sp?.montaj?.replace(/^de la /i, "") || "750 MDL/cameră";
 
-  const title = "Instalare Camere Supraveghere: Prețuri Moldova | TECO.md";
-  const description = "Vezi prețuri orientative pentru instalarea camerelor de supraveghere în Moldova, ce include manopera și calculează online un sistem pentru casă sau afacere.";
+  const title = "Instalare Camere Supraveghere: Preț de la 750 MDL | TECO.md";
+  const description = "Instalare camere de supraveghere în toată Moldova: 750 MDL prima cameră, 650 MDL fiecare cameră suplimentară; 4 camere de la 2.700 MDL. Vezi ce include montajul și cere un deviz pentru locația ta.";
   const keywords = "montare camere supraveghere moldova, instalare sistem supraveghere chisinau, montaj camere ip wifi, instalare nvr dahua uniview, montare camere exterior, pret montaj camera supraveghere moldova, instalare sisteme securitate chisinau, teco.md montaj";
 
   const jsonLd = [
