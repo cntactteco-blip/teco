@@ -6,6 +6,7 @@ const GA_MEASUREMENT_ID = "G-C473N7E2ZJ";
 const META_PIXEL_ID = "833519011841481";
 let gaConfigured = false;
 let metaConfigured = false;
+let contactTrackingInstalled = false;
 
 declare global {
   interface Window {
@@ -67,6 +68,21 @@ function ensureMetaPixel() {
 export function initializeAnalytics() {
   ensureGoogleAnalytics();
   ensureMetaPixel();
+  if (!contactTrackingInstalled && typeof document !== "undefined") {
+    contactTrackingInstalled = true;
+    document.addEventListener("click", event => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const link = target.closest("a[href]");
+      if (!link) return;
+      const href = link.getAttribute("href") || "";
+      const method = href.startsWith("tel:") ? "phone"
+        : /^https?:\/\/(?:wa\.me|api\.whatsapp\.com|web\.whatsapp\.com)\//i.test(href) ? "whatsapp" : null;
+      if (!method) return;
+      // A contact click is an intent signal, not a confirmed lead or sale.
+      gtag("event", "contact_click", { contact_method: method, page_path: window.location.pathname });
+    });
+  }
 }
 
 export function trackPageView(path: string, title: string) {

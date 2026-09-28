@@ -3,6 +3,7 @@ import { jsonRecord } from "./json-response";
 import _snapshot from "./catalog-snapshot.json";
 import { products as seedProducts } from "./products";
 import { trackLead } from "./analytics";
+import { currentProductDescription } from "./product-copy";
 
 // ─── Types ─────────────────────────────────────────────────────────
 export interface StoreProduct {
@@ -489,7 +490,9 @@ const _cachedProducts = (() => {
     if (!raw) return null;
     const parsed = JSON.parse(raw) as StoreProduct[];
     // Tratăm array-ul gol ca null → fallback pe snapshot
-    return parsed && parsed.length > 0 ? parsed : null;
+    return parsed && parsed.length > 0
+      ? parsed.map(p => ({ ...p, description: currentProductDescription(p.description, p.price) }))
+      : null;
   } catch { return null; }
 })();
 
@@ -577,7 +580,7 @@ function dbProductToStore(row: any): StoreProduct {
     category: row.category,
     imageUrl: row.image_url,
     images: row.images,
-    description: row.description ?? "",
+    description: currentProductDescription(row.description, row.price),
     longDescription: row.long_description,
     techSpecs: row.tech_specs,
     inStock: row.in_stock,

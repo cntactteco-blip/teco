@@ -1,4 +1,5 @@
 import { absoluteImage, canonicalPath } from "../lib/seo-url.ts";
+import { currentProductDescription } from "../lib/product-copy.ts";
 
 export type Manifest = { pages: Record<string, string>; redirects: Record<string, string>; queryRedirects?: Record<string, string> };
 type Environment = { ASSETS: { fetch(request: Request): Promise<Response> }; DB?: D1Database };
@@ -58,8 +59,8 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
         const canonical = canonicalPath(`/${dynamic[1]}/${encodeURIComponent(String(row.slug || row.id))}`);
         if (url.pathname !== canonical) return new Response(null, { status: 301, headers: { Location: canonical + url.search } });
         const title = escapeHtml(row.name || row.title);
-        const rawDescription = String(row.description || row.long_description ||
-          `${row.name || row.title} ${row.brand || ""} ${row.model || ""}. Vezi detaliile și disponibilitatea la TECO.md.`).trim();
+        const rawDescription = currentProductDescription(row.description || row.long_description ||
+          `${row.name || row.title} ${row.brand || ""} ${row.model || ""}. Vezi detaliile și disponibilitatea la TECO.md.`, row.price).trim();
         const description = escapeHtml(rawDescription);
         const productImage = String(row.image_url || "").trim();
         const imageUrl = escapeHtml(productImage && !productImage.startsWith("data:")
