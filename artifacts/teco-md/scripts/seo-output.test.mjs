@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { makeSitemap, documentHtml, isIndexableHead, legacyRedirects } from "./seo-output.mjs";
 import { canonicalPath } from "../src/lib/seo-url.ts";
 import { serveHtml } from "../src/server/seo-handler.ts";
+import { currentProductDescription } from "../src/lib/product-copy.ts";
 
 test("canonical URLs preserve category identity and remove tracking parameters", () => {
   assert.equal(canonicalPath("/servicii?utm_source=test"), "/servicii/");
@@ -85,7 +86,7 @@ test("an indexed old kits category redirects to its relevant live landing page",
 
 test("product metadata comes from the live database even when a stale prerender exists", async () => {
   const product = { id: 146, slug: "camera-tiandy", name: "Camera Tiandy", price: 26992, in_stock: 1,
-    image_url: "/api/site-image/tiandy-photo", brand: "TIANDY", description: "Camera IP Tiandy 8MP" };
+    image_url: "/api/site-image/tiandy-photo", brand: "TIANDY", description: "Camera IP Tiandy 8MP la prețul de 18699 MDL." };
   const db = { prepare() { return { bind() { return { async first() { return product; } }; } }; } };
   const assets = { async fetch(request) {
     const path = new URL(request.url).pathname;
@@ -97,6 +98,12 @@ test("product metadata comes from the live database even when a stale prerender 
   assert.equal(result.status, 200);
   assert.ok(html.includes('"price":26992') && html.includes('"priceCurrency":"MDL"'));
   assert.ok(html.includes('og:image" content="https://teco.md/api/site-image/tiandy-photo"'));
-  assert.ok(html.includes("Camera IP Tiandy 8MP") && !html.includes("OLD PRICE 18699"));
+  assert.ok(html.includes("Camera IP Tiandy 8MP") && !html.includes("OLD PRICE 18699") && !html.includes("18699 MDL"));
   assert.ok(!html.includes('name="robots" content="noindex'));
+});
+
+test("a stale standalone price claim changes without rewriting genuine comparison or bundle amounts", () => {
+  assert.equal(currentProductDescription("Kit la prețul de 18699 MDL.", 26992), "Kit la prețul de 26.992 MDL.");
+  assert.equal(currentProductDescription("Preț vechi 18699 MDL; preț nou 26992 MDL.", 26992), "Preț vechi 18699 MDL; preț nou 26992 MDL.");
+  assert.equal(currentProductDescription("HDD 1000 MDL și montaj 650 MDL incluse.", 26992), "HDD 1000 MDL și montaj 650 MDL incluse.");
 });
