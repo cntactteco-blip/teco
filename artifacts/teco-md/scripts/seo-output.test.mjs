@@ -75,3 +75,28 @@ test("kit query aliases share one canonical landing page", async () => {
   const response = await serveHtml(new Request("https://teco.md/produse?cat=kituri&utm_source=google"), env, custom);
   assert.equal(response.headers.get("Location"), "/seturi-camere-supraveghere/?utm_source=google");
 });
+
+test("an indexed old kits category redirects to its relevant live landing page", async () => {
+  const custom = { ...manifest, queryRedirects: { "/produse/?cat=Seturi-Complete-Camere-Supraveghere": "/seturi-camere-supraveghere/" } };
+  const response = await serveHtml(new Request("https://teco.md/produse/?cat=Seturi-Complete-Camere-Supraveghere&utm_source=google"), env, custom);
+  assert.equal(response.status, 301);
+  assert.equal(response.headers.get("Location"), "/seturi-camere-supraveghere/?utm_source=google");
+});
+
+test("product metadata comes from the live database even when a stale prerender exists", async () => {
+  const product = { id: 146, slug: "camera-tiandy", name: "Camera Tiandy", price: 26992, in_stock: 1,
+    image_url: "/api/site-image/tiandy-photo", brand: "TIANDY", description: "Camera IP Tiandy 8MP" };
+  const db = { prepare() { return { bind() { return { async first() { return product; } }; } }; } };
+  const assets = { async fetch(request) {
+    const path = new URL(request.url).pathname;
+    return new Response(path === "/app" ? '<html><head><meta name="robots" content="noindex, follow"></head><body><div id="root"></div></body></html>' : "OLD PRICE 18699", { headers: { "Content-Type": "text/html" } });
+  } };
+  const result = await serveHtml(new Request("https://teco.md/product/camera-tiandy/"),
+    { ASSETS: assets, DB: db }, { pages: { "/product/camera-tiandy/": "/__seo/stale/" }, redirects: {} });
+  const html = await result.text();
+  assert.equal(result.status, 200);
+  assert.ok(html.includes('"price":26992') && html.includes('"priceCurrency":"MDL"'));
+  assert.ok(html.includes('og:image" content="https://teco.md/api/site-image/tiandy-photo"'));
+  assert.ok(html.includes("Camera IP Tiandy 8MP") && !html.includes("OLD PRICE 18699"));
+  assert.ok(!html.includes('name="robots" content="noindex'));
+});
