@@ -1,6 +1,6 @@
 import { useState, useEffect, Suspense, lazy } from "react";
 import { Link } from "wouter";
-import { Camera, Shield, Server, Zap, Truck, Phone, Award, Star, CheckCircle2, ChevronDown } from "lucide-react";
+import { Camera, Shield, Server, Zap, Truck, Phone, Award, Star, CheckCircle2, ChevronDown, Wrench, ArrowUpRight } from "lucide-react";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { AppointmentBooker } from "@/components/AppointmentBooker";
 import BundleBuilder from "@/components/BundleBuilder";
@@ -208,19 +208,25 @@ export default function Home() {
 
           <div className="flex flex-col gap-5 order-3 lg:order-none lg:col-start-1 lg:row-start-2">
 
-            {/* Stats row */}
-            <div className="flex items-center gap-0 animate-fade-in" style={{ animationDelay: "0.28s" }}>
-              <div className="flex flex-col pr-5 border-r border-zinc-200">
-                <span className="text-[2rem] font-black font-mono text-[#FF4F00] leading-none tabular-nums">5.0★</span>
-                <span className="text-[9px] text-zinc-400 uppercase tracking-widest mt-0.5">Google · {lang === "ro" ? "4 recenzii" : "4 отзыва"}</span>
+            {/* Social proof, sized for a narrow phone rather than three large counters. */}
+            <div className="grid grid-cols-2 gap-3 rounded-2xl border border-orange-100 bg-white/90 p-3 shadow-[0_10px_32px_-22px_rgba(9,9,11,0.35)] animate-fade-in" style={{ animationDelay: "0.28s" }}>
+              <div className="flex min-w-0 items-center gap-2.5">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-[#F15A24]">
+                  <Star className="h-5 w-5 fill-current" aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-base font-black leading-tight text-zinc-950">5.0/5</p>
+                  <p className="text-[11px] leading-snug text-zinc-500">Google · {lang === "ro" ? "4 recenzii" : "4 отзыва"}</p>
+                </div>
               </div>
-              <div className="flex flex-col px-5 border-r border-zinc-200">
-                <span className="text-[2rem] font-black font-mono text-[#09090B] leading-none tabular-nums">4</span>
-                <span className="text-[9px] text-zinc-400 uppercase tracking-widest mt-0.5">{lang === "ro" ? "recenzii Google" : "отзыва Google"}</span>
-              </div>
-              <div className="flex flex-col pl-5">
-                <span className="text-[2rem] font-black font-mono text-[#FF4F00] leading-none">{lang === "ro" ? "Livrare" : "Доставка"}</span>
-                <span className="text-[9px] text-zinc-400 uppercase tracking-widest mt-0.5">{lang === "ro" ? "în Moldova" : "по Молдове"}</span>
+              <div className="flex min-w-0 items-center gap-2.5 border-l border-zinc-100 pl-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-800">
+                  <Truck className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-sm font-extrabold leading-tight text-zinc-950">{lang === "ro" ? "Livrare" : "Доставка"}</p>
+                  <p className="text-[11px] leading-snug text-zinc-500">{lang === "ro" ? "în Moldova" : "по Молдове"}</p>
+                </div>
               </div>
             </div>
 
@@ -328,20 +334,38 @@ export default function Home() {
 
       </section>
 
-      {/* 5. TRUST STRIP */}
-      <section className="bg-white border-y border-zinc-100 py-5 md:py-10">
-        <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <div className="grid grid-cols-4 divide-x divide-zinc-100">
+      {/* 5. SERVICE PATHS */}
+      <section aria-labelledby="home-services-title" className="border-y border-zinc-100 bg-[#FAF9F7] py-9 md:py-14">
+        <div className="mx-auto max-w-7xl px-5 md:px-6">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-2 md:mb-7">
+            <div>
+              <p className="mb-1 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#E9511C]">TECO.md</p>
+              <h2 id="home-services-title" className="text-xl font-black tracking-tight text-zinc-950 md:text-3xl">
+                {lang === "ro" ? "De la alegere la instalare" : "От выбора до установки"}
+              </h2>
+            </div>
+            <span className="text-xs font-medium text-zinc-500 md:text-sm">
+              {lang === "ro" ? "Servicii pentru toată Moldova" : "Услуги по всей Молдове"}
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
             {[
-              { num: "5.0★", label: lang === "ro" ? "Google · 4 recenzii" : "Google · 4 отзыва" },
-              { num: lang === "ro" ? "Montaj" : "Монтаж", label: lang === "ro" ? "disponibil la solicitare" : "доступен по запросу" },
-              { num: lang === "ro" ? "Consultanță" : "Консультация", label: lang === "ro" ? "pentru alegerea sistemului" : "по выбору системы" },
-              { num: lang === "ro" ? "Reparații" : "Ремонт", label: lang === "ro" ? "și diagnosticare" : "и диагностика" },
-            ].map(({ num, label }) => (
-              <div key={label} className="flex flex-col items-center py-2 md:py-4 gap-1">
-                <span className="text-[#FF4F00] font-black text-xl md:text-4xl leading-none tracking-tight">{num}</span>
-                <span className="text-zinc-400 text-[10px] md:text-sm uppercase tracking-widest">{label}</span>
-              </div>
+              { icon: Wrench, title: lang === "ro" ? "Montaj" : "Монтаж", detail: lang === "ro" ? "Camere și cablare" : "Камеры и кабели", href: "/montare-camere-supraveghere/" },
+              { icon: Phone, title: lang === "ro" ? "Consultanță" : "Консультация", detail: lang === "ro" ? "Alegem sistemul" : "Подберём систему", href: "/contact/" },
+              { icon: Server, title: lang === "ro" ? "Configurare" : "Настройка", detail: lang === "ro" ? "NVR și aplicație" : "NVR и приложение", href: "/servicii/" },
+              { icon: Shield, title: lang === "ro" ? "Reparații" : "Ремонт", detail: lang === "ro" ? "Diagnostic și service" : "Диагностика и сервис", href: "/reparatii-camere-supraveghere/" },
+            ].map(({ icon: Icon, title, detail, href }) => (
+              <Link key={href} href={href}
+                className="group flex min-w-0 flex-col rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_5px_20px_-17px_rgba(9,9,11,0.4)] transition-colors hover:border-orange-200 hover:bg-orange-50/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF4F00] sm:p-5">
+                <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-[#E9511C] group-hover:bg-orange-100">
+                  <Icon className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <span className="flex min-w-0 items-center gap-1 text-sm font-extrabold leading-tight text-zinc-950 sm:text-base">
+                  <span className="min-w-0 break-words">{title}</span>
+                  <ArrowUpRight className="hidden h-3.5 w-3.5 shrink-0 text-[#E9511C] opacity-0 transition-opacity group-hover:opacity-100 sm:block" aria-hidden="true" />
+                </span>
+                <span className="mt-1 text-[11px] leading-snug text-zinc-500 sm:text-xs">{detail}</span>
+              </Link>
             ))}
           </div>
         </div>
