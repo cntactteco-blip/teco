@@ -35,6 +35,26 @@ function d1Query(sql) {
   return parsed[0]?.results ?? [];
 }
 
+async function readProducts() {
+  try {
+    const products = d1Query("SELECT * FROM products ORDER BY id");
+    if (!Array.isArray(products) || products.length === 0) throw new Error("D1 returned no products");
+    return { products, source: "D1" };
+  } catch (error) {
+    // Cloudflare Pages builds may not have credentials for the remote D1 CLI.
+    // The public catalog API reads the same production database at request time.
+    console.warn(`[snapshot] D1 CLI unavailable (${error.message}); reading the live catalog API.`);
+    const response = await fetch("https://teco.md/api/products", { signal: AbortSignal.timeout(20000) });
+    if (!response.ok) throw new Error(`Catalog API returned ${response.status}`);
+    const payload = await response.json();
+    if (!Array.isArray(payload?.data) || payload.data.length === 0 ||
+        payload.data.some(product => !product.id || !product.name || !product.slug || !Number.isFinite(Number(product.price)))) {
+      throw new Error("Catalog API returned an incomplete product list");
+    }
+    return { products: payload.data, source: "live API" };
+  }
+}
+
 function extractBase64Images(products) {
   mkdirSync(IMG_DIR, { recursive: true });
   let extracted = 0;
@@ -70,7 +90,7 @@ function extractBase64Images(products) {
 
 try {
   const existingSnapshot = readExistingSnapshot();
-  const rawProducts = d1Query("SELECT * FROM products ORDER BY id");
+  const { products: rawProducts, source } = await readProducts();
   const prods = rawProducts.map((p) => ({
     ...p,
     images: typeof p.images === "string" ? JSON.parse(p.images || "[]") : (p.images ?? []),
@@ -79,12 +99,12 @@ try {
 
   const extracted = extractBase64Images(prods);
 
-  const settingsRows = d1Query("SELECT data FROM settings WHERE id = 1");
-  let settings = null;
+  let settings = existingSnapshot?.settings ?? null;
   try {
+    const settingsRows = d1Query("SELECT data FROM settings WHERE id = 1");
     settings = settingsRows?.[0]?.data ? JSON.parse(settingsRows[0].data) : null;
-  } catch {
-    settings = null;
+  } catch (error) {
+    console.warn(`[snapshot] Settings D1 unavailable; retaining existing settings (${error.message}).`);
   }
 
   let blogPosts = existingSnapshot?.blogPosts ?? [];
@@ -101,15 +121,10 @@ try {
     generatedAt: new Date().toISOString(),
   };
   writeFileSync(OUT, JSON.stringify(snapshot));
-  console.log(`[snapshot] OK — ${prods.length} produse din D1, ${extracted} imagini extrase, settings: ${settings ? "yes" : "no"}`);
+  console.log(`[snapshot] OK — ${prods.length} products from ${source}, ${extracted} extracted images, settings: ${settings ? "yes" : "no"}`);
 
   // The final build generates sitemap.xml from the actual rendered routes.
 } catch (err) {
-  const existingSnapshot = readExistingSnapshot();
-  if (existingSnapshot) {
-    console.warn("[snapshot] D1 indisponibil la build; se folosește snapshot-ul valid existent.", err.message);
-  } else {
-    console.error("[snapshot] Build oprit: D1 nu este disponibil și nu există un snapshot valid.", err.message);
-    process.exitCode = 1;
-  }
+  console.error("[snapshot] Build stopped: no current catalog is available.", err);
+  process.exitCode = 1;
 }

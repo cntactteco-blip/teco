@@ -16,6 +16,9 @@ export function getCategoryRedirects(): Record<string, string> {
   const kitCategory = resolveCategorySlug("kituri", state.settings.categories, categories);
   const requested = new Set([...categories, "kituri", "alarme", ...state.settings.categories.flatMap(category => [category.id, category.slug])]);
   const redirects: Record<string, string> = {};
+  // A former category URL is still indexed and receiving clicks. Preserve its
+  // intent with a direct redirect to the current kits landing page.
+  redirects[canonicalPath("/produse/?cat=Seturi-Complete-Camere-Supraveghere")] = "/seturi-camere-supraveghere/";
   for (const category of requested) {
     const resolved = resolveCategorySlug(category, state.settings.categories, categories);
     if (!categories.includes(resolved)) continue;
