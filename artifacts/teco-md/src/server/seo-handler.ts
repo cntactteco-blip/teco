@@ -40,7 +40,9 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
     if (noIndex) headers.set("X-Robots-Tag", "noindex, follow");
     return new Response(request.method === "HEAD" ? null : original.body, { status, headers });
   };
-  if (asset) return response(asset, 200, url.searchParams.has("q"));
+  // Product details must reflect D1 even when a prerendered copy exists: stock
+  // and prices can change between deployments.
+  if (asset && !path.startsWith("/product/")) return response(asset, 200, url.searchParams.has("q"));
   if (isPrivate) return response("/app", 200, true);
 
   // Products/articles created after the last build remain reachable. Missing
@@ -56,7 +58,8 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
         const canonical = canonicalPath(`/${dynamic[1]}/${encodeURIComponent(String(row.slug || row.id))}`);
         if (url.pathname !== canonical) return new Response(null, { status: 301, headers: { Location: canonical + url.search } });
         const title = escapeHtml(row.name || row.title);
-        const rawDescription = String(row.description || "");
+        const rawDescription = String(row.description || row.long_description ||
+          `${row.name || row.title} ${row.brand || ""} ${row.model || ""}. Vezi detaliile și disponibilitatea la TECO.md.`).trim();
         const description = escapeHtml(rawDescription);
         const productImage = String(row.image_url || "").trim();
         const imageUrl = escapeHtml(productImage && !productImage.startsWith("data:")
@@ -65,17 +68,36 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
         const socialHead = dynamic[1] === "product"
           ? `<meta property="og:type" content="product"><meta property="og:title" content="${title} | TECO.md"><meta property="og:description" content="${escapeHtml(rawDescription.slice(0, 300))}"><meta property="og:url" content="https://teco.md${escapeHtml(canonical)}"><meta property="og:image" content="${imageUrl}"><meta property="og:image:alt" content="${title}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${title} | TECO.md"><meta name="twitter:description" content="${escapeHtml(rawDescription.slice(0, 300))}"><meta name="twitter:image" content="${imageUrl}">`
           : "";
+        const price = Number(row.price);
+        const productSchema = dynamic[1] === "product" && Number.isFinite(price) && price > 0
+          ? `<script type="application/ld+json">${JSON.stringify({
+              "@context": "https://schema.org", "@type": "Product",
+              name: String(row.name || row.title),
+              description: rawDescription.slice(0, 5000),
+              image: [absoluteImage(productImage && !productImage.startsWith("data:") ? productImage : "/opengraph.jpg")],
+              ...(row.brand ? { brand: { "@type": "Brand", name: String(row.brand) } } : {}),
+              ...(row.model ? { model: String(row.model) } : {}),
+              offers: { "@type": "Offer", url: `https://teco.md${canonical}`,
+                priceCurrency: "MDL", price, availability: row.in_stock === 1 || row.in_stock === true
+                  ? "https://schema.org/InStock" : "https://schema.org/OutOfStock" },
+            }).replace(/</g, "\\u003c")}</script>`
+          : "";
         const shell = await readAsset("/app");
         if (!shell.ok) throw new Error("Missing application shell");
         let html = await shell.text();
         html = html.replace(/<meta[^>]*name="robots"[^>]*>/gi, "");
-        html = html.replace("</head>", `<title data-teco-prerender="">${title} | TECO.md</title><meta data-teco-prerender="" name="description" content="${escapeHtml(rawDescription.slice(0, 300))}"><link data-teco-prerender="" rel="canonical" href="https://teco.md${escapeHtml(canonical)}">${socialHead}</head>`);
-        html = html.replace('<div id="root"></div>', `<div id="root"><main><h1>${title}</h1><p>${description}</p><a href="/produse/">Catalog TECO.md</a></main></div>`);
+        html = html.replace("</head>", `<title data-teco-prerender="">${title} | TECO.md</title><meta data-teco-prerender="" name="description" content="${escapeHtml(rawDescription.slice(0, 300))}"><link data-teco-prerender="" rel="canonical" href="https://teco.md${escapeHtml(canonical)}">${socialHead}${productSchema}</head>`);
+        const productDetails = dynamic[1] === "product"
+          ? `<img src="${imageUrl}" alt="${title}" width="600" height="600"><p>Preț: ${Number.isFinite(price) && price > 0 ? `${escapeHtml(price)} MDL` : "la cerere"}</p><p>${row.in_stock === 1 || row.in_stock === true ? "În stoc" : "Verifică disponibilitatea"}</p>`
+          : "";
+        html = html.replace('<div id="root"></div>', `<div id="root"><main><h1>${title}</h1>${productDetails}<p>${description}</p><a href="/produse/">Catalog TECO.md</a></main></div>`);
         return new Response(request.method === "HEAD" ? null : html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache" } });
       }
+      if (dynamic[1] === "product") return response("/404", 404, true);
     } catch {
       return new Response("Pagina nu este disponibilă temporar.", { status: 503, headers: { "Retry-After": "60", "Cache-Control": "no-store" } });
     }
   }
+  if (asset) return response(asset, 200, url.searchParams.has("q"));
   return response("/404", 404, true);
 }
