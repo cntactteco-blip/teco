@@ -2380,7 +2380,7 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
                 { key: "hero.stat_installs", label: "Stat: Instalări" },
                 { key: "hero.stat_rating", label: "Stat: Rating" },
                 { key: "hero.stat_delivery", label: "Stat: Livrare" },
-                { key: "hero.cta_buy", label: "Buton Cumpără" },
+                { key: "hero.cta_buy", label: "Buton Oferte" },
                 { key: "hero.cta_consult", label: "Buton Consultanță" },
                 { key: "hero.trust1", label: "Trust 1" },
                 { key: "hero.trust2", label: "Trust 2" },
