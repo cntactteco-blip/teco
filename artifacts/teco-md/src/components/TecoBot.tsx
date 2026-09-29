@@ -197,11 +197,10 @@ export function TecoBot() {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label="TecoBot AI"
-        className="fixed bottom-28 left-4 md:bottom-6 md:left-6 z-40 flex items-center gap-2 bg-gradient-to-br from-[#FF4F00] to-orange-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 px-3.5 py-2.5 md:px-4 md:py-3"
+        className="fixed bottom-[4.5rem] left-3 md:bottom-6 md:left-6 z-40 flex h-11 w-11 items-center justify-center bg-gradient-to-br from-[#FF4F00] to-orange-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 md:h-auto md:w-auto md:gap-2 md:px-4 md:py-3"
       >
         <Bot className="w-5 h-5 flex-shrink-0" />
-        <span className="text-sm font-bold hidden sm:inline">TecoBot AI</span>
-        <span className="text-sm font-bold sm:hidden">AI</span>
+        <span className="hidden text-sm font-bold md:inline">TecoBot AI</span>
         {unread > 0 && (
           <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">{unread}</span>
         )}

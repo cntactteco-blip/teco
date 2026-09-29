@@ -1,6 +1,6 @@
 import { useState, useEffect, Suspense, lazy } from "react";
 import { Link } from "wouter";
-import { Camera, Shield, Server, Zap, Truck, Phone, Award, Star, CheckCircle2, ChevronDown, Wrench, ArrowUpRight } from "lucide-react";
+import { Camera, Shield, Zap, Truck, Phone, Award, ChevronDown } from "lucide-react";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { AppointmentBooker } from "@/components/AppointmentBooker";
 import BundleBuilder from "@/components/BundleBuilder";
@@ -135,8 +135,6 @@ export default function Home() {
     form.reset();
   };
 
-  const tickerItems = t("hero.ticker").split(" • ");
-
   const HOME_FAQ_RO = [
     { q: "Câte camere de supraveghere am nevoie pentru o casă?", a: "Pentru o casă standard (3–4 camere) recomandăm: 1 cameră la intrarea principală, 1 la garaj sau parcare, 1–2 pe perimetrul exterior. Numărul exact depinde de suprafață și punctele critice. Consultanța noastră gratuită identifică exact ce ai nevoie." },
     { q: "Ce este mai bine — camere WiFi sau cablate (PoE)?", a: "Camerele WiFi sunt mai ușor de instalat și perfecte pentru case mici sau apartamente. Camerele PoE (cablate) sunt mai stabile, mai sigure și recomandate pentru afaceri sau case mari. Teco.md instalează ambele tipuri — te sfătuim în funcție de nevoile tale." },
@@ -166,89 +164,45 @@ export default function Home() {
           ══════════════════════════════════════════════ */}
       <section className="relative bg-white overflow-hidden border-b border-zinc-100">
 
-        {/* ── Ticker tape ── */}
-        <div className="bg-[#FF4F00] text-white text-[11px] font-semibold py-1.5 overflow-hidden select-none">
-          <div className="ticker-track whitespace-nowrap">
-            {[1,2].map(n => (
-              <span key={n} className="inline-flex items-center gap-6 px-6">
-                {tickerItems.map((item, i) => (
-                  <span key={i} className="inline-flex items-center gap-6">
-                    <span>{item}</span>
-                    <span className="opacity-40">•</span>
-                  </span>
-                ))}
-              </span>
-            ))}
-          </div>
-        </div>
-
         {/* ── Main hero body ── */}
-        <div className="max-w-7xl mx-auto px-5 py-10 md:py-16 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-8 items-center">
+        <div className="max-w-7xl mx-auto px-5 pt-9 pb-7 md:py-16 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-center">
 
           {/* LEFT — copy */}
-          <div className="flex flex-col gap-5 order-1 lg:order-none lg:col-start-1 lg:row-start-1">
+          <div className="flex flex-col gap-4 order-1 lg:order-none lg:col-start-1 lg:row-start-1">
 
             {/* Headline */}
-            <h1 className="font-black leading-[0.9] tracking-tight text-[#09090B]"
-                style={{ fontSize: "clamp(2.8rem, 9vw, 5.5rem)" }}>
-              <span className="block animate-fade-in" style={{ animationDelay: "0.05s" }}>
-                {t("hero.title1")}
-              </span>
-              <span className="hero-shine block animate-fade-in" style={{ animationDelay: "0.12s" }}>
-                {t("hero.title2")}
-              </span>
-              <span className="block text-zinc-400 font-black animate-fade-in" style={{ animationDelay: "0.19s", fontSize: "clamp(1.1rem, 3.5vw, 2rem)" }}>
-                {t("hero.subtitle")}
-              </span>
+            <h1 className="max-w-2xl text-[clamp(2.1rem,8vw,4.8rem)] font-black leading-[1.04] tracking-tight text-[#09090B] animate-fade-in">
+              {lang === "ro" ? "Camere de supraveghere și sisteme de securitate" : "Камеры видеонаблюдения и системы безопасности"}
             </h1>
+            <p className="max-w-xl text-sm leading-relaxed text-zinc-600 sm:text-lg">
+              {lang === "ro" ? "Camere WiFi, PoE, 4G și kituri complete pentru casă și afacere." : "Камеры WiFi, PoE, 4G и готовые комплекты для дома и бизнеса."}
+            </p>
 
           </div>
 
-          {/* RIGHT — seturi dinamice apar aici pe mobil (order-2) */}
+          {/* Acțiunile apar înaintea produsului pe ecranele mici. */}
 
-          <div className="flex flex-col gap-5 order-3 lg:order-none lg:col-start-1 lg:row-start-2">
-
-            {/* Social proof, sized for a narrow phone rather than three large counters. */}
-            <div className="grid grid-cols-2 gap-3 rounded-2xl border border-orange-100 bg-white/90 p-3 shadow-[0_10px_32px_-22px_rgba(9,9,11,0.35)] animate-fade-in" style={{ animationDelay: "0.28s" }}>
-              <div className="flex min-w-0 items-center gap-2.5">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-[#F15A24]">
-                  <Star className="h-5 w-5 fill-current" aria-hidden="true" />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-base font-black leading-tight text-zinc-950">5.0/5</p>
-                  <p className="text-[11px] leading-snug text-zinc-500">Google · {lang === "ro" ? "4 recenzii" : "4 отзыва"}</p>
-                </div>
-              </div>
-              <div className="flex min-w-0 items-center gap-2.5 border-l border-zinc-100 pl-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-800">
-                  <Truck className="h-5 w-5" aria-hidden="true" />
-                </span>
-                <div className="min-w-0">
-                  <p className="text-sm font-extrabold leading-tight text-zinc-950">{lang === "ro" ? "Livrare" : "Доставка"}</p>
-                  <p className="text-[11px] leading-snug text-zinc-500">{lang === "ro" ? "în Moldova" : "по Молдове"}</p>
-                </div>
-              </div>
-            </div>
+          <div className="flex flex-col gap-3 order-2 lg:order-none lg:col-start-1 lg:row-start-2">
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-3 animate-fade-in" style={{ animationDelay: "0.36s" }}>
+            <div className="flex flex-col sm:flex-row gap-3 animate-fade-in" style={{ animationDelay: "0.2s" }}>
               <Link href="/produse"
-                className="hero-btn-glow flex items-center justify-center gap-2 bg-[#FF4F00] text-white px-7 py-4 rounded-2xl font-black text-lg">
+                className="hero-btn-glow flex items-center justify-center gap-2 bg-[#FF4F00] text-white px-7 py-4 rounded-2xl font-black text-base sm:text-lg">
                 <Zap className="w-5 h-5" />
-                {t("hero.cta_buy")}
+                {lang === "ro" ? "Vezi produsele" : "Смотреть товары"}
               </Link>
               <button
                 onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
-                className="flex items-center justify-center gap-2 border-2 border-zinc-900 text-[#09090B] px-7 py-4 rounded-2xl font-bold text-lg hover:bg-zinc-50 transition-colors active:scale-95">
+                className="flex items-center justify-center gap-2 border-2 border-zinc-900 text-[#09090B] px-7 py-4 rounded-2xl font-bold text-base sm:text-lg hover:bg-zinc-50 transition-colors active:scale-95">
                 <Phone className="w-4 h-4" />
-                {t("hero.cta_consult")}
+                {lang === "ro" ? "Cere o ofertă" : "Запросить предложение"}
               </button>
             </div>
 
           </div>
 
           {/* RIGHT — product showcase (seturi dinamice) */}
-          <div className="relative flex items-center justify-center lg:justify-end order-2 lg:order-none lg:col-start-2 lg:row-start-1 lg:row-span-2">
+          <div className="relative flex items-center justify-center lg:justify-end order-3 mt-4 lg:mt-0 lg:order-none lg:col-start-2 lg:row-start-1 lg:row-span-2">
 
             <div className="absolute w-72 h-72 bg-[#FF4F00] rounded-full blur-[100px] opacity-10 pointer-events-none" />
 
@@ -327,56 +281,9 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Scroll hint */}
-        <div className="flex justify-center pb-4 opacity-40">
-          <ChevronDown className="w-5 h-5 text-zinc-400 animate-bounce" />
-        </div>
-
       </section>
 
-      {/* 5. SERVICE PATHS */}
-      <section aria-labelledby="home-services-title" className="border-y border-zinc-100 bg-[#FAF9F7] py-9 md:py-14">
-        <div className="mx-auto max-w-7xl px-5 md:px-6">
-          <div className="mb-5 flex flex-wrap items-end justify-between gap-2 md:mb-7">
-            <div>
-              <p className="mb-1 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#E9511C]">TECO.md</p>
-              <h2 id="home-services-title" className="text-xl font-black tracking-tight text-zinc-950 md:text-3xl">
-                {lang === "ro" ? "De la alegere la instalare" : "От выбора до установки"}
-              </h2>
-            </div>
-            <span className="text-xs font-medium text-zinc-500 md:text-sm">
-              {lang === "ro" ? "Servicii pentru toată Moldova" : "Услуги по всей Молдове"}
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
-            {[
-              { icon: Wrench, title: lang === "ro" ? "Montaj" : "Монтаж", detail: lang === "ro" ? "Camere și cablare" : "Камеры и кабели", href: "/montare-camere-supraveghere/" },
-              { icon: Phone, title: lang === "ro" ? "Consultanță" : "Консультация", detail: lang === "ro" ? "Alegem sistemul" : "Подберём систему", href: "/contact/" },
-              { icon: Server, title: lang === "ro" ? "Configurare" : "Настройка", detail: lang === "ro" ? "NVR și aplicație" : "NVR и приложение", href: "/servicii/" },
-              { icon: Shield, title: lang === "ro" ? "Reparații" : "Ремонт", detail: lang === "ro" ? "Diagnostic și service" : "Диагностика и сервис", href: "/reparatii-camere-supraveghere/" },
-            ].map(({ icon: Icon, title, detail, href }) => (
-              <Link key={href} href={href}
-                className="group flex min-w-0 flex-col rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-[0_5px_20px_-17px_rgba(9,9,11,0.4)] transition-colors hover:border-orange-200 hover:bg-orange-50/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF4F00] sm:p-5">
-                <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-[#E9511C] group-hover:bg-orange-100">
-                  <Icon className="h-5 w-5" aria-hidden="true" />
-                </span>
-                <span className="flex min-w-0 items-center gap-1 text-sm font-extrabold leading-tight text-zinc-950 sm:text-base">
-                  <span className="min-w-0 break-words">{title}</span>
-                  <ArrowUpRight className="hidden h-3.5 w-3.5 shrink-0 text-[#E9511C] opacity-0 transition-opacity group-hover:opacity-100 sm:block" aria-hidden="true" />
-                </span>
-                <span className="mt-1 text-[11px] leading-snug text-zinc-500 sm:text-xs">{detail}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 5b. CALCULATOR */}
-      <Suspense fallback={null}>
-        <SmartCostCalculator />
-      </Suspense>
-
-      {/* 6. CATEGORIES */}
+      {/* 5. CATEGORIES — the next useful step after the hero */}
       <section className="bg-white py-8 md:py-20 overflow-hidden border-b border-zinc-100">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="flex items-end justify-between mb-6 md:mb-10">
@@ -388,15 +295,15 @@ export default function Home() {
               {t("home.cat.see_all")} <span className="text-[#FF4F00]">→</span>
             </Link>
           </div>
-          <div className="flex gap-3 overflow-x-auto no-scrollbar snap-x md:grid md:grid-cols-4 md:gap-5 pb-2">
-            {categories.map((cat) => {
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
+            {categories.filter((cat) => storeProducts.some((p) => p.category === cat.slug && p.inStock !== false)).map((cat) => {
               const catProducts = storeProducts.filter((p) => p.category === cat.slug);
               const count = catProducts.length;
               const productImg = catProducts[0]?.imageUrl;
               const catImg = cat.image || productImg || "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=500&q=80&auto=format&fit=crop";
               return (
                 <Link key={cat.id} href={`/produse?cat=${cat.slug}`}
-                  className="group relative snap-start min-w-[200px] md:min-w-0 h-[240px] md:h-[300px] rounded-2xl overflow-hidden cursor-pointer flex-shrink-0 block shadow-sm hover:shadow-xl transition-shadow duration-300">
+                  className="group relative min-w-0 h-[170px] sm:h-[220px] md:h-[300px] rounded-2xl overflow-hidden cursor-pointer block shadow-sm hover:shadow-xl transition-shadow duration-300">
                   <img src={catImg} alt={cat.label} loading="lazy" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4 flex flex-col gap-1">
@@ -412,6 +319,11 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* 6. CALCULATOR */}
+      <Suspense fallback={null}>
+        <SmartCostCalculator />
+      </Suspense>
 
       {/* Programare instalare */}
       <section className="py-8 md:py-12 bg-[#FAFAFA]">
