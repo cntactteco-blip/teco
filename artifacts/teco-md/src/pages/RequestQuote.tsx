@@ -47,6 +47,7 @@ export default function RequestQuote() {
   const [phone, setPhone] = useState("");
   const [locality, setLocality] = useState("");
   const [details, setDetails] = useState("");
+  const [discovery, setDiscovery] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -63,7 +64,7 @@ export default function RequestQuote() {
     setSubmitting(true);
     try {
       const projectNotes = repair ? (ro ? "Diagnosticare / reparații sistem existent" : "Диагностика / ремонт существующей системы") : `${ro ? PROPERTY_LABELS_RO[property!] : PROPERTY_LABELS_RU[property!]}, ${cameras} ${ro ? "camere" : "камеры"}`;
-      const leadNotes = [projectNotes, locality.trim() && `${ro ? "Localitate" : "Населённый пункт"}: ${locality.trim()}`, details.trim()].filter(Boolean).join("; ");
+      const leadNotes = [projectNotes, locality.trim() && `${ro ? "Localitate" : "Населённый пункт"}: ${locality.trim()}`, details.trim(), discovery && `Cum ne-a găsit: ${discovery}`].filter(Boolean).join("; ");
       const source = repair ? "Cerere diagnosticare" : "Cerere montaj";
       await storeActions.addLead({
         name: name.trim(),
@@ -258,6 +259,18 @@ export default function RequestQuote() {
               <label className="block mb-5 text-sm font-semibold text-zinc-600">
                 {repair ? (ro ? "Problema și modelul echipamentului" : "Неисправность и модель оборудования") : (ro ? "Detalii despre proiect (opțional)" : "Детали проекта (необязательно)")}
                 <textarea value={details} onChange={e => setDetails(e.target.value)} maxLength={2000} rows={4} placeholder={ro ? "Descrie ce ai nevoie. Dacă ești peste hotare, indică cine poate oferi acces la proprietate. Nu trimite parole." : "Опишите задачу. Если вы за границей, укажите, кто может предоставить доступ на месте. Не отправляйте пароли."} className="mt-2 w-full rounded-xl border-2 border-zinc-200 bg-white px-4 py-3 font-normal text-zinc-950 focus:outline-none focus:border-[#FF4F00]" />
+              </label>
+
+              <label className="block mb-5 text-sm font-semibold text-zinc-600">
+                {ro ? "Cum ai găsit TECO.md? (opțional)" : "Как вы нашли TECO.md? (необязательно)"}
+                <select value={discovery} onChange={e => setDiscovery(e.target.value)} className="mt-2 w-full rounded-xl border-2 border-zinc-200 bg-white px-4 py-3 text-zinc-950">
+                  <option value="">{ro ? "Alege dacă dorești" : "Выберите при желании"}</option>
+                  <option value="Google">Google</option><option value="ChatGPT">ChatGPT</option>
+                  <option value="Alt asistent AI">{ro ? "Alt asistent AI" : "Другой AI-ассистент"}</option>
+                  <option value="Facebook / Instagram">Facebook / Instagram</option>
+                  <option value="Recomandare personală">{ro ? "Recomandare personală" : "Личная рекомендация"}</option>
+                  <option value="Altă sursă">{ro ? "Altă sursă" : "Другой источник"}</option>
+                </select>
               </label>
 
               {error && (

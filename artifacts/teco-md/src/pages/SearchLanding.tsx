@@ -9,6 +9,23 @@ import RemotePropertyHelp from "@/components/RemotePropertyHelp";
 type Copy = { title: string; description: string; heading: string; intro: string; sections: Array<{ title: string; text: string }>; links: Array<{ href: string; label: string }> };
 type FAQ = { question: string; answer: string };
 
+const CAMERA_FAQS: Record<"ro" | "ru", FAQ[]> = {
+  ro: [
+    { question: "Ce camere de supraveghere aleg pentru o casă în Moldova?", answer: "Începe cu intrările, poarta și curtea, apoi verifică alimentarea, internetul și traseele cablurilor. WiFi poate fi potrivit cu semnal și alimentare la cameră; PoE se evaluează pentru un sistem cablat cu NVR; 4G pentru o locație cu acoperire mobilă, fără internet fix. Alegerea se confirmă pentru obiect și modelele propuse." },
+    { question: "Pot vedea casa din Moldova pe telefon dacă sunt în Germania, Italia sau altă țară?", answer: "Accesul se verifică pentru aplicația și echipamentele alese. Sistemul din Moldova trebuie să fie alimentat și conectat la internet. La predare, cere un test de vizualizare cu telefonul pe date mobile, în afara rețelei locale. Conexiunea, serviciile aplicației și eventualele abonamente depind de model." },
+    { question: "Cât costă camerele de supraveghere cu montaj?", answer: "Prețul total depinde de modele, numărul camerelor, stocare, lungimea cablurilor, manoperă și deplasare. Compară prețurile actuale din catalog și cere un deviz separat pentru echipamente și instalare. Prețul unei camere sau al manoperei nu reprezintă costul întregului sistem." },
+    { question: "Ce verific pentru camerele de exterior?", answer: "Verifică protecția la intemperii și temperatura de lucru din fișa modelului, cadrul necesar, iluminarea de noapte și protejarea conexiunilor. Un model pentru interior nu se alege pentru exterior doar pentru că are aceeași rezoluție." },
+    { question: "Pot organiza montajul fără să vin în Moldova?", answer: "Discuția și evaluarea inițială pot începe prin WhatsApp. Trimite localitatea și fotografii și indică persoana care poate oferi acces la obiect. Programarea, devizul și condițiile lucrării se confirmă după evaluare; prezența unui reprezentant la obiect se stabilește înainte de deplasare." },
+  ],
+  ru: [
+    { question: "Как выбрать камеры для дома в Молдове?", answer: "Определите входы, ворота и двор, затем проверьте питание, интернет и кабельные трассы. WiFi требует подходящего сигнала и питания, PoE рассматривается для проводной системы с NVR, 4G — при наличии мобильного покрытия без проводного интернета. Решение согласуется для объекта и конкретных моделей." },
+    { question: "Можно смотреть дом в Молдове с телефона из Германии, Италии или другой страны?", answer: "Доступ проверяется для выбранного приложения и оборудования. Система в Молдове должна иметь питание и интернет. При сдаче запросите проверку просмотра с телефона через мобильные данные вне локальной сети. Подключение, функции приложения и подписки зависят от модели." },
+    { question: "Сколько стоят камеры вместе с монтажом?", answer: "Итог зависит от моделей, количества камер, накопителя, длины кабеля, работы и выезда. Сравните актуальные цены каталога и запросите отдельный расчёт оборудования и монтажа. Цена одной камеры или работы не равна стоимости всей системы." },
+    { question: "Что проверить у уличной камеры?", answer: "Проверьте защиту от погоды и рабочую температуру в документации модели, нужный кадр, ночное освещение и защиту соединений. Внутренняя камера не подходит для улицы только потому, что имеет такое же разрешение." },
+    { question: "Можно организовать монтаж без приезда в Молдову?", answer: "Обсуждение и первоначальная оценка могут начаться в WhatsApp. Укажите населённый пункт, пришлите фотографии и сообщите, кто предоставит доступ на месте. Время, смета и условия работ согласуются после оценки, доступ на объект — до выезда." },
+  ],
+};
+
 const REPAIR_FAQS: Record<"ro" | "ru", FAQ[]> = {
   ro: [
     { question: "Reparați camere care nu mai afișează imagine?", answer: "Da. Diagnosticarea verifică alimentarea, cablul, conectorii, rețeaua și camera. Spune-ne dacă problema afectează o singură cameră sau întregul sistem." },
@@ -109,6 +126,7 @@ export default function SearchLanding() {
   const copy = PAGES[path]?.[lang] ?? PAGES["/contact"][lang];
   const phone = useStore(s => s.settings.general?.adminPhone || "37367200463").replace(/\D/g, "");
   const isRepair = path === "/reparatii-camere-supraveghere";
+  const isCamera = path === "/camere-supraveghere-moldova";
   const repairFaqs = REPAIR_FAQS[lang];
   const jsonLd: Record<string, unknown>[] = [
     schemas.breadcrumb([{ name: "TECO.md", url: canonicalUrl("/") }, { name: copy.heading, url: canonicalUrl(path) }]),
@@ -129,6 +147,7 @@ export default function SearchLanding() {
       schemas.faq(repairFaqs),
     );
   }
+  if (isCamera) jsonLd.push(schemas.faq(CAMERA_FAQS[lang]));
   return <>
     <SEO title={copy.title} description={copy.description} canonical={path} lang={lang} jsonLd={jsonLd} />
     <main className="flex-1 bg-[#FAFAFA] pb-20 md:pb-0">
@@ -145,6 +164,19 @@ export default function SearchLanding() {
         </div>
       </section>
       <div className="max-w-5xl mx-auto px-5 md:px-8 py-12 md:py-16 space-y-6">
+        {isCamera && <section className="rounded-2xl bg-white border border-zinc-200 p-6 md:p-8">
+          <h2 className="text-xl md:text-2xl font-bold text-zinc-950">{lang === "ro" ? "Compară sistemul pentru casa ta" : "Сравните системы для вашего дома"}</h2>
+          <div className="mt-5 overflow-x-auto"><table className="w-full min-w-[480px] text-sm text-left">
+            <thead><tr className="border-b border-zinc-200 text-zinc-950"><th scope="col" className="p-3">{lang === "ro" ? "Sistem" : "Система"}</th><th scope="col" className="p-3">{lang === "ro" ? "Când îl evaluezi" : "Когда рассмотреть"}</th><th scope="col" className="p-3">{lang === "ro" ? "Ce verifici înainte" : "Что проверить"}</th></tr></thead>
+            <tbody className="text-zinc-600">{[
+              ["WiFi", "Alimentare și semnal la locul camerei", "Semnal, stocare și aplicația modelului", "Питание и сигнал в месте камеры", "Сигнал, запись и приложение модели"],
+              ["PoE + NVR", "Mai multe camere și trasee de cablu", "Compatibilitate PoE, NVR și capacitate HDD", "Несколько камер и кабельные трассы", "Совместимость PoE, NVR и объём HDD"],
+              ["4G", "Locație fără internet fix", "Acoperire SIM, trafic de date și alimentare", "Объект без проводного интернета", "Покрытие SIM, трафик и питание"],
+            ].map(row => <tr key={row[0]} className="border-b border-zinc-100"><th scope="row" className="p-3 font-semibold text-zinc-950">{row[0]}</th><td className="p-3">{row[lang === "ro" ? 1 : 3]}</td><td className="p-3">{row[lang === "ro" ? 2 : 4]}</td></tr>)}</tbody>
+          </table></div>
+          <p className="mt-5 text-zinc-600 leading-relaxed">{lang === "ro" ? "Pentru o proprietate în Moldova administrată din străinătate, verifică și accesul de pe telefon, înregistrarea și cine poate interveni la obiect când lipsesc curentul sau internetul." : "Для объекта в Молдове, которым вы управляете из-за границы, проверьте просмотр с телефона, запись и возможность доступа на месте при отключении питания или интернета."}</p>
+          <Link href="/blog/camere-supraveghere-casa-moldova-din-strainatate/" className="inline-flex mt-4 font-semibold text-[#FF4F00] underline underline-offset-4">{lang === "ro" ? "Ghid: supravegherea casei din Moldova când locuiești peste hotare" : "Как организовать наблюдение за домом в Молдове из-за границы"}</Link>
+        </section>}
         {isRepair && <>
           <section className="grid gap-4 md:grid-cols-3" aria-label={lang === "ro" ? "Probleme frecvente" : "Частые проблемы"}>
             {[
@@ -160,6 +192,7 @@ export default function SearchLanding() {
         </>}
         {copy.sections.map(section => <section key={section.title} className="rounded-2xl bg-white border border-zinc-200 p-6 md:p-8"><h2 className="text-xl md:text-2xl font-bold text-zinc-950">{section.title}</h2><p className="mt-4 text-zinc-600 leading-relaxed">{section.text}</p></section>)}
         {path !== "/contact" && <RemotePropertyHelp repair={isRepair} />}
+        {isCamera && <section className="rounded-2xl bg-white border border-zinc-200 p-6 md:p-8"><h2 className="text-xl md:text-2xl font-bold text-zinc-950">{lang === "ro" ? "Întrebări despre camere pentru Moldova" : "Вопросы о камерах для Молдовы"}</h2><div className="mt-6 divide-y divide-zinc-200">{CAMERA_FAQS[lang].map(item => <details key={item.question} className="py-4"><summary className="cursor-pointer font-semibold text-zinc-950">{item.question}</summary><p className="mt-3 text-zinc-600 leading-relaxed">{item.answer}</p></details>)}</div></section>}
         {isRepair && <section className="rounded-2xl bg-white border border-zinc-200 p-6 md:p-8"><h2 className="text-xl md:text-2xl font-bold text-zinc-950">{lang === "ro" ? "Întrebări despre reparații" : "Вопросы о ремонте"}</h2><div className="mt-6 divide-y divide-zinc-200">{repairFaqs.map(item => <details key={item.question} className="group py-4"><summary className="cursor-pointer list-none font-semibold text-zinc-950">{item.question}<span className="float-right text-[#FF4F00] group-open:rotate-45">+</span></summary><p className="mt-3 pr-8 text-sm leading-relaxed text-zinc-600">{item.answer}</p></details>)}</div></section>}
         <nav aria-label={lang === "ro" ? "Produse și servicii relevante" : "Оборудование и услуги"} className="flex flex-wrap gap-3 pt-5">
           {copy.links.map(link => <Link key={link.href} href={link.href} className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-semibold hover:border-[#FF4F00]">{link.label}</Link>)}
