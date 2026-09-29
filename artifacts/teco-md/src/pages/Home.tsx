@@ -1,6 +1,6 @@
 import { useState, useEffect, Suspense, lazy } from "react";
 import { Link } from "wouter";
-import { Camera, Shield, Zap, Truck, Phone, Award, ChevronDown } from "lucide-react";
+import { Camera, Shield, Server, Zap, Truck, Phone, Award, Star, CheckCircle2, ChevronDown } from "lucide-react";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { AppointmentBooker } from "@/components/AppointmentBooker";
 import BundleBuilder from "@/components/BundleBuilder";
@@ -135,7 +135,7 @@ export default function Home() {
     form.reset();
   };
 
-  const tickerItems = t("hero.ticker").split(" • ");
+  const tickerItems = t("hero.ticker").split(" • ").filter((item) => !/4[.,]9\s*(din\s*5|из\s*5)/i.test(item));
 
   const HOME_FAQ_RO = [
     { q: "Câte camere de supraveghere am nevoie pentru o casă?", a: "Pentru o casă standard (3–4 camere) recomandăm: 1 cameră la intrarea principală, 1 la garaj sau parcare, 1–2 pe perimetrul exterior. Numărul exact depinde de suprafață și punctele critice. Consultanța noastră gratuită identifică exact ce ai nevoie." },
@@ -166,13 +166,13 @@ export default function Home() {
           ══════════════════════════════════════════════ */}
       <section className="relative bg-white overflow-hidden border-b border-zinc-100">
 
-        {/* Banda informativă din designul original — o singură sursă pentru mesajele comerciale. */}
+        {/* ── Ticker tape ── */}
         <div className="bg-[#FF4F00] text-white text-[11px] font-semibold py-1.5 overflow-hidden select-none">
           <div className="ticker-track whitespace-nowrap">
-            {[1, 2].map((copy) => (
-              <span key={copy} className="inline-flex items-center gap-6 px-6">
-                {tickerItems.map((item, index) => (
-                  <span key={`${copy}-${index}`} className="inline-flex items-center gap-6">
+            {[1,2].map(n => (
+              <span key={n} className="inline-flex items-center gap-6 px-6">
+                {tickerItems.map((item, i) => (
+                  <span key={i} className="inline-flex items-center gap-6">
                     <span>{item}</span>
                     <span className="opacity-40">•</span>
                   </span>
@@ -204,12 +204,28 @@ export default function Home() {
 
           </div>
 
-          {/* Pe mobil produsul rămâne între mesaj și acțiuni, ca în designul original. */}
+          {/* RIGHT — seturi dinamice apar aici pe mobil (order-2) */}
 
           <div className="flex flex-col gap-5 order-3 lg:order-none lg:col-start-1 lg:row-start-2">
 
+            {/* Stats row */}
+            <div className="grid grid-cols-3 items-start animate-fade-in" style={{ animationDelay: "0.28s" }}>
+              <div className="flex min-w-0 flex-col pr-2 sm:pr-5 border-r border-zinc-200">
+                <span className="text-[2rem] font-black font-mono text-[#FF4F00] leading-none tabular-nums">5.0★</span>
+                <span className="text-[9px] text-zinc-400 uppercase tracking-widest mt-0.5">Google · {lang === "ro" ? "4 recenzii" : "4 отзыва"}</span>
+              </div>
+              <div className="flex min-w-0 flex-col px-2 sm:px-5 border-r border-zinc-200">
+                <span className="text-[clamp(1.35rem,5vw,2rem)] font-black font-mono text-[#09090B] leading-none tabular-nums">847+</span>
+                <span className="text-[9px] text-zinc-400 uppercase tracking-widest mt-0.5">{lang === "ro" ? "instalări" : "установок"}</span>
+              </div>
+              <div className="flex min-w-0 flex-col pl-2 sm:pl-5">
+                <span className="text-[clamp(1.05rem,4.5vw,2rem)] font-black font-mono text-[#FF4F00] leading-none">{lang === "ro" ? "Livrare" : "Доставка"}</span>
+                <span className="text-[9px] text-zinc-400 uppercase tracking-widest mt-0.5">{lang === "ro" ? "în Moldova" : "по Молдове"}</span>
+              </div>
+            </div>
+
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-3 animate-fade-in" style={{ animationDelay: "0.28s" }}>
+            <div className="flex flex-col sm:flex-row gap-3 animate-fade-in" style={{ animationDelay: "0.36s" }}>
               <Link href="/produse"
                 className="hero-btn-glow flex items-center justify-center gap-2 bg-[#FF4F00] text-white px-7 py-4 rounded-2xl font-black text-lg">
                 <Zap className="w-5 h-5" />
@@ -264,6 +280,10 @@ export default function Home() {
                 />
               </Link>
 
+              <div className="badge-pop absolute -top-3 -right-3 bg-[#FF4F00] text-white text-[11px] font-black px-3 py-1.5 rounded-xl shadow-lg rotate-[-3deg] whitespace-nowrap pointer-events-none">
+                {lang === "ro" ? "Montaj disponibil la solicitare" : "Установка по запросу"}
+              </div>
+
               {heroProducts.length > 1 && (
                 <div className="absolute -top-7 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
                   {heroProducts.map((_, i) => (
@@ -301,13 +321,38 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Scroll hint */}
         <div className="flex justify-center pb-4 opacity-40">
           <ChevronDown className="w-5 h-5 text-zinc-400 animate-bounce" />
         </div>
 
       </section>
 
-      {/* 5. CATEGORIES — the next useful step after the hero */}
+      {/* 5. TRUST STRIP */}
+      <section className="bg-white border-y border-zinc-100 py-5 md:py-10">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <div className="grid grid-cols-2 gap-y-4 md:grid-cols-4 md:divide-x md:divide-zinc-100">
+            {[
+              { num: lang === "ro" ? "Montaj" : "Монтаж", label: lang === "ro" ? "disponibil la solicitare" : "доступен по запросу" },
+              { num: lang === "ro" ? "Consultanță" : "Консультация", label: lang === "ro" ? "pentru alegerea sistemului" : "по выбору системы" },
+              { num: lang === "ro" ? "Reparații" : "Ремонт", label: lang === "ro" ? "și diagnosticare" : "и диагностика" },
+              { num: lang === "ro" ? "Garanție" : "Гарантия", label: lang === "ro" ? "pentru echipamente" : "на оборудование" },
+            ].map(({ num, label }) => (
+              <div key={label} className="flex min-w-0 flex-col items-center px-2 py-2 text-center md:py-4 gap-1">
+                <span className="text-[#FF4F00] font-black text-lg sm:text-xl md:text-4xl leading-tight tracking-tight break-words">{num}</span>
+                <span className="text-zinc-400 text-[10px] md:text-sm uppercase tracking-widest break-words">{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 5b. CALCULATOR */}
+      <Suspense fallback={null}>
+        <SmartCostCalculator />
+      </Suspense>
+
+      {/* 6. CATEGORIES */}
       <section className="bg-white py-8 md:py-20 overflow-hidden border-b border-zinc-100">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="flex items-end justify-between mb-6 md:mb-10">
@@ -319,15 +364,15 @@ export default function Home() {
               {t("home.cat.see_all")} <span className="text-[#FF4F00]">→</span>
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
-            {categories.filter((cat) => storeProducts.some((p) => p.category === cat.slug && p.inStock !== false)).map((cat) => {
+          <div className="flex gap-3 overflow-x-auto no-scrollbar snap-x md:grid md:grid-cols-4 md:gap-5 pb-2">
+            {categories.map((cat) => {
               const catProducts = storeProducts.filter((p) => p.category === cat.slug);
               const count = catProducts.length;
               const productImg = catProducts[0]?.imageUrl;
               const catImg = cat.image || productImg || "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=500&q=80&auto=format&fit=crop";
               return (
                 <Link key={cat.id} href={`/produse?cat=${cat.slug}`}
-                  className="group relative min-w-0 h-[170px] sm:h-[220px] md:h-[300px] rounded-2xl overflow-hidden cursor-pointer block shadow-sm hover:shadow-xl transition-shadow duration-300">
+                  className="group relative snap-start min-w-[200px] md:min-w-0 h-[240px] md:h-[300px] rounded-2xl overflow-hidden cursor-pointer flex-shrink-0 block shadow-sm hover:shadow-xl transition-shadow duration-300">
                   <img src={catImg} alt={cat.label} loading="lazy" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4 flex flex-col gap-1">
@@ -343,11 +388,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* 6. CALCULATOR */}
-      <Suspense fallback={null}>
-        <SmartCostCalculator />
-      </Suspense>
 
       {/* Programare instalare */}
       <section className="py-8 md:py-12 bg-[#FAFAFA]">
