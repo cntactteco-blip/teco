@@ -1,16 +1,40 @@
 import { absoluteImage, canonicalPath } from "../lib/seo-url.ts";
-import { currentProductDescription, productSeoTitle, productSeoDescription } from "../lib/product-copy.ts";
+import { currentProductDescription, productSeoTitle, productSeoDescription, seoSnippet } from "../lib/product-copy.ts";
 
 export type Manifest = { pages: Record<string, string>; redirects: Record<string, string>; queryRedirects?: Record<string, string> };
 type Environment = { ASSETS: { fetch(request: Request): Promise<Response> }; DB?: D1Database };
 const privatePaths = new Set(["/admin/", "/checkout/", "/favorit/"]);
 const escapeHtml = (value: unknown) => String(value ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 const readableText = (value: unknown) => String(value ?? "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+const sitemapXml = (routes: string[]) => `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${[...new Set(routes)].sort().map((route) => `  <url><loc>${escapeHtml(`https://teco.md${route}`)}</loc></url>`).join("\n")}\n</urlset>\n`;
 
 export async function serveHtml(request: Request, env: Environment, manifest: Manifest): Promise<Response> {
   const url = new URL(request.url);
   const path = url.pathname.replace(/\/+$/, "") || "/";
   if (!['GET', 'HEAD'].includes(request.method)) return new Response("Method not allowed", { status: 405, headers: { Allow: "GET, HEAD" } });
+  if (path === "/sitemap.xml") {
+    const base = await env.ASSETS.fetch(new Request(new URL("/sitemap.xml", url.origin)));
+    if (!base.ok || !env.DB) return base;
+    try {
+      const xml = await base.text();
+      const staticRoutes = [...xml.matchAll(/<loc>(https:\/\/teco\.md[^<]*)<\/loc>/g)]
+        .map(([, location]) => location.replace(/&amp;/g, "&").replace("https://teco.md", ""))
+        .filter((route) => !route.startsWith("/product/") && !route.startsWith("/blog/") || route === "/blog/");
+      const [products, articles] = await Promise.all([
+        env.DB.prepare("SELECT slug FROM products WHERE slug IS NOT NULL AND slug != '' AND price > 0").all<{ slug: string }>(),
+        env.DB.prepare("SELECT slug FROM blog_posts WHERE slug IS NOT NULL AND slug != '' AND published = 1").all<{ slug: string }>(),
+      ]);
+      const routes = [
+        ...staticRoutes,
+        ...(products.results ?? []).map((row) => `/product/${encodeURIComponent(row.slug)}/`),
+        ...(articles.results ?? []).map((row) => `/blog/${encodeURIComponent(row.slug)}/`),
+      ];
+      const sitemap = sitemapXml(routes);
+      return new Response(request.method === "HEAD" ? null : sitemap, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=300" } });
+    } catch {
+      return env.ASSETS.fetch(new Request(new URL("/sitemap.xml", url.origin), { method: request.method }));
+    }
+  }
   // Resources and internal assets retain their own MIME type and status.
   if (/\.(?:js|css|json|xml|txt|png|jpe?g|webp|svg|ico|woff2?|pdf)$/i.test(path) || path.startsWith("/__seo/")) {
     return env.ASSETS.fetch(request);
@@ -65,17 +89,15 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
         const description = escapeHtml(readableText(rawDescription));
         const longDescription = readableText(row.long_description);
         const specs = readableText(row.specs);
-        const titleMeta = escapeHtml(dynamic[1] === "product" ? productSeoTitle(row.name) : `${row.title} | TECO.md`);
+        const titleMeta = escapeHtml(dynamic[1] === "product" ? productSeoTitle(row.name) : seoSnippet(`${row.title} | TECO.md`, 62));
         const descriptionMeta = escapeHtml(dynamic[1] === "product"
           ? productSeoDescription(rawDescription, row.name, row.price)
-          : rawDescription.slice(0, 155));
+          : seoSnippet(rawDescription, 155));
         const productImage = String(row.image_url || "").trim();
         const imageUrl = escapeHtml(productImage && !productImage.startsWith("data:")
           ? absoluteImage(productImage)
           : absoluteImage("/opengraph.jpg"));
-        const socialHead = dynamic[1] === "product"
-          ? `<meta property="og:type" content="product"><meta property="og:title" content="${titleMeta}"><meta property="og:description" content="${descriptionMeta}"><meta property="og:url" content="https://teco.md${escapeHtml(canonical)}"><meta property="og:image" content="${imageUrl}"><meta property="og:image:alt" content="${title}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${titleMeta}"><meta name="twitter:description" content="${descriptionMeta}"><meta name="twitter:image" content="${imageUrl}">`
-          : "";
+        const socialHead = `<meta property="og:type" content="${dynamic[1] === "product" ? "product" : "article"}"><meta property="og:title" content="${titleMeta}"><meta property="og:description" content="${descriptionMeta}"><meta property="og:url" content="https://teco.md${escapeHtml(canonical)}"><meta property="og:image" content="${imageUrl}"><meta property="og:image:alt" content="${title}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${titleMeta}"><meta name="twitter:description" content="${descriptionMeta}"><meta name="twitter:image" content="${imageUrl}">`;
         const price = Number(row.price);
         const productSchema = dynamic[1] === "product" && Number.isFinite(price) && price > 0
           ? `<script type="application/ld+json">${JSON.stringify({
@@ -90,18 +112,32 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
                   ? "https://schema.org/InStock" : "https://schema.org/OutOfStock" },
             }).replace(/</g, "\\u003c")}</script>`
           : "";
+        const articleSchema = dynamic[1] === "blog"
+          ? `<script type="application/ld+json">${JSON.stringify({
+              "@context": "https://schema.org", "@type": "BlogPosting", headline: String(row.title),
+              description: rawDescription, image: [absoluteImage(productImage && !productImage.startsWith("data:") ? productImage : "/opengraph.jpg")],
+              url: `https://teco.md${canonical}`, datePublished: row.published_at || row.created_at,
+              author: { "@type": "Organization", name: "TECO.md", url: "https://teco.md/" },
+              publisher: { "@type": "Organization", name: "TECO.md", logo: { "@type": "ImageObject", url: "https://teco.md/logo.png" } },
+            }).replace(/</g, "\\u003c")}</script>`
+          : "";
         const shell = await readAsset("/app");
         if (!shell.ok) throw new Error("Missing application shell");
         let html = await shell.text();
         html = html.replace(/<meta[^>]*name="robots"[^>]*>/gi, "");
-        html = html.replace("</head>", `<title data-teco-prerender="">${titleMeta}</title><meta data-teco-prerender="" name="description" content="${descriptionMeta}"><link data-teco-prerender="" rel="canonical" href="https://teco.md${escapeHtml(canonical)}">${socialHead}${productSchema}</head>`);
+        html = html.replace("</head>", `<title data-teco-prerender="">${titleMeta}</title><meta data-teco-prerender="" name="description" content="${descriptionMeta}"><link data-teco-prerender="" rel="canonical" href="https://teco.md${escapeHtml(canonical)}">${socialHead}${productSchema}${articleSchema}</head>`);
         const productDetails = dynamic[1] === "product"
           ? `<img src="${imageUrl}" alt="${title}" width="600" height="600"><p>Preț: ${Number.isFinite(price) && price > 0 ? `${escapeHtml(price)} MDL` : "la cerere"}</p><p>${row.in_stock === 1 || row.in_stock === true ? "În stoc" : "Verifică disponibilitatea"}</p>`
           : "";
         const extraCopy = dynamic[1] === "product"
           ? `${longDescription && longDescription !== readableText(rawDescription) ? `<section><h2>Descriere detaliată</h2><p>${escapeHtml(longDescription)}</p></section>` : ""}${specs ? `<section><h2>Caracteristici</h2><p>${escapeHtml(specs)}</p></section>` : ""}`
           : "";
-        html = html.replace('<div id="root"></div>', `<div id="root"><main><h1>${title}</h1>${productDetails}<p>${description}</p>${extraCopy}<a href="/produse/">Catalog TECO.md</a></main></div>`);
+        const articleCopy = dynamic[1] === "blog" ? String(row.content ?? "").split(/\n+/).map((line) => line.trim()).filter(Boolean).slice(0, 120).map((line) => {
+          if (line.startsWith("## ")) return `<h2>${escapeHtml(line.slice(3))}</h2>`;
+          if (line.startsWith("### ")) return `<h3>${escapeHtml(line.slice(4))}</h3>`;
+          return `<p>${escapeHtml(line.replace(/^[-*] /, ""))}</p>`;
+        }).join("") : "";
+        html = html.replace('<div id="root"></div>', `<div id="root"><main><h1>${title}</h1>${productDetails}<p>${description}</p>${extraCopy}${articleCopy}<a href="${dynamic[1] === "blog" ? "/blog/" : "/produse/"}">${dynamic[1] === "blog" ? "Articole TECO.md" : "Catalog TECO.md"}</a></main></div>`);
         return new Response(request.method === "HEAD" ? null : html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache" } });
       }
       if (dynamic[1] === "product") return response("/404", 404, true);

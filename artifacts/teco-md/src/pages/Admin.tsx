@@ -19,6 +19,7 @@ import {
 import { ImportModal } from "@/components/ImportModal";
 import { SEO } from "@/components/SEO";
 import { CatIconBadge, CatIconPicker, getCatIconDef } from "@/components/CatIcons";
+import { productSeoTitle, productSeoDescription } from "@/lib/product-copy";
 
 const ADMIN_PIN_FALLBACK = "teco2025";
 const brands = ["TAPO", "REOLINK", "UNIARCH", "DAHUA", "UNIVIEW", "TIANDY"] as const;
@@ -386,6 +387,7 @@ function ProductField({ label, field, type = "text", placeholder = "", form, set
 }
 
 function ProductModal({ product, onClose, categories }: { product: StoreProduct | null; onClose: () => void; categories: CategoryDef[] }) {
+  const existingProducts = useStore((s) => s.products);
   const [descGen, setDescGen] = useState(false);
   const [form, setForm] = useState<ProductFormData>(
     product
@@ -440,6 +442,10 @@ function ProductModal({ product, onClose, categories }: { product: StoreProduct 
 
   const handleSave = () => {
     if (!form.name || !form.price) return;
+    if (!Number.isFinite(Number(form.price)) || Number(form.price) <= 0) { alert("Introdu un preț valid mai mare decât zero."); return; }
+    if (!form.category || (!categories.some((category) => category.slug === form.category) && form.category !== product?.category)) { alert("Alege o categorie existentă."); return; }
+    const proposedSlug = product?.slug || slugify(form.name);
+    if (!proposedSlug || existingProducts.some((item) => item.id !== product?.id && item.slug === proposedSlug)) { alert("Există deja un produs cu acest URL. Alege un nume distinct."); return; }
     const allImages = [form.imageUrl, ...extraImages].filter(Boolean);
     const data: Omit<StoreProduct, "id"> = {
       name: form.name, model: form.model, brand: form.brand, category: form.category,
@@ -511,7 +517,7 @@ function ProductModal({ product, onClose, categories }: { product: StoreProduct 
               <label className="block text-[11px] font-semibold text-zinc-400 mb-1 uppercase tracking-wider">Brand</label>
               <select value={form.brand} onChange={(e) => set("brand", e.target.value)}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#FF4F00]">
-                {brands.map((b) => <option key={b} value={b}>{b}</option>)}
+                {[...new Set([...brands, "Ajax Systems", "IMOU", "TP-Link Tapo", "TP-Link VIGI", ...existingProducts.map((item) => item.brand), form.brand])].filter(Boolean).map((b) => <option key={b} value={b}>{b}</option>)}
               </select>
             </div>
             <div>
@@ -578,6 +584,15 @@ function ProductModal({ product, onClose, categories }: { product: StoreProduct 
             <textarea value={form.longDescription} onChange={(e) => set("longDescription", e.target.value)} rows={4}
               placeholder="Descriere detaliată — avantaje, caracteristici, cazuri de utilizare..."
               className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#FF4F00] resize-none" />
+          </div>
+
+          <div className="rounded-xl border border-zinc-700 bg-zinc-800/60 p-4 text-xs text-zinc-300 space-y-1.5">
+            <p className="font-bold text-white">Previzualizare SEO produs</p>
+            <p className="text-[#FF7A3D] font-semibold">{productSeoTitle(form.name || "Numele produsului")}</p>
+            <p>{productSeoDescription(form.description, form.name || "Produs", Number(form.price) || 0)}</p>
+            <p className="text-zinc-400">URL: /product/{product?.slug || slugify(form.name) || "nume-produs"}/ · Adaugă o imagine proprie, specificații corecte și o descriere utilă înainte de publicare.</p>
+            {!form.imageUrl && <p className="text-amber-400">Lipsește imaginea principală: linkul distribuit poate afișa sigla în locul produsului.</p>}
+            {!form.description.trim() && <p className="text-amber-400">Lipsește descrierea produsului.</p>}
           </div>
 
           <div>
@@ -1457,7 +1472,7 @@ function BlogTab({ posts }: { posts: BlogPost[] }) {
         slug: data.slug ?? "", title: data.title ?? "", titleRu: data.titleRu ?? "",
         description: data.description ?? "", descriptionRu: data.descriptionRu ?? "",
         content: data.content ?? "", contentRu: data.contentRu ?? "",
-        imageUrl: `https://picsum.photos/seed/${encodeURIComponent(data.slug ?? aiTopic)}/1200/630`, category: data.category ?? "Ghiduri", categoryRu: data.categoryRu ?? "Руководства",
+        imageUrl: "", category: data.category ?? "Ghiduri", categoryRu: data.categoryRu ?? "Руководства",
         metaTitle: data.metaTitle ?? "", metaTitleRu: data.metaTitleRu ?? "",
         metaDescription: data.metaDescription ?? "", metaDescriptionRu: data.metaDescriptionRu ?? "",
         keywords: data.keywords ?? "", keywordsRu: data.keywordsRu ?? "",
@@ -1514,6 +1529,8 @@ function BlogTab({ posts }: { posts: BlogPost[] }) {
       return;
     }
     const slug = form.slug.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "");
+    if (!slug || posts.some((post) => post.id !== editing && post.slug === slug)) { alert("Acest URL există deja. Alege alt slug."); return; }
+    if (form.published && !form.content.trim()) { alert("Completează conținutul articolului înainte de publicare."); return; }
     if (editing) {
       storeActions.updateBlogPost(editing, { ...form, slug });
     } else {
@@ -1716,6 +1733,15 @@ function BlogTab({ posts }: { posts: BlogPost[] }) {
                   <input value={form.metaTitleRu} onChange={(e) => setForm({ ...form, metaTitleRu: e.target.value })} className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white focus:border-[#FF4F00] focus:outline-none" />
                 </div>
               </div>
+              <div className="rounded-xl border border-zinc-700 bg-zinc-800/60 p-3 text-xs text-zinc-300 space-y-1">
+                <p className="font-bold text-white">Previzualizare Google · /blog/{form.slug || "slug-articol"}/</p>
+                <p className="text-[#FF7A3D]">{form.metaTitle || form.title || "Titlul articolului"} ({(form.metaTitle || form.title).length} caractere)</p>
+                <p>{form.metaDescription || form.description || "Descrierea articolului"} ({(form.metaDescription || form.description).length} caractere)</p>
+                {(form.metaTitle || form.title).length > 65 && <p className="text-amber-400">Titlul este lung; scurtează-l fără să pierzi tema articolului.</p>}
+                {(form.metaDescription || form.description).length > 160 && <p className="text-amber-400">Descrierea este lungă; păstrează beneficiul principal.</p>}
+                {!form.imageUrl && <p className="text-amber-400">Adaugă o imagine reală, relevantă. Până atunci se folosește imaginea generală a site-ului.</p>}
+                <p className="text-zinc-400">Revizuiește informațiile și prețurile generate de AI înainte de a bifa „Publicat”.</p>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-[11px] font-semibold text-zinc-400 uppercase mb-1.5 block">Meta Desc RO</label>
@@ -1815,21 +1841,33 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
   };
 
   const deleteCat = (id: string) => {
-    const used = products.some((p) => p.category === id);
+    const category = categories.find((c) => c.id === id);
+    const used = products.some((p) => p.category === category?.slug || p.category === id);
     if (used && !window.confirm(`Categoria "${id}" este folosită de produse. Ești sigur că vrei să o ștergi?`)) return;
     storeActions.updateCategories(categories.filter((c) => c.id !== id));
   };
 
   const saveEditCat = (id: string) => {
+    const current = categories.find((c) => c.id === id);
+    if (!current || !catEditLabel.trim()) return;
+    const slug = catEditSlug.trim().toLowerCase();
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) { window.alert("Adresa categoriei trebuie să conțină doar litere mici, cifre și cratime."); return; }
+    if (categories.some((c) => c.id !== id && c.slug === slug)) { window.alert("Există deja o categorie cu această adresă."); return; }
+    if (slug !== current.slug && products.some((p) => p.category === current.slug || p.category === id)) {
+      window.alert("Nu schimba adresa unei categorii cu produse: legăturile și paginile Google s-ar putea rupe. Păstrează adresa existentă.");
+      return;
+    }
     storeActions.updateCategories(categories.map((c) =>
-      c.id === id ? { ...c, label: catEditLabel, labelRu: catEditLabelRu || c.labelRu, slug: catEditSlug || c.slug, image: catEditImage || c.image, iconKey: catEditIcon || c.iconKey } : c
+      c.id === id ? { ...c, label: catEditLabel.trim(), labelRu: catEditLabelRu.trim() || c.labelRu, slug, image: catEditImage || c.image, iconKey: catEditIcon || c.iconKey } : c
     ));
     setCatEditId(null);
   };
 
   const addCat = () => {
     if (!catNewLabel.trim()) return;
-    const slug = catNewSlug.trim() || catNewLabel.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    const slug = catNewSlug.trim().toLowerCase() || catNewLabel.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) { window.alert("Alege o adresă URL cu litere mici, cifre și cratime."); return; }
+    if (categories.some((c) => c.slug === slug)) { window.alert("Există deja o categorie cu această adresă."); return; }
     const id = slug + "-" + Date.now().toString(36);
     storeActions.updateCategories([...categories, { id, slug, label: catNewLabel.trim(), labelRu: catNewLabelRu.trim() || undefined, image: catNewImage || undefined, iconKey: catNewIcon || undefined }]);
     setCatNewLabel(""); setCatNewLabelRu(""); setCatNewSlug(""); setCatNewImage(""); setCatNewIcon(""); setShowAddCat(false);
@@ -2022,7 +2060,7 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
 
       {/* ── 6. Categorii ── */}
       <SettingsSection icon={Tag} title="Categorii Produse"
-        description="Adaugă, editează, reordonează sau șterge categorii. Modificările se reflectă imediat în filtrul de pe site.">
+        description="Adaugă, editează, reordonează sau șterge categorii. Filtrul se actualizează imediat; o categorie nouă are nevoie de includere în generarea SEO a site-ului înainte de indexare.">
         <div className="space-y-2 mb-4">
           {categories.map((cat, idx) => (
             <div key={cat.id} className="bg-zinc-800 rounded-xl p-3">

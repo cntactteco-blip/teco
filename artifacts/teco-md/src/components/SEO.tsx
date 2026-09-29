@@ -177,6 +177,7 @@ export const schemas = {
       },
       description: lang === "ro" ? "Echipamente de supraveghere, instalare și reparații în Moldova." : "Оборудование видеонаблюдения, монтаж и ремонт в Молдове.",
       areaServed: { "@type": "Country", name: "Moldova" },
+      address: { "@type": "PostalAddress", addressLocality: "Chișinău", addressCountry: "MD" },
       logo: "https://teco.md/logo.png",
     };
   },
@@ -453,8 +454,11 @@ export const schemas = {
       description: p.description,
       provider: {
         "@type": "LocalBusiness",
+        "@id": "https://teco.md/#business",
         name: "Teco.md",
         telephone: "+37367200463",
+        address: { "@type": "PostalAddress", addressLocality: "Chișinău", addressCountry: "MD" },
+        logo: "https://teco.md/logo.png",
         areaServed: { "@type": "Country", name: "Moldova" },
       },
       ...(p.price ? { offers: { "@type": "Offer", price: p.price, priceCurrency: "MDL" } } : {}),

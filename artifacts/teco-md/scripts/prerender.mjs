@@ -34,7 +34,7 @@ try {
   mkdirSync(resolve(root, "src/generated"), { recursive: true });
   writeFileSync(resolve(root, "src/generated/seo-manifest.json"), JSON.stringify(manifest));
   writeFileSync(resolve(out, "_redirects"), "# Page redirects are handled by the HTML Pages Function.\n");
-  writeFileSync(resolve(out, "_routes.json"), JSON.stringify({ version: 1, include: ["/*"], exclude: ["/assets/*", "/product-images/*", "/__seo/*", "/favicon*", "/apple-touch-icon*", "/opengraph.jpg", "/logo*", "/manifest*", "/robots.txt", "/sitemap.xml"] }));
+  writeFileSync(resolve(out, "_routes.json"), JSON.stringify({ version: 1, include: ["/*"], exclude: ["/assets/*", "/product-images/*", "/__seo/*", "/favicon*", "/apple-touch-icon*", "/opengraph.jpg", "/logo*", "/manifest*", "/robots.txt"] }));
   console.log(`[prerender] ${routes.length} pages; ${Object.keys(manifest.redirects).length} exact redirects; ${indexableRoutes.length} sitemap URLs.`);
 } finally {
   await vite.close();

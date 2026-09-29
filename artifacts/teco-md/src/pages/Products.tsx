@@ -67,6 +67,15 @@ const PRICE_PRESETS = [
   { label: "3000+",   min: 3000, max: 99999},
 ];
 
+const CATEGORY_GUIDES: Record<string, { ro: { heading: string; copy: string }; ru: { heading: string; copy: string } }> = {
+  wifi: { ro: { heading: "Cum alegi o cameră WiFi?", copy: "Verifică semnalul la locul montării, alimentarea și stocarea pe card sau înregistrator. Pentru curte, alege un model potrivit pentru exterior; pentru zone fără WiFi, compară camerele 4G." }, ru: { heading: "Как выбрать WiFi-камеру?", copy: "Проверьте сигнал в месте установки, питание и хранение записей. Для улицы выбирайте защищённую модель; если нет WiFi, рассмотрите камеры 4G." } },
+  poe: { ro: { heading: "Când merită un sistem PoE?", copy: "Camerele PoE folosesc cablul de rețea pentru date și alimentare. Sunt potrivite când dorești mai multe camere și înregistrare centralizată pe NVR; verifică numărul de porturi și compatibilitatea înainte de comandă." }, ru: { heading: "Когда выбрать PoE?", copy: "PoE использует сетевой кабель для данных и питания. Для нескольких камер и записи на NVR проверьте число портов и совместимость оборудования." } },
+  "4g": { ro: { heading: "Supraveghere unde nu ai internet fix", copy: "Pentru terenuri, șantiere sau gospodării fără internet fix, compară acoperirea 4G, consumul de date și autonomia bateriei. Un panou solar necesită amplasare cu lumină suficientă." }, ru: { heading: "Наблюдение без проводного интернета", copy: "Для участка или стройки сравните покрытие 4G, расход мобильных данных и автономность батареи. Солнечной панели нужно достаточно света." } },
+  nvr: { ro: { heading: "Alege înregistratorul după camere", copy: "Verifică numărul de canale, rezoluția acceptată, compatibilitatea camerelor și spațiul pentru HDD. Dacă nu știi câtă memorie îți trebuie, spune-ne câte camere ai și câte zile vrei să păstrezi înregistrările." }, ru: { heading: "Выберите NVR под ваши камеры", copy: "Проверьте число каналов, разрешение, совместимость и место для HDD. Сообщите нам количество камер и срок хранения записи для расчёта накопителя." } },
+  kituri: { ro: { heading: "Ce verifici într-un set complet?", copy: "Compară numărul de camere, NVR-ul, HDD-ul, cablurile și accesoriile incluse. Montajul și traseul de cablu depind de obiect; solicită un deviz cu toate componentele înainte de comandă." }, ru: { heading: "Что входит в комплект?", copy: "Сравните камеры, NVR, HDD, кабели и аксессуары. Монтаж и прокладка кабеля зависят от объекта; запросите полную смету до заказа." } },
+  alarme: { ro: { heading: "Alarmă Ajax sau sonerie video?", copy: "Un kit Ajax poate include centrală și senzori pentru protecția locuinței. Soneriile și vizoarele video arată cine este la intrare, dar nu înlocuiesc o alarmă antiefracție. Te ajutăm să alegi echipamentul și montajul potrivit." }, ru: { heading: "Ajax или видеозвонок?", copy: "Комплект Ajax с хабом и датчиками служит для охраны. Видеозвонок показывает посетителя у входа, но не заменяет охранную сигнализацию. Поможем подобрать оборудование и монтаж." } },
+};
+
 function ProductCard({ product }: { product: StoreProduct }) {
   const { t } = useLang();
   const addItem = useCart((s) => s.addItem);
@@ -309,7 +318,7 @@ export default function Products() {
     },
     poe: {
       ro: { title: `Camere PoE Supraveghere — ${catCounts.poe ?? 0} Modele | Teco.md Moldova`,
-            desc: "Camere IP PoE cu rezoluție 4K–8MP pentru sisteme profesionale. Alimentare prin cablu LAN, imagine HD, compatibile cu NVR-uri Dahua, Uniview, Uniarch. Livrare 24h.",
+            desc: "Camere IP PoE pentru sisteme profesionale, alimentate prin cablu LAN. Compară rezoluția, compatibilitatea NVR și modelele disponibile în Moldova.",
             keywords: "camere poe supraveghere moldova, camere ip poe 4k, camere profesionale exterior, dahua poe, uniview poe, uniarch, teco.md" },
       ru: { title: `PoE Камеры Видеонаблюдения — ${catCounts.poe ?? 0} Моделей | Teco.md`,
             desc: "Профессиональные IP PoE камеры 4K–8MP для систем видеонаблюдения. Питание по LAN-кабелю, совместимы с NVR Dahua, Uniview, Uniarch. Доставка 24ч.",
@@ -333,18 +342,18 @@ export default function Products() {
     },
     kituri: {
       ro: { title: `Seturi Complete Supraveghere — ${kitCount} Kituri | Teco.md Moldova`,
-            desc: "Seturi complete sisteme de supraveghere NVR + camere, gata de instalat. Prețuri de la 3.500 MDL. Montaj profesional inclus. Cel mai bun raport calitate-preț din Moldova.",
+            desc: "Compară seturi cu camere, NVR și accesorii pentru casă sau afacere. Verifică ce include fiecare kit și cere un deviz de instalare în Moldova.",
             keywords: "seturi complete supraveghere moldova, kit supraveghere nvr camere, sistem supraveghere complet casa, kituri instalare, teco.md, seturi camere video" },
       ru: { title: `Комплекты Видеонаблюдения — ${kitCount} Наборов | Teco.md`,
-            desc: "Готовые комплекты систем видеонаблюдения NVR + камеры. Цены от 3500 MDL. Профессиональный монтаж. Лучшее соотношение цена-качество в Молдове.",
+            desc: "Сравните комплекты с камерами, NVR и аксессуарами для дома или бизнеса. Уточните состав набора и запросите смету монтажа в Молдове.",
             keywords: "комплекты видеонаблюдения молдова, набор камер nvr, система видеонаблюдения для дома, teco.md" },
     },
     alarme: {
-      ro: { title: `Sisteme Alarmă — ${catCounts.alarme ?? 0} Modele | Teco.md Moldova`,
-            desc: "Sisteme de alarmă Ajax și video pentru casă și birou. Detectoare motion, senzori, sirenă, monitorizare 24/7. Instalare profesională în toată Moldova.",
+      ro: { title: "Alarmă Ajax și Sonerii Video | Teco.md Moldova",
+            desc: "Compară kitul de alarmă Ajax cu sonerii și vizoare video. Alege protecția potrivită casei sau biroului și cere o ofertă de montaj în Moldova.",
             keywords: "sisteme alarma moldova, alarma ajax, sistem alarma casa, detectoare miscare, alarma profesionala, teco.md" },
-      ru: { title: `Системы Сигнализации — ${catCounts.alarme ?? 0} Моделей | Teco.md`,
-            desc: "Системы сигнализации Ajax для дома и офиса. Датчики движения, сирена, мониторинг 24/7. Профессиональная установка по всей Молдове.",
+      ru: { title: "Сигнализация Ajax и Видеозвонки | Teco.md Молдова",
+            desc: "Сравните комплект Ajax с видеозвонками и дверными глазками. Подберём защиту для дома или офиса и предложим монтаж в Молдове.",
             keywords: "системы сигнализации молдова, ajax сигнализация, охранная сигнализация дома, teco.md" },
     },
     all: {
@@ -369,7 +378,7 @@ export default function Products() {
   const seo = (activeCategory !== "all" && !(activeCategory in CAT_SEO) && activeCatLabel)
     ? {
         title: `${activeCatLabel} — ${catCounts[activeCategory] ?? 0} Modele | Teco.md Moldova`,
-        desc: `Catalog ${activeCatLabel} — ${catCounts[activeCategory] ?? 0} produse disponibile. Livrare 24h în toată Moldova. Garanție 2–3 ani.`,
+        desc: `Compară ${catCounts[activeCategory] ?? 0} produse din categoria ${activeCatLabel}. Vezi prețuri și caracteristici și solicită livrare sau montaj în Moldova.`,
         keywords: `${activeCatLabel.toLowerCase()} moldova, teco.md, sisteme supraveghere`,
       }
     : baseSeo;
@@ -390,11 +399,6 @@ export default function Products() {
       { name: seo.title, url: `https://teco.md${canonicalUrl}`, description: seo.desc }
     ),
     schemas.breadcrumb(breadcrumbItems),
-    ...(effectiveCat === "kituri" ? [schemas.faq([
-      { question: "Cât costă un set complet de supraveghere în Moldova?", answer: "Prețurile pentru seturi complete de supraveghere video în Moldova încep de la 3.500 MDL și pot ajunge la 30.000+ MDL, în funcție de numărul de camere și rezoluție. La Teco.md găsești kituri de 4, 8 și 16 camere, gata de instalat." },
-      { question: "Includeți montajul în prețul kitului?", answer: "Da, la Teco.md oferta poate include instalare profesională. Contactați-ne pentru un deviz gratuit de montaj, inclusiv cablare și configurare aplicație mobilă." },
-      { question: "Câte camere are nevoie o casă obișnuită?", answer: "Pentru o casă medie recomandăm un kit de 4 camere (față, spate, 2 laterale). Pentru curți mari sau case cu etaj, un kit de 8 camere acoperă complet perimetrul." },
-    ])] : []),
   ];
 
   return (
@@ -745,6 +749,16 @@ export default function Products() {
             </>
           )}
         </div>
+
+        {!offersOnly && !search.trim() && activeCategory !== "all" && (
+          <section className="max-w-7xl mx-auto px-4 md:px-6 pb-7" aria-label={lang === "ru" ? "Помощь с выбором" : "Ajutor pentru alegere"}>
+            <div className="rounded-2xl border border-zinc-200 bg-white p-5 md:p-7">
+              <h2 className="font-bold text-lg text-[#09090B]">{CATEGORY_GUIDES[effectiveCat]?.[lang].heading ?? (lang === "ru" ? `Как выбрать ${activeCatLabel}?` : `Cum alegi ${activeCatLabel}?`)}</h2>
+              <p className="mt-2 text-sm leading-6 text-zinc-600">{CATEGORY_GUIDES[effectiveCat]?.[lang].copy ?? (lang === "ru" ? `Сравните характеристики, совместимость и наличие в категории ${activeCatLabel}. Если нужна помощь, запросите рекомендацию для вашего объекта.` : `Compară caracteristicile, compatibilitatea și disponibilitatea produselor din ${activeCatLabel}. Pentru o recomandare, spune-ne unde vei folosi echipamentul.`)}</p>
+              <Link href="/servicii" className="inline-flex mt-3 text-sm font-bold text-[#FF4F00] hover:underline">{lang === "ru" ? "Узнать о монтаже →" : "Vezi serviciile de montaj →"}</Link>
+            </div>
+          </section>
+        )}
 
         {/* CTA Banner */}
         <div className="max-w-7xl mx-auto px-4 md:px-6 pb-8">
