@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { makeSitemap, documentHtml, isIndexableHead, legacyRedirects } from "./seo-output.mjs";
 import { canonicalPath } from "../src/lib/seo-url.ts";
 import { serveHtml } from "../src/server/seo-handler.ts";
-import { currentProductDescription } from "../src/lib/product-copy.ts";
+import { currentProductDescription, productSeoTitle, productSeoDescription } from "../src/lib/product-copy.ts";
 
 test("canonical URLs preserve category identity and remove tracking parameters", () => {
   assert.equal(canonicalPath("/servicii?utm_source=test"), "/servicii/");
@@ -106,4 +106,31 @@ test("a stale standalone price claim changes without rewriting genuine compariso
   assert.equal(currentProductDescription("Kit la prețul de 18699 MDL.", 26992), "Kit la prețul de 26.992 MDL.");
   assert.equal(currentProductDescription("Preț vechi 18699 MDL; preț nou 26992 MDL.", 26992), "Preț vechi 18699 MDL; preț nou 26992 MDL.");
   assert.equal(currentProductDescription("HDD 1000 MDL și montaj 650 MDL incluse.", 26992), "HDD 1000 MDL și montaj 650 MDL incluse.");
+});
+
+test("long catalog names and descriptions produce concise, current product snippets", () => {
+  const name = "Camera de supraveghere smart / inteligenta IMOU Bullet 3 IPC-S3EP-5M0WE, 5MP, Wi-Fi, microfon, difuzor, interior / exterior";
+  const description = "Camera IP IMOU de exterior la prețul de 18699 MDL. " + "Detecție de persoane și vedere nocturnă pentru curte. ".repeat(9);
+  assert.ok(productSeoTitle(name).length <= 63);
+  const snippet = productSeoDescription(description, name, 26992);
+  assert.ok(snippet.length <= 155);
+  assert.ok(snippet.includes("26.992 MDL"));
+});
+
+test("live product HTML includes unique product information and bounded metadata", async () => {
+  const name = "Camera de supraveghere smart / inteligenta IMOU Bullet 3 IPC-S3EP-5M0WE, 5MP, Wi-Fi, microfon, difuzor, interior / exterior";
+  const row = { id: 159, slug: "imou-bullet-3", name, brand: "IMOU", price: 1699, in_stock: 1,
+    description: "Camera de exterior cu detecție de persoane și vedere nocturnă. ".repeat(6),
+    long_description: "Utilizare pentru curte și intrare. Configurare din aplicația mobilă.",
+    specs: "5MP | WiFi | IP67", image_url: "/product-images/159.webp" };
+  const db = { prepare() { return { bind() { return { async first() { return row; } }; } }; } };
+  const assets = { async fetch() { return new Response('<html><head></head><body><div id="root"></div></body></html>'); } };
+  const res = await serveHtml(new Request("https://teco.md/product/imou-bullet-3/"), { ASSETS: assets, DB: db }, { pages: {}, redirects: {} });
+  const html = await res.text();
+  const title = html.match(/<title[^>]*>(.*?)<\/title>/)?.[1];
+  const desc = html.match(/name="description" content="([^"]*)"/)?.[1];
+  assert.ok(title && title.length <= 63);
+  assert.ok(desc && desc.length <= 155);
+  assert.ok(html.includes("Configurare din aplicația mobilă") && html.includes("5MP | WiFi | IP67"));
+  assert.ok(html.includes('rel="canonical" href="https://teco.md/product/imou-bullet-3/"'));
 });

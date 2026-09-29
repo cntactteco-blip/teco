@@ -232,7 +232,7 @@ export const schemas = {
         priceCurrency: "MDL",
         availability: p.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
         itemCondition: "https://schema.org/NewCondition",
-        seller: { "@type": "Organization", "@id": "https://teco.md/#business", name: "TECO.md" },
+        seller: { "@type": "Organization", "@id": "https://teco.md/#business", name: "TECO.md", logo: "https://teco.md/logo.png" },
         ...(p.oldPrice ? { priceSpecification: {
           "@type": "PriceSpecification",
           priceType: "https://schema.org/SalePrice",

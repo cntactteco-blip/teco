@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLang } from "@/contexts/LangContext";
 import { SEO, schemas } from "@/components/SEO";
 import { trackViewProduct } from "@/lib/analytics";
+import { productSeoTitle, productSeoDescription } from "@/lib/product-copy";
 
 // ── Pagina "Produs negăsit" cu auto-redirect ─────────────────────────
 function ProductNotFound() {
@@ -524,8 +525,8 @@ export default function ProductDetail() {
       { name: product.name, url: `https://teco.md/product/${product.slug || product.id}` },
     ]),
   ];
-  const metaTitle = `${product.name} — ${product.price.toLocaleString()} MDL | ${product.brand} | Teco.md`;
-  const metaDesc = product.description.slice(0, 160) || `${product.name}. Preț: ${product.price.toLocaleString()} MDL. Brand: ${product.brand}. Livrare în 24h. Garanție 2–5 ani.`;
+  const metaTitle = productSeoTitle(product.name);
+  const metaDesc = productSeoDescription(product.description, product.name, product.price);
 
   return (
     <>
