@@ -21,7 +21,7 @@ const BASE_URL = "https://teco.md";
 
 const DEFAULT_META = {
   ro: {
-    title: "Teco.md — Montare și Instalare Sisteme de Securitate Moldova | Camere de Supraveghere",
+    title: "Camere de Supraveghere și Montaj în Moldova | Teco.md",
     description: "Camere de supraveghere, seturi video, NVR-uri și alarme în Moldova. Consultanță, montaj și reparații. Compară echipamentele și solicită o ofertă în MDL.",
     keywords: "montare instalare sisteme securitate Moldova, camere supraveghere Chisinau, seturi supraveghere video complete, instalare camere exterior, NVR DVR Moldova, sisteme alarma, reparatii camere supraveghere, teco.md",
   },
@@ -300,7 +300,7 @@ export const schemas = {
                 priceCurrency: "MDL",
                 availability: (item.inStock !== false) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
                 itemCondition: "https://schema.org/NewCondition",
-                seller: { "@type": "Organization", name: "Teco.md", url: "https://teco.md" },
+                seller: { "@type": "Organization", "@id": "https://teco.md/#business", name: "TECO.md", url: "https://teco.md/", logo: "https://teco.md/logo.png" },
               },
             },
           };

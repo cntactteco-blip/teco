@@ -301,7 +301,7 @@ export default function Products() {
   const CAT_SEO: Record<string, { ro: CatSeoEntry; ru: CatSeoEntry }> = {
     wifi: {
       ro: { title: `Camere WiFi Supraveghere — ${catCounts.wifi ?? 0} Modele | Teco.md Moldova`,
-            desc: "Camere de supraveghere WiFi fără cabluri pentru casă, grădină și birou. Configurare în 10 minute, vizualizare live pe telefon oriunde în lume. Livrare 24h în toată Moldova.",
+            desc: "Camere WiFi pentru casă, curte și birou. Vizualizare live pe telefon, instalare ușoară și livrare rapidă în toată Moldova.",
             keywords: "camere wifi supraveghere moldova, camere ip wireless, camera supraveghere fara cablu, IMOU, Reolink, TP-Link Tapo, dahua wifi, teco.md" },
       ru: { title: `WiFi Камеры Видеонаблюдения — ${catCounts.wifi ?? 0} Моделей | Teco.md`,
             desc: "Беспроводные WiFi камеры видеонаблюдения для дома и офиса. Без кабелей, настройка 10 минут, просмотр онлайн с телефона. Доставка 24ч по всей Молдове.",
@@ -348,8 +348,8 @@ export default function Products() {
             keywords: "системы сигнализации молдова, ajax сигнализация, охранная сигнализация дома, teco.md" },
     },
     all: {
-      ro: { title: "Catalog Camere Supraveghere, NVR, Kituri, Alarme | Teco.md Moldova",
-            desc: "Catalog complet sisteme de supraveghere Moldova: camere IP WiFi, PoE, 4G Solar, înregistratoare NVR, kituri complete și alarme. Stoc fizic în Chișinău. Livrare 24h.",
+      ro: { title: "Camere Supraveghere, NVR și Alarme | Teco.md Moldova",
+            desc: "Camere WiFi, PoE și 4G, NVR, kituri complete și alarme. Stoc în Chișinău, livrare în Moldova, consultanță și montaj profesional.",
             keywords: "camere supraveghere moldova, sisteme supraveghere chisinau, seturi complete supraveghere video, nvr dvr moldova, kituri camere, alarme, teco.md" },
       ru: { title: "Каталог Камер, NVR, Комплектов, Сигнализаций | Teco.md Молдова",
             desc: "Полный каталог систем видеонаблюдения: IP камеры WiFi, PoE, 4G, NVR, готовые комплекты и сигнализации. Физический склад в Кишинёве. Доставка 24ч.",
