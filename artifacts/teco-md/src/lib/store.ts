@@ -505,6 +505,13 @@ const _productsCacheTs = (() => {
   catch { return 0; }
 })();
 
+const _cachedBlogPosts: BlogPost[] | null = (() => {
+  try {
+    const parsed = JSON.parse(localStorage.getItem("teco_blog_cache") ?? "null");
+    return Array.isArray(parsed) ? parsed : null;
+  } catch { return null; }
+})();
+
 const _seedProducts: StoreProduct[] = seedProducts.map((p) => ({
   ...p,
   imageUrl: IMAGE_SEED[(p as { imageType: string }).imageType] ?? "",
@@ -534,7 +541,7 @@ let state: StoreState = {
   products: _cachedProducts ?? _snapshotProducts ?? _seedProducts,
   leads: [],
   orders: [],
-  blogPosts: Array.isArray((_snapshot as any).blogPosts) ? (_snapshot as any).blogPosts.map(dbBlogPostToStore) : DEFAULT_BLOG_POSTS,
+  blogPosts: _cachedBlogPosts ?? (Array.isArray((_snapshot as any).blogPosts) ? (_snapshot as any).blogPosts.map(dbBlogPostToStore) : DEFAULT_BLOG_POSTS),
   settings: _cachedSettings ?? _snapshotSettings ?? DEFAULT_SETTINGS,
   userReviews: (() => {
     try { return JSON.parse(localStorage.getItem("teco_user_reviews") ?? "{}"); } catch { return {}; }
@@ -773,6 +780,18 @@ async function _backgroundRefreshFromD1(): Promise<void> {
   } catch { /* silent — nu blocăm pagina */ }
 }
 
+async function _refreshBlogFromD1(): Promise<void> {
+  try {
+    const response = await fetch(_API + "/api/blog-posts");
+    if (!response.ok) return;
+    const payload = jsonRecord(await response.json());
+    if (!Array.isArray(payload?.data)) return;
+    const blogPosts = payload.data.map(dbBlogPostToStore);
+    try { localStorage.setItem("teco_blog_cache", JSON.stringify(blogPosts)); } catch {}
+    setState(s => ({ ...s, blogPosts }));
+  } catch { /* Keep the last known articles during a temporary API outage. */ }
+}
+
 // ─── initStore — VIZITATORI: instant din snapshot/cache + SWR background ──────
 // Afișează imediat din cache/snapshot, apoi reîmprospătează din D1 în background
 // dacă cache-ul e mai vechi de PRODUCTS_CACHE_TTL_MS (3 min).
@@ -785,6 +804,9 @@ export function initStore(): void {
   const cacheAge = Date.now() - _productsCacheTs;
   if (cacheAge > PRODUCTS_CACHE_TTL_MS) {
     _backgroundRefreshFromD1();
+  } else {
+    // Article edits/publications are independent of the product cache age.
+    _refreshBlogFromD1();
   }
 }
 
