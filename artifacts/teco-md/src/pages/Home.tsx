@@ -135,6 +135,8 @@ export default function Home() {
     form.reset();
   };
 
+  const tickerItems = t("hero.ticker").split(" • ");
+
   const HOME_FAQ_RO = [
     { q: "Câte camere de supraveghere am nevoie pentru o casă?", a: "Pentru o casă standard (3–4 camere) recomandăm: 1 cameră la intrarea principală, 1 la garaj sau parcare, 1–2 pe perimetrul exterior. Numărul exact depinde de suprafață și punctele critice. Consultanța noastră gratuită identifică exact ce ai nevoie." },
     { q: "Ce este mai bine — camere WiFi sau cablate (PoE)?", a: "Camerele WiFi sunt mai ușor de instalat și perfecte pentru case mici sau apartamente. Camerele PoE (cablate) sunt mai stabile, mai sigure și recomandate pentru afaceri sau case mari. Teco.md instalează ambele tipuri — te sfătuim în funcție de nevoile tale." },
@@ -164,45 +166,67 @@ export default function Home() {
           ══════════════════════════════════════════════ */}
       <section className="relative bg-white overflow-hidden border-b border-zinc-100">
 
+        {/* Banda informativă din designul original — o singură sursă pentru mesajele comerciale. */}
+        <div className="bg-[#FF4F00] text-white text-[11px] font-semibold py-1.5 overflow-hidden select-none">
+          <div className="ticker-track whitespace-nowrap">
+            {[1, 2].map((copy) => (
+              <span key={copy} className="inline-flex items-center gap-6 px-6">
+                {tickerItems.map((item, index) => (
+                  <span key={`${copy}-${index}`} className="inline-flex items-center gap-6">
+                    <span>{item}</span>
+                    <span className="opacity-40">•</span>
+                  </span>
+                ))}
+              </span>
+            ))}
+          </div>
+        </div>
+
         {/* ── Main hero body ── */}
-        <div className="max-w-7xl mx-auto px-5 pt-9 pb-7 md:py-16 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-center">
+        <div className="max-w-7xl mx-auto px-5 py-10 md:py-16 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-8 items-center">
 
           {/* LEFT — copy */}
-          <div className="flex flex-col gap-4 order-1 lg:order-none lg:col-start-1 lg:row-start-1">
+          <div className="flex flex-col gap-5 order-1 lg:order-none lg:col-start-1 lg:row-start-1">
 
             {/* Headline */}
-            <h1 className="max-w-2xl text-[clamp(2.1rem,8vw,4.8rem)] font-black leading-[1.04] tracking-tight text-[#09090B] animate-fade-in">
-              {lang === "ro" ? "Camere de supraveghere și sisteme de securitate" : "Камеры видеонаблюдения и системы безопасности"}
+            <h1 className="font-black leading-[0.9] tracking-tight text-[#09090B]"
+                style={{ fontSize: "clamp(2.8rem, 9vw, 5.5rem)" }}>
+              <span className="block animate-fade-in" style={{ animationDelay: "0.05s" }}>
+                {t("hero.title1")}
+              </span>
+              <span className="hero-shine block animate-fade-in" style={{ animationDelay: "0.12s" }}>
+                {t("hero.title2")}
+              </span>
+              <span className="block text-zinc-400 font-black animate-fade-in" style={{ animationDelay: "0.19s", fontSize: "clamp(1.1rem, 3.5vw, 2rem)" }}>
+                {t("hero.subtitle")}
+              </span>
             </h1>
-            <p className="max-w-xl text-sm leading-relaxed text-zinc-600 sm:text-lg">
-              {lang === "ro" ? "Camere WiFi, PoE, 4G și kituri complete pentru casă și afacere." : "Камеры WiFi, PoE, 4G и готовые комплекты для дома и бизнеса."}
-            </p>
 
           </div>
 
-          {/* Acțiunile apar înaintea produsului pe ecranele mici. */}
+          {/* Pe mobil produsul rămâne între mesaj și acțiuni, ca în designul original. */}
 
-          <div className="flex flex-col gap-3 order-2 lg:order-none lg:col-start-1 lg:row-start-2">
+          <div className="flex flex-col gap-5 order-3 lg:order-none lg:col-start-1 lg:row-start-2">
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-3 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+            <div className="flex flex-col sm:flex-row gap-3 animate-fade-in" style={{ animationDelay: "0.28s" }}>
               <Link href="/produse"
-                className="hero-btn-glow flex items-center justify-center gap-2 bg-[#FF4F00] text-white px-7 py-4 rounded-2xl font-black text-base sm:text-lg">
+                className="hero-btn-glow flex items-center justify-center gap-2 bg-[#FF4F00] text-white px-7 py-4 rounded-2xl font-black text-lg">
                 <Zap className="w-5 h-5" />
-                {lang === "ro" ? "Vezi produsele" : "Смотреть товары"}
+                {t("hero.cta_buy")}
               </Link>
               <button
                 onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
-                className="flex items-center justify-center gap-2 border-2 border-zinc-900 text-[#09090B] px-7 py-4 rounded-2xl font-bold text-base sm:text-lg hover:bg-zinc-50 transition-colors active:scale-95">
+                className="flex items-center justify-center gap-2 border-2 border-zinc-900 text-[#09090B] px-7 py-4 rounded-2xl font-bold text-lg hover:bg-zinc-50 transition-colors active:scale-95">
                 <Phone className="w-4 h-4" />
-                {lang === "ro" ? "Cere o ofertă" : "Запросить предложение"}
+                {t("hero.cta_consult")}
               </button>
             </div>
 
           </div>
 
           {/* RIGHT — product showcase (seturi dinamice) */}
-          <div className="relative flex items-center justify-center lg:justify-end order-3 mt-4 lg:mt-0 lg:order-none lg:col-start-2 lg:row-start-1 lg:row-span-2">
+          <div className="relative flex items-center justify-center lg:justify-end order-2 lg:order-none lg:col-start-2 lg:row-start-1 lg:row-span-2">
 
             <div className="absolute w-72 h-72 bg-[#FF4F00] rounded-full blur-[100px] opacity-10 pointer-events-none" />
 
@@ -275,6 +299,10 @@ export default function Home() {
             )}
 
           </div>
+        </div>
+
+        <div className="flex justify-center pb-4 opacity-40">
+          <ChevronDown className="w-5 h-5 text-zinc-400 animate-bounce" />
         </div>
 
       </section>
