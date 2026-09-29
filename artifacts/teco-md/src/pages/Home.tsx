@@ -365,7 +365,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="flex gap-3 overflow-x-auto no-scrollbar snap-x md:grid md:grid-cols-4 md:gap-5 pb-2">
-            {categories.map((cat) => {
+            {categories.filter((cat) => storeProducts.some((product) => product.category === cat.slug && product.inStock !== false)).map((cat) => {
               const catProducts = storeProducts.filter((p) => p.category === cat.slug);
               const count = catProducts.length;
               const productImg = catProducts[0]?.imageUrl;
