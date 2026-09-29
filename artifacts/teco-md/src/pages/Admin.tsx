@@ -1856,8 +1856,9 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
   const saveEditCat = (id: string) => {
     const current = categories.find((c) => c.id === id);
     if (!current || !catEditLabel.trim()) return;
-    const slug = catEditSlug.trim().toLowerCase();
-    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) { window.alert("Adresa categoriei trebuie să conțină doar litere mici, cifre și cratime."); return; }
+    // Keep historic URLs unchanged when editing copy or SEO fields.
+    const slug = catEditSlug === current.slug ? current.slug : catEditSlug.trim().toLowerCase();
+    if (slug !== current.slug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) { window.alert("Adresa categoriei trebuie să conțină doar litere mici, cifre și cratime."); return; }
     if (categories.some((c) => c.id !== id && c.slug === slug)) { window.alert("Există deja o categorie cu această adresă."); return; }
     if (slug !== current.slug && products.some((p) => p.category === current.slug || p.category === id)) {
       window.alert("Nu schimba adresa unei categorii cu produse: legăturile și paginile Google s-ar putea rupe. Păstrează adresa existentă.");
@@ -2125,7 +2126,7 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
                     <span className="text-zinc-600 text-xs font-mono ml-2">/{cat.slug}</span>
                   </div>
                   <span className="text-[10px] text-zinc-600 bg-zinc-700 px-1.5 py-0.5 rounded">
-                    {products.filter((p) => p.category === cat.slug).length} prod.
+                    {products.filter((p) => p.category === cat.slug || p.category === cat.id).length} prod.
                   </span>
                   <button onClick={() => { setCatEditId(cat.id); setCatEditLabel(cat.label); setCatEditLabelRu(cat.labelRu ?? ""); setCatEditSlug(cat.slug); setCatEditImage(cat.image ?? ""); setCatEditIcon(cat.iconKey ?? ""); setCatEditSeoTitle(cat.seoTitle ?? ""); setCatEditSeoDescription(cat.seoDescription ?? ""); setCatEditSeoIntro(cat.seoIntro ?? ""); }}
                     className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-500 hover:text-white transition-colors">
