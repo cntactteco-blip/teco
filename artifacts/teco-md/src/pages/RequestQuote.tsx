@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ArrowLeft, CheckCircle2, ChevronRight, Building2, Home as HomeIcon, Warehouse, Store, Shield } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useSearch } from "wouter";
 import { storeActions } from "@/lib/store";
 import { useLang } from "@/contexts/LangContext";
 import { SEO } from "@/components/SEO";
@@ -38,13 +38,15 @@ const CAMERA_OPTIONS: CameraCount[] = ["2", "4", "8", "12+"];
 export default function RequestQuote() {
   const { lang } = useLang();
   const ro = lang === "ro";
+  const repair = new URLSearchParams(useSearch()).get("serviciu") === "reparatii";
 
-  const [step, setStep] = useState<Step>(1);
+  const [step, setStep] = useState<Step>(repair ? 3 : 1);
   const [property, setProperty] = useState<PropertyType | null>(null);
   const [cameras, setCameras] = useState<CameraCount | null>(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [locality, setLocality] = useState("");
+  const [details, setDetails] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -60,16 +62,17 @@ export default function RequestQuote() {
     setError("");
     setSubmitting(true);
     try {
-      const projectNotes = `${ro ? PROPERTY_LABELS_RO[property!] : PROPERTY_LABELS_RU[property!]}, ${cameras} ${ro ? "camere" : "камеры"}`;
-      const leadNotes = locality.trim() ? `${projectNotes}, ${ro ? "Localitate" : "Населённый пункт"}: ${locality.trim()}` : projectNotes;
+      const projectNotes = repair ? (ro ? "Diagnosticare / reparații sistem existent" : "Диагностика / ремонт существующей системы") : `${ro ? PROPERTY_LABELS_RO[property!] : PROPERTY_LABELS_RU[property!]}, ${cameras} ${ro ? "camere" : "камеры"}`;
+      const leadNotes = [projectNotes, locality.trim() && `${ro ? "Localitate" : "Населённый пункт"}: ${locality.trim()}`, details.trim()].filter(Boolean).join("; ");
+      const source = repair ? "Cerere diagnosticare" : "Cerere montaj";
       await storeActions.addLead({
         name: name.trim(),
         phone: phone.trim(),
-        source: ro ? "Ofertă Mobilă" : "Мобильный запрос",
+        source,
         notes: leadNotes,
-      });
+      }, { requireSaved: true });
       import("@/lib/notify").then(({ notifyLead }) =>
-        notifyLead({ name: name.trim(), phone: phone.trim(), source: "Cerere Ofertă", notes: leadNotes })
+        notifyLead({ name: name.trim(), phone: phone.trim(), source, notes: leadNotes })
       );
       setStep("done");
     } catch {
@@ -97,16 +100,16 @@ export default function RequestQuote() {
             </Link>
             <div>
               <h1 className="font-black text-2xl text-[#09090B]">
-                {ro ? "Solicită Ofertă" : "Запросить Предложение"}
+                {repair ? (ro ? "Solicită diagnosticare" : "Запросить диагностику") : (ro ? "Solicită Ofertă" : "Запросить Предложение")}
               </h1>
               <p className="text-zinc-500 text-sm mt-0.5">
-                {ro ? "Gratuit · Fără obligații · Răspuns în 30 min" : "Бесплатно · Без обязательств · Ответ за 30 мин"}
+                {repair ? (ro ? "Cerere fără obligații · Costul intervenției se confirmă după evaluare" : "Запрос без обязательств · Стоимость работ согласуется после оценки") : (ro ? "Gratuit · Fără obligații · Răspuns în 30 min" : "Бесплатно · Без обязательств · Ответ за 30 мин")}
               </p>
             </div>
           </div>
 
           {/* Progress dots */}
-          {step !== "done" && (
+          {step !== "done" && !repair && (
             <div className="flex gap-1.5 mb-8">
               {[1, 2, 3].map((s) => (
                 <div
@@ -195,7 +198,7 @@ export default function RequestQuote() {
               </p>
 
               {/* Summary card */}
-              <div className="bg-[#FF4F00]/5 border border-[#FF4F00]/20 rounded-2xl p-4 mb-5 flex items-center gap-3">
+              {!repair && <div className="bg-[#FF4F00]/5 border border-[#FF4F00]/20 rounded-2xl p-4 mb-5 flex items-center gap-3">
                 <div className="text-[#FF4F00]">{PROPERTY_ICONS[property!]}</div>
                 <div>
                   <p className="text-sm font-bold text-[#09090B]">
@@ -211,7 +214,7 @@ export default function RequestQuote() {
                 >
                   {ro ? "Modifică" : "Изменить"}
                 </button>
-              </div>
+              </div>}
 
               <div className="flex flex-col gap-3 mb-5">
                 <div>
@@ -234,7 +237,7 @@ export default function RequestQuote() {
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+373 __ ___ ___"
+                    placeholder={ro ? "Cu prefixul țării, de exemplu +373… sau +49…" : "С кодом страны, например +373… или +49…"}
                     className="w-full border-2 border-zinc-200 rounded-xl px-4 py-3.5 text-base font-medium text-[#09090B] placeholder:text-zinc-400 focus:outline-none focus:border-[#FF4F00] transition-colors bg-white"
                   />
                 </div>
@@ -246,11 +249,16 @@ export default function RequestQuote() {
                     type="text"
                     value={locality}
                     onChange={(e) => setLocality(e.target.value)}
-                    placeholder={ro ? "Localitatea unde va fi instalat sistemul" : "Где нужно установить систему"}
+                    placeholder={ro ? "Localitatea proprietății din Moldova" : "Населённый пункт объекта в Молдове"}
                     className="w-full border-2 border-zinc-200 rounded-xl px-4 py-3.5 text-base font-medium text-[#09090B] placeholder:text-zinc-400 focus:outline-none focus:border-[#FF4F00] transition-colors bg-white"
                   />
                 </div>
               </div>
+
+              <label className="block mb-5 text-sm font-semibold text-zinc-600">
+                {repair ? (ro ? "Problema și modelul echipamentului" : "Неисправность и модель оборудования") : (ro ? "Detalii despre proiect (opțional)" : "Детали проекта (необязательно)")}
+                <textarea value={details} onChange={e => setDetails(e.target.value)} maxLength={2000} rows={4} placeholder={ro ? "Descrie ce ai nevoie. Dacă ești peste hotare, indică cine poate oferi acces la proprietate. Nu trimite parole." : "Опишите задачу. Если вы за границей, укажите, кто может предоставить доступ на месте. Не отправляйте пароли."} className="mt-2 w-full rounded-xl border-2 border-zinc-200 bg-white px-4 py-3 font-normal text-zinc-950 focus:outline-none focus:border-[#FF4F00]" />
+              </label>
 
               {error && (
                 <p className="text-red-500 text-sm font-medium mb-3">{error}</p>
@@ -278,7 +286,7 @@ export default function RequestQuote() {
               </p>
 
               <button
-                onClick={() => setStep(2)}
+                onClick={() => repair ? window.history.back() : setStep(2)}
                 className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-600 transition-colors mt-4"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -302,9 +310,9 @@ export default function RequestQuote() {
                   : `Спасибо, ${name.split(" ")[0]}! Свяжемся с вами в течение 30 минут.`}
               </p>
               <p className="text-sm text-zinc-400 mb-8">
-                {ro
+                {repair ? (ro ? "Vom discuta problema și detaliile necesare pentru evaluarea sistemului existent." : "Обсудим неисправность и сведения, необходимые для оценки существующей системы.") : (ro
                   ? "Echipa noastră îți va pregăti o ofertă personalizată pentru sistemul de supraveghere."
-                  : "Наша команда подготовит персональное предложение для системы видеонаблюдения."}
+                  : "Наша команда подготовит персональное предложение для системы видеонаблюдения.")}
               </p>
               <Link
                 href="/produse"

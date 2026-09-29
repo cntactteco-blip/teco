@@ -967,20 +967,26 @@ export const storeActions = {
   },
 
   // Leads
-  async addLead(lead: Omit<Lead, "id" | "timestamp" | "status">) {
+  async addLead(lead: Omit<Lead, "id" | "timestamp" | "status">, options?: { requireSaved?: boolean }) {
     const newLead: Lead = {
       ...lead,
       id: crypto.randomUUID(),
       timestamp: new Date().toISOString(),
       status: "new",
     };
-    setState((s) => ({ ...s, leads: [newLead, ...s.leads] }));
-    trackLead(newLead.source);
-    fetch(_API + "/api/leads", {
+    const saving = fetch(_API + "/api/leads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: newLead.id, name: newLead.name, phone: newLead.phone, source: newLead.source, timestamp: newLead.timestamp, status: newLead.status, notes: newLead.notes ?? null, selections: newLead.selections ?? null }),
-    }).catch(() => {});
+    });
+    if (options?.requireSaved) {
+      const response = await saving;
+      if (!response.ok) throw new Error("Lead could not be saved");
+    } else {
+      saving.catch(() => {});
+    }
+    setState((s) => ({ ...s, leads: [newLead, ...s.leads] }));
+    trackLead(newLead.source);
     return newLead;
   },
 
