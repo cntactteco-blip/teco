@@ -179,6 +179,7 @@ function ProductCard({ product }: { product: StoreProduct }) {
 export default function Products() {
   const [isKitRoute] = useRoute("/seturi-camere-supraveghere");
   const searchStr = useSearch();
+  const offersOnly = !isKitRoute && new URLSearchParams(searchStr).get("oferte") === "1";
   const [, navigate] = useLocation();
   const { t, lang } = useLang();
   const products = useStore((s) => s.products);
@@ -238,6 +239,9 @@ export default function Products() {
 
   const filtered = useMemo(() => {
     let list = activeCategory === "all" ? products : products.filter(p => p.category === activeCategory);
+    if (offersOnly) {
+      list = list.filter(p => p.inStock !== false && !!p.oldPrice && p.oldPrice > p.price);
+    }
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(p =>
@@ -256,16 +260,17 @@ export default function Products() {
     if (sortBy === "price_asc")  list = [...list].sort((a, b) => a.price - b.price);
     if (sortBy === "price_desc") list = [...list].sort((a, b) => b.price - a.price);
     return list;
-  }, [activeCategory, search, selectedBrands, priceMin, priceMax, sortBy, products]);
+  }, [activeCategory, search, selectedBrands, priceMin, priceMax, sortBy, products, offersOnly]);
 
   const activeFilterCount = useMemo(() => {
     let n = 0;
+    if (offersOnly) n++;
     if (activeCategory !== "all") n++;
     if (selectedBrands.length > 0) n++;
     if (priceMin > 0 || priceMax < 99999) n++;
     if (sortBy !== "relevance") n++;
     return n;
-  }, [activeCategory, selectedBrands, priceMin, priceMax, sortBy]);
+  }, [activeCategory, selectedBrands, priceMin, priceMax, sortBy, offersOnly]);
 
   const clearAll = () => {
     selectCategory("all");
@@ -394,7 +399,7 @@ export default function Products() {
 
   return (
     <>
-      <SEO title={seo.title} description={seo.desc} keywords={seo.keywords} canonical={canonicalUrl} lang={lang} jsonLd={jsonLd} noIndex={!!search.trim()} />
+      <SEO title={seo.title} description={seo.desc} keywords={seo.keywords} canonical={canonicalUrl} lang={lang} jsonLd={jsonLd} noIndex={!!search.trim() || offersOnly} />
 
       {/* ── Mobile Filter Bottom Sheet ── */}
       {showFilters && (
@@ -568,7 +573,8 @@ export default function Products() {
 
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-lg md:text-3xl font-black text-[#09090B] tracking-tight">{activeCatLabel || (isKitRoute ? (lang === "ru" ? "Комплекты видеонаблюдения" : "Seturi camere de supraveghere") : t("products.title"))}</h1>
+                <h1 className="text-lg md:text-3xl font-black text-[#09090B] tracking-tight">{offersOnly ? (lang === "ru" ? "Товары со скидкой" : "Produse cu reducere") : activeCatLabel || (isKitRoute ? (lang === "ru" ? "Комплекты видеонаблюдения" : "Seturi camere de supraveghere") : t("products.title"))}</h1>
+                {offersOnly && <Link href="/produse" className="text-xs font-semibold text-[#FF4F00] hover:underline">{lang === "ru" ? "Все товары →" : "Toate produsele →"}</Link>}
               </div>
 
               {/* Desktop sort dropdown */}
