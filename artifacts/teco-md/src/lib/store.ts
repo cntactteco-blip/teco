@@ -51,6 +51,9 @@ export interface CategoryDef {
   slug: string;
   label: string;
   labelRu?: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  seoIntro?: string;
   image?: string;
   iconKey?: string; // cheie iconița din CatIcons (ex: "cctv-wifi", "nvr", "alarm")
 }

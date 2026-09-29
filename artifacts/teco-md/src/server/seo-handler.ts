@@ -7,6 +7,13 @@ const privatePaths = new Set(["/admin/", "/checkout/", "/favorit/"]);
 const escapeHtml = (value: unknown) => String(value ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 const readableText = (value: unknown) => String(value ?? "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 const sitemapXml = (routes: string[]) => `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${[...new Set(routes)].sort().map((route) => `  <url><loc>${escapeHtml(`https://teco.md${route}`)}</loc></url>`).join("\n")}\n</urlset>\n`;
+type RuntimeCategory = { id?: string; slug: string; label: string; seoTitle?: string; seoDescription?: string; seoIntro?: string };
+async function categoriesFromDb(db: D1Database): Promise<RuntimeCategory[]> {
+  const row = await db.prepare("SELECT data FROM settings WHERE id = 1").first<{ data: string }>();
+  if (!row?.data) return [];
+  const parsed = JSON.parse(row.data);
+  return Array.isArray(parsed?.categories) ? parsed.categories.filter((category: RuntimeCategory) => category && typeof category.slug === "string" && typeof category.label === "string") : [];
+}
 
 export async function serveHtml(request: Request, env: Environment, manifest: Manifest): Promise<Response> {
   const url = new URL(request.url);
@@ -20,12 +27,16 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
       const staticRoutes = [...xml.matchAll(/<loc>(https:\/\/teco\.md[^<]*)<\/loc>/g)]
         .map(([, location]) => location.replace(/&amp;/g, "&").replace("https://teco.md", ""))
         .filter((route) => !route.startsWith("/product/") && !route.startsWith("/blog/") || route === "/blog/");
-      const [products, articles] = await Promise.all([
-        env.DB.prepare("SELECT slug FROM products WHERE slug IS NOT NULL AND slug != '' AND price > 0").all<{ slug: string }>(),
+      const [products, articles, categories] = await Promise.all([
+        env.DB.prepare("SELECT slug, category FROM products WHERE slug IS NOT NULL AND slug != '' AND price > 0").all<{ slug: string; category: string }>(),
         env.DB.prepare("SELECT slug FROM blog_posts WHERE slug IS NOT NULL AND slug != '' AND published = 1").all<{ slug: string }>(),
+        categoriesFromDb(env.DB),
       ]);
+      const activeCategories = new Set((products.results ?? []).map((row) => row.category));
       const routes = [
-        ...staticRoutes,
+        ...staticRoutes.filter((route) => !route.startsWith("/produse/?cat=") || !categories.length),
+        ...categories.filter((category) => activeCategories.has(category.slug) && category.slug !== "kituri" && !/seturi-complete/i.test(category.slug))
+          .map((category) => canonicalPath(`/produse?cat=${encodeURIComponent(category.slug)}`)),
         ...(products.results ?? []).map((row) => `/product/${encodeURIComponent(row.slug)}/`),
         ...(articles.results ?? []).map((row) => `/blog/${encodeURIComponent(row.slug)}/`),
       ];
@@ -66,6 +77,46 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
     if (noIndex) headers.set("X-Robots-Tag", "noindex, follow");
     return new Response(request.method === "HEAD" ? null : original.body, { status, headers });
   };
+  const dynamicPage = async (title: string, description: string, canonical: string, body: string, schema: unknown) => {
+    const shell = await readAsset("/app");
+    if (!shell.ok) throw new Error("Missing application shell");
+    let html = await shell.text();
+    html = html.replace(/<meta[^>]*name="robots"[^>]*>/gi, "");
+    const safeTitle = escapeHtml(seoSnippet(title, 62));
+    const safeDescription = escapeHtml(seoSnippet(description, 155));
+    const safeCanonical = escapeHtml(`https://teco.md${canonical}`);
+    const jsonLd = JSON.stringify(schema).replace(/</g, "\\u003c");
+    html = html.replace("</head>", `<title data-teco-prerender="">${safeTitle}</title><meta data-teco-prerender="" name="description" content="${safeDescription}"><link data-teco-prerender="" rel="canonical" href="${safeCanonical}"><meta property="og:type" content="website"><meta property="og:title" content="${safeTitle}"><meta property="og:description" content="${safeDescription}"><meta property="og:url" content="${safeCanonical}"><meta property="og:image" content="https://teco.md/opengraph.jpg"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${safeTitle}"><meta name="twitter:description" content="${safeDescription}"><meta name="twitter:image" content="https://teco.md/opengraph.jpg"><script type="application/ld+json">${jsonLd}</script></head>`);
+    html = html.replace('<div id="root"></div>', `<div id="root"><main>${body}</main></div>`);
+    return new Response(request.method === "HEAD" ? null : html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=0, must-revalidate" } });
+  };
+  // Categories created in Admin need a crawlable page on the same day, without a build.
+  if (path === "/produse" && url.searchParams.has("cat") && env.DB) {
+    try {
+      const slug = url.searchParams.get("cat") || "";
+      const category = (await categoriesFromDb(env.DB)).find((item) => item.slug === slug);
+      if (category && (!asset || category.seoTitle || category.seoDescription || category.seoIntro)) {
+        const products = await env.DB.prepare("SELECT slug, name, price FROM products WHERE category = ? AND slug IS NOT NULL AND slug != '' AND price > 0 ORDER BY name LIMIT 100").bind(slug).all<{ slug: string; name: string; price: number }>();
+        if (!products.results?.length) return response("/404", 404, true);
+        const canonical = canonicalPath(`/produse?cat=${encodeURIComponent(slug)}`);
+        const title = category.seoTitle || `${category.label} | Produse și prețuri în Moldova | Teco.md`;
+        const description = category.seoDescription || `Compară ${category.label} la Teco.md. Vezi specificațiile și prețurile produselor și cere o recomandare sau montaj în Moldova.`;
+        const intro = category.seoIntro || `Compară specificațiile produselor din categoria ${category.label} și alege echipamentul potrivit pentru obiectul tău.`;
+        const links = products.results.map((product) => `<li><a href="/product/${encodeURIComponent(product.slug)}/">${escapeHtml(product.name)}</a> — ${escapeHtml(product.price)} MDL</li>`).join("");
+        const body = `<h1>${escapeHtml(category.label)}</h1><p>${escapeHtml(intro)}</p><ul>${links}</ul><a href="/servicii/">Servicii de instalare</a>`;
+        return dynamicPage(title, description, canonical, body, { "@context": "https://schema.org", "@type": "CollectionPage", name: category.label, description, url: `https://teco.md${canonical}` });
+      }
+    } catch {
+      if (!asset) return new Response("Pagina nu este disponibilă temporar.", { status: 503, headers: { "Retry-After": "60", "Cache-Control": "no-store" } });
+    }
+  }
+  if (path === "/blog" && env.DB) {
+    try {
+      const articles = await env.DB.prepare("SELECT slug, title, description FROM blog_posts WHERE published = 1 AND slug IS NOT NULL AND slug != '' ORDER BY published_at DESC LIMIT 100").all<{ slug: string; title: string; description: string }>();
+      const body = `<h1>Ghiduri despre supraveghere și securitate</h1><p>Articole despre alegerea camerelor, sistemelor de alarmă și instalarea lor în Moldova.</p><ul>${(articles.results ?? []).map((article) => `<li><a href="/blog/${encodeURIComponent(article.slug)}/">${escapeHtml(article.title)}</a> — ${escapeHtml(seoSnippet(article.description, 180))}</li>`).join("")}</ul><a href="/produse/">Vezi produsele</a>`;
+      return dynamicPage("Ghiduri despre camere și alarme | Teco.md", "Ghiduri practice despre camere de supraveghere, sisteme de alarmă și montaj în Moldova. Descoperă cele mai recente articole Teco.md.", "/blog/", body, { "@context": "https://schema.org", "@type": "CollectionPage", name: "Ghiduri despre supraveghere și securitate", url: "https://teco.md/blog/" });
+    } catch { /* The static blog remains available if the database is temporarily unavailable. */ }
+  }
   // Product details must reflect D1 even when a prerendered copy exists: stock
   // and prices can change between deployments.
   if (asset && !path.startsWith("/product/")) return response(asset, 200, url.searchParams.has("q"));
@@ -89,10 +140,10 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
         const description = escapeHtml(readableText(rawDescription));
         const longDescription = readableText(row.long_description);
         const specs = readableText(row.specs);
-        const titleMeta = escapeHtml(dynamic[1] === "product" ? productSeoTitle(row.name) : seoSnippet(`${row.title} | TECO.md`, 62));
+        const titleMeta = escapeHtml(dynamic[1] === "product" ? productSeoTitle(row.name) : seoSnippet(row.meta_title || `${row.title} | TECO.md`, 62));
         const descriptionMeta = escapeHtml(dynamic[1] === "product"
           ? productSeoDescription(rawDescription, row.name, row.price)
-          : seoSnippet(rawDescription, 155));
+          : seoSnippet(row.meta_description || rawDescription, 155));
         const productImage = String(row.image_url || "").trim();
         const imageUrl = escapeHtml(productImage && !productImage.startsWith("data:")
           ? absoluteImage(productImage)
@@ -104,7 +155,7 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
               "@context": "https://schema.org", "@type": "Product",
               name: String(row.name || row.title),
               description: rawDescription.slice(0, 5000),
-              image: [absoluteImage(productImage && !productImage.startsWith("data:") ? productImage : "/opengraph.jpg")],
+              ...(productImage && !productImage.startsWith("data:") ? { image: [absoluteImage(productImage)] } : {}),
               ...(row.brand ? { brand: { "@type": "Brand", name: String(row.brand) } } : {}),
               ...(row.model ? { model: String(row.model) } : {}),
               offers: { "@type": "Offer", url: `https://teco.md${canonical}`,
@@ -116,7 +167,7 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
           ? `<script type="application/ld+json">${JSON.stringify({
               "@context": "https://schema.org", "@type": "BlogPosting", headline: String(row.title),
               description: rawDescription, image: [absoluteImage(productImage && !productImage.startsWith("data:") ? productImage : "/opengraph.jpg")],
-              url: `https://teco.md${canonical}`, datePublished: row.published_at || row.created_at,
+              url: `https://teco.md${canonical}`, datePublished: row.published_at, dateModified: row.updated_at || row.published_at,
               author: { "@type": "Organization", name: "TECO.md", url: "https://teco.md/" },
               publisher: { "@type": "Organization", name: "TECO.md", logo: { "@type": "ImageObject", url: "https://teco.md/logo.png" } },
             }).replace(/</g, "\\u003c")}</script>`

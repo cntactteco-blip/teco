@@ -375,13 +375,18 @@ export default function Products() {
   // SEO: folosește intrarea hardcodată dacă există, altfel generează dinamic
   const effectiveCat = isKitRoute ? "kituri" : (activeCategory in CAT_SEO ? activeCategory : "all");
   const baseSeo = CAT_SEO[effectiveCat][lang];
-  const seo = (activeCategory !== "all" && !(activeCategory in CAT_SEO) && activeCatLabel)
+  const categorySeo = (activeCategory !== "all" && !(activeCategory in CAT_SEO) && activeCatLabel)
     ? {
         title: `${activeCatLabel} — ${catCounts[activeCategory] ?? 0} Modele | Teco.md Moldova`,
         desc: `Compară ${catCounts[activeCategory] ?? 0} produse din categoria ${activeCatLabel}. Vezi prețuri și caracteristici și solicită livrare sau montaj în Moldova.`,
         keywords: `${activeCatLabel.toLowerCase()} moldova, teco.md, sisteme supraveghere`,
       }
     : baseSeo;
+  const seo = activeCatDef && activeCategory !== "all" ? {
+    ...categorySeo,
+    title: (lang === "ro" && activeCatDef.seoTitle?.trim()) || categorySeo.title,
+    desc: (lang === "ro" && activeCatDef.seoDescription?.trim()) || categorySeo.desc,
+  } : categorySeo;
 
   const canonicalUrl = isKitRoute || activeCategory === resolveCategorySlug("kituri", storeCategories, productCategories)
     ? "/seturi-camere-supraveghere"
@@ -754,7 +759,7 @@ export default function Products() {
           <section className="max-w-7xl mx-auto px-4 md:px-6 pb-7" aria-label={lang === "ru" ? "Помощь с выбором" : "Ajutor pentru alegere"}>
             <div className="rounded-2xl border border-zinc-200 bg-white p-5 md:p-7">
               <h2 className="font-bold text-lg text-[#09090B]">{CATEGORY_GUIDES[effectiveCat]?.[lang].heading ?? (lang === "ru" ? `Как выбрать ${activeCatLabel}?` : `Cum alegi ${activeCatLabel}?`)}</h2>
-              <p className="mt-2 text-sm leading-6 text-zinc-600">{CATEGORY_GUIDES[effectiveCat]?.[lang].copy ?? (lang === "ru" ? `Сравните характеристики, совместимость и наличие в категории ${activeCatLabel}. Если нужна помощь, запросите рекомендацию для вашего объекта.` : `Compară caracteristicile, compatibilitatea și disponibilitatea produselor din ${activeCatLabel}. Pentru o recomandare, spune-ne unde vei folosi echipamentul.`)}</p>
+              <p className="mt-2 text-sm leading-6 text-zinc-600">{(lang === "ro" && activeCatDef?.seoIntro?.trim()) || CATEGORY_GUIDES[effectiveCat]?.[lang].copy || (lang === "ru" ? `Сравните характеристики, совместимость и наличие в категории ${activeCatLabel}. Если нужна помощь, запросите рекомендацию для вашего объекта.` : `Compară caracteristicile, compatibilitatea și disponibilitatea produselor din ${activeCatLabel}. Pentru o recomandare, spune-ne unde vei folosi echipamentul.`)}</p>
               <Link href="/servicii" className="inline-flex mt-3 text-sm font-bold text-[#FF4F00] hover:underline">{lang === "ru" ? "Узнать о монтаже →" : "Vezi serviciile de montaj →"}</Link>
             </div>
           </section>
