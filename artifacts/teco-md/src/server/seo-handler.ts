@@ -1,5 +1,6 @@
 import { absoluteImage, canonicalPath } from "../lib/seo-url.ts";
 import { resolveCategorySlug } from "../lib/category-routing.ts";
+import { renderArticleHtml } from "../lib/article-html.ts";
 import { currentProductDescription, productSeoTitle, productSeoDescription, seoSnippet } from "../lib/product-copy.ts";
 
 export type Manifest = { pages: Record<string, string>; redirects: Record<string, string>; queryRedirects?: Record<string, string> };
@@ -188,11 +189,7 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
         const extraCopy = dynamic[1] === "product"
           ? `${longDescription && longDescription !== readableText(rawDescription) ? `<section><h2>Descriere detaliată</h2><p>${escapeHtml(longDescription)}</p></section>` : ""}${specs ? `<section><h2>Caracteristici</h2><p>${escapeHtml(specs)}</p></section>` : ""}`
           : "";
-        const articleCopy = dynamic[1] === "blog" ? String(row.content ?? "").split(/\n+/).map((line) => line.trim()).filter(Boolean).slice(0, 120).map((line) => {
-          if (line.startsWith("## ")) return `<h2>${escapeHtml(line.slice(3))}</h2>`;
-          if (line.startsWith("### ")) return `<h3>${escapeHtml(line.slice(4))}</h3>`;
-          return `<p>${escapeHtml(line.replace(/^[-*] /, ""))}</p>`;
-        }).join("") : "";
+        const articleCopy = dynamic[1] === "blog" ? renderArticleHtml(row.content) : "";
         html = html.replace('<div id="root"></div>', `<div id="root"><main><h1>${title}</h1>${productDetails}<p>${description}</p>${extraCopy}${articleCopy}<a href="${dynamic[1] === "blog" ? "/blog/" : "/produse/"}">${dynamic[1] === "blog" ? "Articole TECO.md" : "Catalog TECO.md"}</a></main></div>`);
         return new Response(request.method === "HEAD" ? null : html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache" } });
       }

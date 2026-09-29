@@ -4,6 +4,18 @@ import { makeSitemap, documentHtml, isIndexableHead, legacyRedirects } from "./s
 import { canonicalPath } from "../src/lib/seo-url.ts";
 import { serveHtml } from "../src/server/seo-handler.ts";
 import { currentProductDescription, productSeoTitle, productSeoDescription } from "../src/lib/product-copy.ts";
+import { renderArticleHtml } from "../src/lib/article-html.ts";
+
+test("article links, lists and tables render safely without executable imported HTML", () => {
+  const html = renderArticleHtml('## Alegere\n- **Verifică** [produsele](/produse/)\n- [link](javascript:alert)\n<script>alert(1)</script>\n| Tip | Preț |\n| --- | --- |\n| Kit | la cerere |');
+  assert.ok(html.includes('<h2>Alegere</h2>') && html.includes('<a href="/produse/">produsele</a>'));
+  assert.ok(html.includes('<ul><li><strong>Verifică</strong>') && html.includes('<td>la cerere</td>'));
+  assert.ok(html.includes('&lt;script&gt;') && !html.includes('<script>') && !html.includes('href="javascript:'));
+});
+test("long articles retain their final section and valid source links", () => {
+  const html = renderArticleHtml(`${'Un paragraf.\n'.repeat(150)}## Surse\n[Ajax](https://support.ajax.systems/en/manuals/hub/)`);
+  assert.ok(html.includes('<h2>Surse</h2>') && html.includes('href="https://support.ajax.systems/en/manuals/hub/"'));
+});
 
 test("canonical URLs preserve category identity and remove tracking parameters", () => {
   assert.equal(canonicalPath("/servicii?utm_source=test"), "/servicii/");

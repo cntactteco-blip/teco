@@ -5,6 +5,7 @@ import { SEO, schemas } from "@/components/SEO";
 import { Calendar, Clock, ArrowLeft, Share2, Tag, ChevronRight, Facebook, Twitter, Link2, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { seoSnippet } from "@/lib/product-copy";
+import { renderArticleHtml } from "@/lib/article-html";
 
 function formatDate(iso: string, lang: "ro" | "ru") {
   const d = new Date(iso);
@@ -20,104 +21,8 @@ function readingTimeLabel(min: number, lang: "ro" | "ru") {
 }
 
 function parseContent(content: string) {
-  const lines = content.split("\n");
-  const elements: React.JSX.Element[] = [];
-  let tableRows: string[] = [];
-  let inTable = false;
-  let key = 0;
-
-  const flushTable = () => {
-    if (tableRows.length === 0) return;
-    const headers = tableRows[0].split("|").map((h) => h.trim()).filter(Boolean);
-    const dataRows = tableRows.slice(2).filter((r) => r.includes("|"));
-    elements.push(
-      <div key={`table-${key++}`} className="overflow-x-auto my-6">
-        <table className="w-full border-collapse border border-zinc-200 rounded-lg">
-          <thead>
-            <tr className="bg-zinc-50">
-              {headers.map((h, i) => (
-                <th key={i} className="border border-zinc-200 px-4 py-3 text-left text-sm font-bold text-zinc-800">
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {dataRows.map((row, ri) => {
-              const cells = row.split("|").map((c) => c.trim()).filter(Boolean);
-              return (
-                <tr key={ri} className={ri % 2 === 1 ? "bg-zinc-50/50" : ""}>
-                  {cells.map((c, ci) => (
-                    <td key={ci} className="border border-zinc-200 px-4 py-3 text-sm text-zinc-700">
-                      {c}
-                    </td>
-                  ))}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    );
-    tableRows = [];
-    inTable = false;
-  };
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed) {
-      if (inTable) flushTable();
-      continue;
-    }
-
-    if (trimmed.startsWith("## ")) {
-      if (inTable) flushTable();
-      elements.push(
-        <h2 key={`h2-${key++}`} className="text-2xl font-bold text-zinc-900 mt-10 mb-4">
-          {trimmed.replace("## ", "")}
-        </h2>
-      );
-    } else if (trimmed.startsWith("### ")) {
-      if (inTable) flushTable();
-      elements.push(
-        <h3 key={`h3-${key++}`} className="text-xl font-bold text-zinc-800 mt-8 mb-3">
-          {trimmed.replace("### ", "")}
-        </h3>
-      );
-    } else if (trimmed.startsWith("|")) {
-      inTable = true;
-      tableRows.push(trimmed);
-    } else if (trimmed.startsWith("- ")) {
-      if (inTable) flushTable();
-      elements.push(
-        <ul key={`ul-${key++}`} className="list-disc list-inside my-3 space-y-1 text-zinc-700">
-          <li className="text-base leading-relaxed">
-            {trimmed.replace("- ", "").replace(/\*\*(.+?)\*\*/g, (_, t) => `<strong>${t}</strong>`).replace(/\*(.+?)\*/g, (_, t) => `<em>${t}</em>`)}
-          </li>
-        </ul>
-      );
-    } else if (trimmed.startsWith("**") && trimmed.endsWith("**")) {
-      if (inTable) flushTable();
-      elements.push(
-        <p key={`bold-${key++}`} className="font-bold text-zinc-900 my-3">
-          {trimmed.replace(/\*\*/g, "")}
-        </p>
-      );
-    } else {
-      if (inTable) flushTable();
-      const html = trimmed
-        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-        .replace(/\*(.+?)\*/g, "<em>$1</em>")
-        .replace(/\ud83c\udf1e|\ud83d\udcf1|\ud83d\udcfa|\ud83c\udfe2|\ud83d\udee3\ufe0f|\ud83c\udfe0|\ud83c\udf33/g, (m) => m);
-      elements.push(
-        <p key={`p-${key++}`} className="text-base leading-relaxed text-zinc-700 my-3"
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
-      );
-    }
-  }
-  if (inTable) flushTable();
-  return elements;
+  return <div className="[&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-zinc-900 [&_h2]:mt-10 [&_h2]:mb-4 [&_h3]:text-xl [&_h3]:font-bold [&_h3]:mt-8 [&_h3]:mb-3 [&_p]:text-base [&_p]:leading-relaxed [&_p]:text-zinc-700 [&_p]:my-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-4 [&_li]:my-2 [&_a]:text-[#FF4F00] [&_a]:underline [&_table]:w-full [&_table]:my-6 [&_th]:border [&_th]:p-3 [&_td]:border [&_td]:p-3"
+    dangerouslySetInnerHTML={{ __html: renderArticleHtml(content) }} />;
 }
 
 export default function BlogPost() {
