@@ -46,6 +46,24 @@ test("recent product cache cannot suppress blog edits, new articles or withdrawa
     await refreshed();
     assert.equal(store.getState().blogPosts.length, 0);
     assert.deepEqual(JSON.parse(cache.get("teco_blog_cache")), []);
+    const lead = { name: "Test", phone: "+49123456789", source: "Cerere diagnosticare", notes: "NVR offline; Localitate: Orhei" };
+    const count = store.getState().leads.length;
+    globalThis.fetch = async () => new Response("unavailable", { status: 503 });
+    await assert.rejects(store.storeActions.addLead(lead, { requireSaved: true }), /could not be saved/);
+    assert.equal(store.getState().leads.length, count);
+    globalThis.fetch = async () => { throw new Error("Network unavailable"); };
+    await assert.rejects(store.storeActions.addLead(lead, { requireSaved: true }), /Network unavailable/);
+    assert.equal(store.getState().leads.length, count);
+    let saved;
+    globalThis.fetch = async (url, options) => {
+      assert.equal(url, "/api/leads");
+      saved = JSON.parse(options.body);
+      return new Response(JSON.stringify({ success: true }));
+    };
+    await store.storeActions.addLead(lead, { requireSaved: true });
+    assert.equal(store.getState().leads.length, count + 1);
+    assert.equal(saved.phone, lead.phone);
+    assert.equal(saved.notes, lead.notes);
   } finally {
     await vite.close();
     globalThis.localStorage = oldStorage;

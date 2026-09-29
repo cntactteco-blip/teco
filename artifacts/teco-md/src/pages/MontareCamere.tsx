@@ -7,6 +7,7 @@ import {
 import { SEO, schemas } from "@/components/SEO";
 import { useLang } from "@/contexts/LangContext";
 import { useStore } from "@/lib/store";
+import RemotePropertyHelp from "@/components/RemotePropertyHelp";
 
 const SmartCostCalculator = lazy(() => import("@/components/SmartCostCalculator"));
 
@@ -225,6 +226,8 @@ export default function MontareCamere() {
             </div>
           </div>
         </section>
+
+        <div className="max-w-4xl mx-auto px-4 py-8"><RemotePropertyHelp /></div>
 
         {/* ── Stats ───────────────────────────────────────────────── */}
         <section className="bg-[#FF4F00] py-8 px-4">

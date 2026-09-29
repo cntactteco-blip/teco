@@ -4,6 +4,7 @@ import { SEO, schemas } from "@/components/SEO";
 import { useLang } from "@/contexts/LangContext";
 import { useStore } from "@/lib/store";
 import { canonicalUrl } from "@/lib/seo-url";
+import RemotePropertyHelp from "@/components/RemotePropertyHelp";
 
 type Copy = { title: string; description: string; heading: string; intro: string; sections: Array<{ title: string; text: string }>; links: Array<{ href: string; label: string }> };
 type FAQ = { question: string; answer: string };
@@ -137,7 +138,7 @@ export default function SearchLanding() {
           <h1 className="text-3xl md:text-5xl font-black leading-tight max-w-3xl">{copy.heading}</h1>
           <p className="mt-6 text-zinc-300 text-lg leading-relaxed max-w-3xl">{copy.intro}</p>
           <div className="flex flex-wrap gap-3 mt-8">
-            <Link href="/oferta" className="inline-flex items-center gap-2 rounded-xl bg-[#FF4F00] px-6 py-3 font-bold">{isRepair ? (lang === "ro" ? "Solicită diagnosticare" : "Запросить диагностику") : (lang === "ro" ? "Solicită o ofertă" : "Запросить предложение")}<ArrowRight size={18} /></Link>
+            <Link href={isRepair ? "/oferta?serviciu=reparatii" : "/oferta"} className="inline-flex items-center gap-2 rounded-xl bg-[#FF4F00] px-6 py-3 font-bold">{isRepair ? (lang === "ro" ? "Solicită diagnosticare" : "Запросить диагностику") : (lang === "ro" ? "Solicită o ofertă" : "Запросить предложение")}<ArrowRight size={18} /></Link>
             <a href={`tel:+${phone}`} className="inline-flex items-center gap-2 rounded-xl border border-zinc-600 px-6 py-3 font-bold"><Phone size={18} />+{phone}</a>
             {isRepair && <a href={`https://wa.me/${phone}?text=${encodeURIComponent(lang === "ro" ? "Bună ziua! Am nevoie de diagnosticarea unui sistem de supraveghere." : "Здравствуйте! Нужна диагностика системы видеонаблюдения.")}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-zinc-600 px-6 py-3 font-bold"><MessageCircle size={18} />WhatsApp</a>}
           </div>
@@ -158,6 +159,7 @@ export default function SearchLanding() {
           </aside>
         </>}
         {copy.sections.map(section => <section key={section.title} className="rounded-2xl bg-white border border-zinc-200 p-6 md:p-8"><h2 className="text-xl md:text-2xl font-bold text-zinc-950">{section.title}</h2><p className="mt-4 text-zinc-600 leading-relaxed">{section.text}</p></section>)}
+        {path !== "/contact" && <RemotePropertyHelp repair={isRepair} />}
         {isRepair && <section className="rounded-2xl bg-white border border-zinc-200 p-6 md:p-8"><h2 className="text-xl md:text-2xl font-bold text-zinc-950">{lang === "ro" ? "Întrebări despre reparații" : "Вопросы о ремонте"}</h2><div className="mt-6 divide-y divide-zinc-200">{repairFaqs.map(item => <details key={item.question} className="group py-4"><summary className="cursor-pointer list-none font-semibold text-zinc-950">{item.question}<span className="float-right text-[#FF4F00] group-open:rotate-45">+</span></summary><p className="mt-3 pr-8 text-sm leading-relaxed text-zinc-600">{item.answer}</p></details>)}</div></section>}
         <nav aria-label={lang === "ro" ? "Produse și servicii relevante" : "Оборудование и услуги"} className="flex flex-wrap gap-3 pt-5">
           {copy.links.map(link => <Link key={link.href} href={link.href} className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm font-semibold hover:border-[#FF4F00]">{link.label}</Link>)}
