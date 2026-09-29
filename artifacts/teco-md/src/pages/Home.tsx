@@ -240,10 +240,6 @@ export default function Home() {
                 />
               </Link>
 
-              <div className="badge-pop absolute -top-3 -right-3 bg-[#FF4F00] text-white text-[11px] font-black px-3 py-1.5 rounded-xl shadow-lg rotate-[-3deg] whitespace-nowrap pointer-events-none">
-                {lang === "ro" ? "Montaj disponibil la solicitare" : "Установка по запросу"}
-              </div>
-
               {heroProducts.length > 1 && (
                 <div className="absolute -top-7 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
                   {heroProducts.map((_, i) => (
