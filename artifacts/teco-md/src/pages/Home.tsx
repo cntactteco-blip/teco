@@ -58,6 +58,7 @@ export default function Home() {
     return [116];
   })();
   const storeProducts = useStore((s) => s.products);
+  const hasOffers = storeProducts.some((product) => product.inStock !== false && !!product.oldPrice && product.oldPrice > product.price);
   const categories = useStore((s) => s.settings.categories);
   const loaded = useStore((s) => s.loaded);
   const [heroIndex, setHeroIndex] = useState(0);
@@ -226,10 +227,12 @@ export default function Home() {
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-3 animate-fade-in" style={{ animationDelay: "0.36s" }}>
-              <Link href="/produse"
+              <Link href={hasOffers ? "/produse?oferte=1" : "/produse"}
                 className="hero-btn-glow flex items-center justify-center gap-2 bg-[#FF4F00] text-white px-7 py-4 rounded-2xl font-black text-lg">
                 <Zap className="w-5 h-5" />
-                {t("hero.cta_buy")}
+                {hasOffers
+                  ? t("hero.cta_buy")
+                  : (lang === "ro" ? "Vezi produsele" : "Смотреть товары")}
               </Link>
               <button
                 onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
