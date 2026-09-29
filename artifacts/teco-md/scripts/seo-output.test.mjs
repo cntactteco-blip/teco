@@ -17,16 +17,41 @@ test("sitemap includes each canonical page once and escapes XML", () => {
   assert.ok(!xml.includes("hreflang") && !xml.includes("lastmod"));
 });
 test("runtime sitemap reflects published articles and current products from D1", async () => {
-  const base = makeSitemap(["/", "/produse/?cat=wifi", "/product/retired/", "/blog/", "/blog/old-post/"]);
+  const base = makeSitemap(["/", "/produse/?cat=retired", "/product/retired/", "/blog/", "/blog/old-post/"]);
   const assets = { async fetch() { return new Response(base, { headers: { "Content-Type": "application/xml" } }); } };
-  const db = { prepare(sql) { return { async all() { return { results: sql.includes("FROM products")
-    ? [{ slug: "new-camera" }] : [{ slug: "ajax-guide" }] }; } }; } };
+  const db = { prepare(sql) { return {
+    async first() { return { data: JSON.stringify({ categories: [{ slug: "wifi", label: "Camere WiFi" }] }) }; },
+    async all() { return { results: sql.includes("FROM products")
+      ? [{ slug: "new-camera", category: "wifi" }] : [{ slug: "ajax-guide" }] }; },
+  }; } };
   const response = await serveHtml(new Request("https://teco.md/sitemap.xml"), { ASSETS: assets, DB: db }, { pages: {}, redirects: {} });
   const xml = await response.text();
   assert.equal(response.status, 200);
   assert.ok(xml.includes("/product/new-camera/") && xml.includes("/blog/ajax-guide/"));
   assert.ok(xml.includes("/produse/?cat=wifi") && xml.includes("https://teco.md/blog/"));
+  assert.ok(!xml.includes("/produse/?cat=retired"));
   assert.ok(!xml.includes("/product/retired/") && !xml.includes("/blog/old-post/"));
+});
+test("a new admin category with products is crawlable before another build", async () => {
+  const db = { prepare(sql) { return {
+    async first() { assert.ok(sql.includes("settings")); return { data: JSON.stringify({ categories: [{ id: "solar", slug: "solar", label: "Camere solare", seoTitle: "Camere solare | Teco.md", seoDescription: "Camere solare pentru terenuri în Moldova.", seoIntro: "Verifică autonomia și semnalul 4G." }] }) }; },
+    bind(slug) { assert.equal(slug, "solar"); return { async all() { return { results: [{ slug: "camera-solara", name: "Cameră solară 4G", price: 3100 }] }; } }; },
+  }; } };
+  const assets = { async fetch() { return new Response('<html><head><meta name="robots" content="noindex, follow"></head><body><div id="root"></div></body></html>'); } };
+  const res = await serveHtml(new Request("https://teco.md/produse/?cat=solar"), { ASSETS: assets, DB: db }, { pages: {}, redirects: {} });
+  const html = await res.text();
+  assert.equal(res.status, 200);
+  assert.ok(html.includes("Camere solare | Teco.md") && html.includes("Verifică autonomia"));
+  assert.ok(html.includes('/product/camera-solara/') && html.includes('href="https://teco.md/produse/?cat=solar"'));
+  assert.ok(!html.includes('name="robots" content="noindex'));
+});
+test("newly published articles appear in the crawlable blog index", async () => {
+  const db = { prepare() { return { async all() { return { results: [{ slug: "ghid-ajax", title: "Ghid Ajax", description: "Alegerea senzorilor." }] }; } }; } };
+  const assets = { async fetch() { return new Response('<html><head></head><body><div id="root"></div></body></html>'); } };
+  const res = await serveHtml(new Request("https://teco.md/blog/"), { ASSETS: assets, DB: db }, { pages: { "/blog/": "/__seo/old-blog/" }, redirects: {} });
+  const html = await res.text();
+  assert.equal(res.status, 200);
+  assert.ok(html.includes('/blog/ghid-ajax/') && !html.includes("old-blog"));
 });
 test("static head replaces old metadata and uses the actual rendered page", () => {
   const html = documentHtml('<html><head><title>Old</title><link rel="canonical" href="/"><script type="application/ld+json">{}</script></head><body><div id="root"><!--app-html--></div></body></html>', { head: '<title>Contact</title><link rel="canonical" href="https://teco.md/contact/">', body: '<h1>Contact</h1><a href="tel:+37367200463">Sună</a>' });
@@ -149,13 +174,15 @@ test("live product HTML includes unique product information and bounded metadata
 
 test("a newly published article is crawlable without waiting for another deployment", async () => {
   const article = { slug: "alegere-ajax", title: "Cum alegi o alarmă Ajax pentru casă", description: "Ghid pentru alegerea senzorilor Ajax.",
-    content: "## Ce protejezi?\nCompară intrarea, ferestrele și spațiile interioare.\n### Configurare\nAlege senzorii potriviți.", published_at: "2026-09-29", image_url: "/product-images/ajax.webp" };
+    meta_title: "Alarmă Ajax: alegerea senzorilor | Teco.md", meta_description: "Ghid practic pentru senzorii Ajax potriviți casei tale.",
+    content: "## Ce protejezi?\nCompară intrarea, ferestrele și spațiile interioare.\n### Configurare\nAlege senzorii potriviți.", published_at: "2026-09-29", updated_at: "2026-09-30", image_url: "/product-images/ajax.webp" };
   const db = { prepare() { return { bind() { return { async first() { return article; } }; } }; } };
   const assets = { async fetch() { return new Response('<html><head></head><body><div id="root"></div></body></html>'); } };
   const response = await serveHtml(new Request("https://teco.md/blog/alegere-ajax/"), { ASSETS: assets, DB: db }, { pages: {}, redirects: {} });
   const html = await response.text();
   assert.equal(response.status, 200);
   assert.ok(html.includes("<h2>Ce protejezi?</h2>") && html.includes("Alege senzorii potriviți."));
+  assert.ok(html.includes(article.meta_title) && html.includes(article.meta_description));
   assert.ok(html.includes('property="og:image" content="https://teco.md/product-images/ajax.webp"'));
   assert.ok(html.includes('"@type":"BlogPosting"'));
 });

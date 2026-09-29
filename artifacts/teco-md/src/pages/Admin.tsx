@@ -1825,11 +1825,17 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
   const [catEditSlug, setCatEditSlug] = useState("");
   const [catEditImage, setCatEditImage] = useState("");
   const [catEditIcon, setCatEditIcon] = useState("");
+  const [catEditSeoTitle, setCatEditSeoTitle] = useState("");
+  const [catEditSeoDescription, setCatEditSeoDescription] = useState("");
+  const [catEditSeoIntro, setCatEditSeoIntro] = useState("");
   const [catNewLabel, setCatNewLabel] = useState("");
   const [catNewLabelRu, setCatNewLabelRu] = useState("");
   const [catNewSlug, setCatNewSlug] = useState("");
   const [catNewImage, setCatNewImage] = useState("");
   const [catNewIcon, setCatNewIcon] = useState("");
+  const [catNewSeoTitle, setCatNewSeoTitle] = useState("");
+  const [catNewSeoDescription, setCatNewSeoDescription] = useState("");
+  const [catNewSeoIntro, setCatNewSeoIntro] = useState("");
   const [showAddCat, setShowAddCat] = useState(false);
 
   const moveCat = (idx: number, dir: -1 | 1) => {
@@ -1858,7 +1864,8 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
       return;
     }
     storeActions.updateCategories(categories.map((c) =>
-      c.id === id ? { ...c, label: catEditLabel.trim(), labelRu: catEditLabelRu.trim() || c.labelRu, slug, image: catEditImage || c.image, iconKey: catEditIcon || c.iconKey } : c
+      c.id === id ? { ...c, label: catEditLabel.trim(), labelRu: catEditLabelRu.trim() || c.labelRu, slug, image: catEditImage || c.image, iconKey: catEditIcon || c.iconKey,
+        seoTitle: catEditSeoTitle.trim() || undefined, seoDescription: catEditSeoDescription.trim() || undefined, seoIntro: catEditSeoIntro.trim() || undefined } : c
     ));
     setCatEditId(null);
   };
@@ -1869,8 +1876,9 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) { window.alert("Alege o adresă URL cu litere mici, cifre și cratime."); return; }
     if (categories.some((c) => c.slug === slug)) { window.alert("Există deja o categorie cu această adresă."); return; }
     const id = slug + "-" + Date.now().toString(36);
-    storeActions.updateCategories([...categories, { id, slug, label: catNewLabel.trim(), labelRu: catNewLabelRu.trim() || undefined, image: catNewImage || undefined, iconKey: catNewIcon || undefined }]);
-    setCatNewLabel(""); setCatNewLabelRu(""); setCatNewSlug(""); setCatNewImage(""); setCatNewIcon(""); setShowAddCat(false);
+    storeActions.updateCategories([...categories, { id, slug, label: catNewLabel.trim(), labelRu: catNewLabelRu.trim() || undefined, image: catNewImage || undefined, iconKey: catNewIcon || undefined,
+      seoTitle: catNewSeoTitle.trim() || undefined, seoDescription: catNewSeoDescription.trim() || undefined, seoIntro: catNewSeoIntro.trim() || undefined }]);
+    setCatNewLabel(""); setCatNewLabelRu(""); setCatNewSlug(""); setCatNewImage(""); setCatNewIcon(""); setCatNewSeoTitle(""); setCatNewSeoDescription(""); setCatNewSeoIntro(""); setShowAddCat(false);
   };
 
   // --- PIN change state ---
@@ -2060,7 +2068,7 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
 
       {/* ── 6. Categorii ── */}
       <SettingsSection icon={Tag} title="Categorii Produse"
-        description="Adaugă, editează, reordonează sau șterge categorii. Filtrul se actualizează imediat; o categorie nouă are nevoie de includere în generarea SEO a site-ului înainte de indexare.">
+        description="Adaugă, editează și reordonează categorii. O categorie nouă primește pagină SEO și intră în sitemap după ce are cel puțin un produs cu preț și adresă URL.">
         <div className="space-y-2 mb-4">
           {categories.map((cat, idx) => (
             <div key={cat.id} className="bg-zinc-800 rounded-xl p-3">
@@ -2084,6 +2092,10 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
                     <button onClick={() => saveEditCat(cat.id)} className="bg-[#FF4F00] text-white px-4 py-1.5 rounded-lg text-xs font-bold hover:opacity-90 whitespace-nowrap">Salvează</button>
                     <button onClick={() => setCatEditId(null)} className="bg-zinc-700 text-zinc-400 px-2 py-1.5 rounded-lg text-xs hover:bg-zinc-600">✕</button>
                   </div>
+                  <input value={catEditSeoTitle} onChange={(e) => setCatEditSeoTitle(e.target.value)} placeholder="Titlu Google (opțional, ideal sub 65 caractere)" className="w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-1.5 text-sm text-white" />
+                  <textarea value={catEditSeoDescription} onChange={(e) => setCatEditSeoDescription(e.target.value)} placeholder="Descriere Google: ce găsește clientul în această categorie (opțional)" rows={2} className="w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-1.5 text-sm text-white" />
+                  <textarea value={catEditSeoIntro} onChange={(e) => setCatEditSeoIntro(e.target.value)} placeholder="Ghid scurt și original pentru alegerea produselor (opțional)" rows={3} className="w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-1.5 text-sm text-white" />
+                  <p className="text-xs text-zinc-400">Fără aceste câmpuri se generează automat un titlu și o descriere. Adaugă informații reale, distincte pentru fiecare categorie.</p>
                   <CatIconPicker value={catEditIcon} onChange={setCatEditIcon} />
                   <MediaUploadSlot
                     label="Imagine categorie (afișată pe homepage)"
@@ -2115,7 +2127,7 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
                   <span className="text-[10px] text-zinc-600 bg-zinc-700 px-1.5 py-0.5 rounded">
                     {products.filter((p) => p.category === cat.slug).length} prod.
                   </span>
-                  <button onClick={() => { setCatEditId(cat.id); setCatEditLabel(cat.label); setCatEditLabelRu(cat.labelRu ?? ""); setCatEditSlug(cat.slug); setCatEditImage(cat.image ?? ""); setCatEditIcon(cat.iconKey ?? ""); }}
+                  <button onClick={() => { setCatEditId(cat.id); setCatEditLabel(cat.label); setCatEditLabelRu(cat.labelRu ?? ""); setCatEditSlug(cat.slug); setCatEditImage(cat.image ?? ""); setCatEditIcon(cat.iconKey ?? ""); setCatEditSeoTitle(cat.seoTitle ?? ""); setCatEditSeoDescription(cat.seoDescription ?? ""); setCatEditSeoIntro(cat.seoIntro ?? ""); }}
                     className="p-1.5 rounded-lg hover:bg-zinc-700 text-zinc-500 hover:text-white transition-colors">
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
@@ -2151,6 +2163,9 @@ function SettingsTab({ settings, products }: { settings: ModuleSettings; product
               <button onClick={() => { setShowAddCat(false); setCatNewLabel(""); setCatNewLabelRu(""); setCatNewSlug(""); setCatNewImage(""); }}
                 className="bg-zinc-700 text-zinc-400 px-2 py-1.5 rounded-lg text-xs hover:bg-zinc-600">✕</button>
             </div>
+            <input value={catNewSeoTitle} onChange={(e) => setCatNewSeoTitle(e.target.value)} placeholder="Titlu Google (opțional)" className="w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-1.5 text-sm text-white" />
+            <textarea value={catNewSeoDescription} onChange={(e) => setCatNewSeoDescription(e.target.value)} placeholder="Descriere Google (opțional)" rows={2} className="w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-1.5 text-sm text-white" />
+            <textarea value={catNewSeoIntro} onChange={(e) => setCatNewSeoIntro(e.target.value)} placeholder="Text original: cum alegi produsele (opțional)" rows={3} className="w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-1.5 text-sm text-white" />
             <CatIconPicker value={catNewIcon} onChange={setCatNewIcon} />
             <MediaUploadSlot
               label="Imagine categorie (opțional)"
