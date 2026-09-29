@@ -111,7 +111,16 @@ try {
   try {
     blogPosts = d1Query("SELECT * FROM blog_posts WHERE published = 1 ORDER BY published_at DESC");
   } catch (blogErr) {
-    console.warn("[snapshot] Blogul nu a putut fi citit din D1; se păstrează datele existente.", blogErr.message);
+    console.warn("[snapshot] Blog D1 CLI unavailable; reading the public blog API.", blogErr.message);
+    try {
+      const response = await fetch("https://teco.md/api/blog-posts", { signal: AbortSignal.timeout(20000) });
+      if (!response.ok) throw new Error(`Blog API returned ${response.status}`);
+      const payload = await response.json();
+      if (!Array.isArray(payload?.data)) throw new Error("Invalid blog API response");
+      blogPosts = payload.data.filter(post => post.published === true || post.published === 1);
+    } catch (error) {
+      console.warn("[snapshot] Blog API unavailable; retaining existing articles.", error.message);
+    }
   }
 
   const snapshot = {

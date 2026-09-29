@@ -29,7 +29,7 @@ for change in updates:
     source, target = (change["after"], change["before"]) if rollback else (change["before"], change["after"])
     if all(row.get(key) == value for key, value in target.items()):
         continue
-    if not all(row.get(key) == value for key, value in source.items()):
+    if not all(row.get(key) in (source[key], target[key]) for key in source):
         raise RuntimeError("Content changed since review; refusing to overwrite: " + change["slug"])
     prepared.append((change, {**row, **target}))
 
