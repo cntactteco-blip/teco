@@ -173,7 +173,7 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
               "@context": "https://schema.org", "@type": "BlogPosting", headline: String(row.title),
               description: rawDescription, image: [absoluteImage(productImage && !productImage.startsWith("data:") ? productImage : "/opengraph.jpg")],
               url: `https://teco.md${canonical}`, datePublished: row.published_at, dateModified: row.updated_at || row.published_at,
-              author: { "@type": "Organization", name: "TECO.md", url: "https://teco.md/" },
+              author: { "@type": "Organization", name: "TECO.md", url: "https://teco.md/", logo: { "@type": "ImageObject", url: "https://teco.md/logo.png" } },
               publisher: { "@type": "Organization", name: "TECO.md", logo: { "@type": "ImageObject", url: "https://teco.md/logo.png" } },
             }).replace(/</g, "\\u003c")}</script>`
           : "";
