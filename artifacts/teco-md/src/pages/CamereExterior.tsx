@@ -40,8 +40,8 @@ export default function CamereExterior() {
   const storeProducts = useStore(s => s.products);
   const exteriorProducts = storeProducts.filter(p => p.inStock !== false && p.price > 0 && (p.category === "wifi" || p.category === "poe" || p.category === "4g")).slice(0, 4);
 
-  const title = "Camere Supraveghere Exterior Moldova | IP66/IP67 | WiFi, PoE, 4G Solar | Teco.md";
-  const description = "Camere supraveghere exterior pentru casă, curte și afaceri în Moldova. IP66/IP67, vedere nocturnă, WiFi, PoE sau 4G Solar. Prețuri de la 1.100 MDL. Livrare 24h. ☎ 067 200 463";
+  const title = "Camere de Exterior WiFi, PoE și 4G | Teco.md Moldova";
+  const description = "Alege camere de exterior pentru casă și afaceri: WiFi, PoE sau 4G solar, vedere nocturnă și protecție la intemperii. Livrare în Moldova.";
   const keywords = "camere supraveghere exterior moldova, camera ip exterior, camere exterior wifi, camera supraveghere curte, camera exterior 4k, camera exterior ip66, camere rezistente la apa, teco.md exterior";
 
   const jsonLd = [
@@ -55,7 +55,7 @@ export default function CamereExterior() {
       name: "Camere de Supraveghere pentru Exterior Moldova",
       description: "Vânzare și instalare camere de supraveghere exterior în Moldova. Camere WiFi, PoE și 4G Solar cu protecție IP66/IP67, vedere nocturnă Full-Color, rezoluție 4K. Garanție 2–5 ani.",
       url: "https://teco.md/camere-supraveghere-exterior",
-      provider: { "@type": "LocalBusiness", "@id": "https://teco.md/#business", name: "Teco.md" },
+      provider: { "@type": "LocalBusiness", "@id": "https://teco.md/#business", name: "Teco.md", address: { "@type": "PostalAddress", addressLocality: "Chișinău", addressCountry: "MD" } },
       areaServed: { "@type": "Country", name: "Moldova" },
       serviceType: "Outdoor Security Camera Installation",
     },

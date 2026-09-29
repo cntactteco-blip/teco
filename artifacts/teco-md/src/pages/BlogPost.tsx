@@ -4,6 +4,7 @@ import { useLang } from "@/contexts/LangContext";
 import { SEO, schemas } from "@/components/SEO";
 import { Calendar, Clock, ArrowLeft, Share2, Tag, ChevronRight, Facebook, Twitter, Link2, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
+import { seoSnippet } from "@/lib/product-copy";
 
 function formatDate(iso: string, lang: "ro" | "ru") {
   const d = new Date(iso);
@@ -148,8 +149,8 @@ export default function BlogPost() {
   const title = lang === "ru" ? post.titleRu || post.title : post.title;
   const description = lang === "ru" ? post.descriptionRu || post.description : post.description;
   const content = lang === "ru" ? post.contentRu || post.content : post.content;
-  const metaTitle = lang === "ru" ? post.metaTitleRu || post.metaTitle || title : post.metaTitle || title;
-  const metaDesc = lang === "ru" ? post.metaDescriptionRu || post.metaDescription || description : post.metaDescription || description;
+  const metaTitle = seoSnippet(lang === "ru" ? post.metaTitleRu || post.metaTitle || title : post.metaTitle || title, 62);
+  const metaDesc = seoSnippet(lang === "ru" ? post.metaDescriptionRu || post.metaDescription || description : post.metaDescription || description, 155);
   const keywords = lang === "ru" ? post.keywordsRu || post.keywords : post.keywords;
   const category = lang === "ru" ? post.categoryRu || post.category : post.category;
   const canonicalUrl = `https://teco.md/blog/${post.slug}`;
@@ -160,7 +161,7 @@ export default function BlogPost() {
       slug: post.slug,
       description: metaDesc,
       content,
-      imageUrl: post.imageUrl || "https://teco.md/og-image.jpg",
+      imageUrl: post.imageUrl || "https://teco.md/opengraph.jpg",
       publishedAt: post.publishedAt,
       author: post.author,
       category,
@@ -194,7 +195,7 @@ export default function BlogPost() {
         description={metaDesc}
         keywords={keywords}
         ogType="article"
-        ogImage={post.imageUrl || "/og-image.jpg"}
+        ogImage={post.imageUrl || "/opengraph.jpg"}
         canonical={`/blog/${post.slug}`}
         lang={lang}
         jsonLd={jsonLd}

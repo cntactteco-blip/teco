@@ -43,8 +43,8 @@ export default function SistemeSupraveghereCasa() {
   const storeProducts = useStore(s => s.products);
   const kits = storeProducts.filter(p => p.category === "kituri" && p.inStock !== false && p.price > 0).slice(0, 3);
 
-  const title = "Sistem Supraveghere Casă Moldova | Camere Video Casă | Teco.md";
-  const description = "Sisteme de supraveghere complete pentru casă în Moldova. Camere WiFi, PoE + NVR, 4G Solar. Pachete complete de la 3.200 MDL cu montaj profesional inclus. ☎ 067 200 463";
+  const title = "Sisteme de Supraveghere pentru Casă | Teco.md";
+  const description = "Compară sisteme pentru casă: camere WiFi, seturi PoE cu NVR și soluții 4G solar. Cere un deviz pentru echipamente și montaj în Moldova.";
   const keywords = "sistem supraveghere casa moldova, camere supraveghere casa, kit supraveghere casa, camere video casa, sistem securitate casa chisinau, nvr camere casa, teco.md";
 
   const jsonLd = [
@@ -58,7 +58,7 @@ export default function SistemeSupraveghereCasa() {
       name: "Sisteme de Supraveghere pentru Casă — Teco.md Moldova",
       description: "Sisteme complete de supraveghere video pentru casă și curte în Moldova. Camere WiFi și PoE, NVR, instalare și configurare profesională. Pachete de la 3.200 MDL.",
       url: "https://teco.md/sisteme-supraveghere-casa",
-      provider: { "@type": "LocalBusiness", "@id": "https://teco.md/#business", name: "Teco.md" },
+      provider: { "@type": "LocalBusiness", "@id": "https://teco.md/#business", name: "Teco.md", address: { "@type": "PostalAddress", addressLocality: "Chișinău", addressCountry: "MD" } },
       areaServed: { "@type": "Country", name: "Moldova" },
       serviceType: "Home Security System Installation",
     },

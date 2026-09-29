@@ -16,6 +16,18 @@ test("sitemap includes each canonical page once and escapes XML", () => {
   assert.ok(xml.includes("A&amp;B"));
   assert.ok(!xml.includes("hreflang") && !xml.includes("lastmod"));
 });
+test("runtime sitemap reflects published articles and current products from D1", async () => {
+  const base = makeSitemap(["/", "/produse/?cat=wifi", "/product/retired/", "/blog/", "/blog/old-post/"]);
+  const assets = { async fetch() { return new Response(base, { headers: { "Content-Type": "application/xml" } }); } };
+  const db = { prepare(sql) { return { async all() { return { results: sql.includes("FROM products")
+    ? [{ slug: "new-camera" }] : [{ slug: "ajax-guide" }] }; } }; } };
+  const response = await serveHtml(new Request("https://teco.md/sitemap.xml"), { ASSETS: assets, DB: db }, { pages: {}, redirects: {} });
+  const xml = await response.text();
+  assert.equal(response.status, 200);
+  assert.ok(xml.includes("/product/new-camera/") && xml.includes("/blog/ajax-guide/"));
+  assert.ok(xml.includes("/produse/?cat=wifi") && xml.includes("https://teco.md/blog/"));
+  assert.ok(!xml.includes("/product/retired/") && !xml.includes("/blog/old-post/"));
+});
 test("static head replaces old metadata and uses the actual rendered page", () => {
   const html = documentHtml('<html><head><title>Old</title><link rel="canonical" href="/"><script type="application/ld+json">{}</script></head><body><div id="root"><!--app-html--></div></body></html>', { head: '<title>Contact</title><link rel="canonical" href="https://teco.md/contact/">', body: '<h1>Contact</h1><a href="tel:+37367200463">Sună</a>' });
   assert.equal((html.match(/<title/g) || []).length, 1);
@@ -133,4 +145,17 @@ test("live product HTML includes unique product information and bounded metadata
   assert.ok(desc && desc.length <= 155);
   assert.ok(html.includes("Configurare din aplicația mobilă") && html.includes("5MP | WiFi | IP67"));
   assert.ok(html.includes('rel="canonical" href="https://teco.md/product/imou-bullet-3/"'));
+});
+
+test("a newly published article is crawlable without waiting for another deployment", async () => {
+  const article = { slug: "alegere-ajax", title: "Cum alegi o alarmă Ajax pentru casă", description: "Ghid pentru alegerea senzorilor Ajax.",
+    content: "## Ce protejezi?\nCompară intrarea, ferestrele și spațiile interioare.\n### Configurare\nAlege senzorii potriviți.", published_at: "2026-09-29", image_url: "/product-images/ajax.webp" };
+  const db = { prepare() { return { bind() { return { async first() { return article; } }; } }; } };
+  const assets = { async fetch() { return new Response('<html><head></head><body><div id="root"></div></body></html>'); } };
+  const response = await serveHtml(new Request("https://teco.md/blog/alegere-ajax/"), { ASSETS: assets, DB: db }, { pages: {}, redirects: {} });
+  const html = await response.text();
+  assert.equal(response.status, 200);
+  assert.ok(html.includes("<h2>Ce protejezi?</h2>") && html.includes("Alege senzorii potriviți."));
+  assert.ok(html.includes('property="og:image" content="https://teco.md/product-images/ajax.webp"'));
+  assert.ok(html.includes('"@type":"BlogPosting"'));
 });

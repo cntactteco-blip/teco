@@ -25,7 +25,7 @@ const REPAIR_FAQS: Record<"ro" | "ru", FAQ[]> = {
 const PAGES: Record<string, { ro: Copy; ru: Copy }> = {
   "/camere-supraveghere-moldova": {
     ro: {
-      title: "Camere de supraveghere în Moldova: produse și montaj | TECO.md",
+      title: "Camere de Supraveghere în Moldova | TECO.md",
       description: "Compară camere WiFi, PoE, 4G și seturi de supraveghere în Moldova. Prețuri în MDL, alegerea echipamentelor și ofertă de montaj pentru casă sau afacere.",
       heading: "Camere de supraveghere în Moldova",
       intro: "Alege sistemul după spațiul pe care vrei să îl protejezi, conexiunea disponibilă și modul de înregistrare. La TECO.md poți compara echipamentele din catalog și cere o ofertă cu produsele, cablarea, consumabilele și montajul detaliate separat.",

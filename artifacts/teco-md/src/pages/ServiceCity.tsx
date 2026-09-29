@@ -76,7 +76,7 @@ export default function ServiceCity() {
       url: `https://teco.md/servicii/${citySlug}`,
       telephone: "+37367200463",
       areaServed: { "@type": "City", name: cityName },
-      provider: { "@type": "Organization", "@id": "https://teco.md/#business", name: "TECO.md" },
+      provider: { "@type": "Organization", "@id": "https://teco.md/#business", name: "TECO.md", logo: "https://teco.md/logo.png" },
     },
     schemas.service({ name: `Montaj Camere Supraveghere ${city.ro}`, description: pageDesc, url: `https://teco.md/servicii/${citySlug}`, price: "200" }),
     schemas.breadcrumb([

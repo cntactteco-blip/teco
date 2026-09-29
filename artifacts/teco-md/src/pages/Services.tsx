@@ -163,7 +163,7 @@ const SERVICES = [
   ];
 
   const jsonLd = [
-    schemas.service({ name: "Montaj Camere de Supraveghere", description: "Instalare profesionala camere IP, NVR, kituri complete in Moldova. Preturi de la 300 MDL/camera.", url: "https://teco.md/servicii", price: "300" }),
+    schemas.service({ name: "Montaj Camere de Supraveghere", description: "Instalare profesională camere IP, NVR și kituri complete în Moldova. Devizul se confirmă înainte de lucrare.", url: "https://teco.md/servicii" }),
     schemas.service({ name: "Diagnosticare si Reparatii Sisteme Supraveghere", description: "Reparatii camere IP, NVR, DVR, sisteme analogice si alarme. Diagnosticare on-site de la 200 MDL. Garantie 6 luni.", url: "https://teco.md/servicii", price: "200" }),
     schemas.repairService({ name: "Reparare Camera Supraveghere Moldova", description: "Reparatii camere IP si analogice (Dahua, Hikvision, TP-Link, Reolink). Piese originale. Garantie 6 luni. Chisinau + toata Moldova.", price: "150" }),
     schemas.howTo({
@@ -192,8 +192,8 @@ const SERVICES = [
       { name: ro ? "Servicii" : "Услуги", url: "https://teco.md/servicii" },
     ]),
   ];
-  const pageTitle = ro ? "Servicii Montaj, Instalare si Reparatii Camere — Teco.md Moldova" : "Монтаж, Установка и Ремонт Камер Видеонаблюдения — Teco.md Молдова";
-  const pageDesc = ro ? "Montaj și reparații camere de supraveghere în toată Moldova. Instalare, diagnosticare și reparații NVR, DVR și camere IP. Programarea și oferta se confirmă pentru localitatea ta." : "Монтаж и ремонт камер видеонаблюдения по всей Молдове. Установка, диагностика и ремонт NVR, DVR и IP-камер. Срок и смета подтверждаются для вашего населённого пункта.";
+  const pageTitle = ro ? "Montaj și Reparații Camere în Moldova | Teco.md" : "Монтаж и Ремонт Камер в Молдове | Teco.md";
+  const pageDesc = ro ? "Montaj camere, configurare și reparații NVR/DVR în toată Moldova. Primești o ofertă și programarea pentru localitatea ta." : "Монтаж камер и ремонт NVR/DVR по всей Молдове. Получите предложение и согласуйте выезд для вашего населённого пункта.";
 
   return (
     <>
