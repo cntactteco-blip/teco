@@ -1,4 +1,5 @@
 import { absoluteImage, canonicalPath } from "../lib/seo-url.ts";
+import { resolveCategorySlug } from "../lib/category-routing.ts";
 import { currentProductDescription, productSeoTitle, productSeoDescription, seoSnippet } from "../lib/product-copy.ts";
 
 export type Manifest = { pages: Record<string, string>; redirects: Record<string, string>; queryRedirects?: Record<string, string> };
@@ -33,10 +34,13 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
         categoriesFromDb(env.DB),
       ]);
       const activeCategories = new Set((products.results ?? []).map((row) => row.category));
+      const productCategories = [...activeCategories];
+      const kitCategory = resolveCategorySlug("kituri", categories, productCategories);
+      const categorySlugs = categories.map((category) => resolveCategorySlug(category.slug, categories, productCategories));
       const routes = [
         ...staticRoutes.filter((route) => !route.startsWith("/produse/?cat=") || !categories.length),
-        ...categories.filter((category) => activeCategories.has(category.slug) && category.slug !== "kituri" && !/seturi-complete/i.test(category.slug))
-          .map((category) => canonicalPath(`/produse?cat=${encodeURIComponent(category.slug)}`)),
+        ...categorySlugs.filter((slug) => activeCategories.has(slug) && slug !== kitCategory)
+          .map((slug) => canonicalPath(`/produse?cat=${encodeURIComponent(slug)}`)),
         ...(products.results ?? []).map((row) => `/product/${encodeURIComponent(row.slug)}/`),
         ...(articles.results ?? []).map((row) => `/blog/${encodeURIComponent(row.slug)}/`),
       ];
@@ -94,11 +98,13 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
   if (path === "/produse" && url.searchParams.has("cat") && env.DB) {
     try {
       const slug = url.searchParams.get("cat") || "";
-      const category = (await categoriesFromDb(env.DB)).find((item) => item.slug === slug);
+      const categories = await categoriesFromDb(env.DB);
+      const category = categories.find((item) => item.slug === slug || item.id === slug);
       if (category && (!asset || category.seoTitle || category.seoDescription || category.seoIntro)) {
-        const products = await env.DB.prepare("SELECT slug, name, price FROM products WHERE category = ? AND slug IS NOT NULL AND slug != '' AND price > 0 ORDER BY name LIMIT 100").bind(slug).all<{ slug: string; name: string; price: number }>();
+        const products = await env.DB.prepare("SELECT slug, name, price, category FROM products WHERE (category = ? OR category = ?) AND slug IS NOT NULL AND slug != '' AND price > 0 ORDER BY name LIMIT 100").bind(category.slug, category.id || category.slug).all<{ slug: string; name: string; price: number; category: string }>();
         if (!products.results?.length) return response("/404", 404, true);
-        const canonical = canonicalPath(`/produse?cat=${encodeURIComponent(slug)}`);
+        const resolvedSlug = resolveCategorySlug(slug, categories, products.results.map((product) => product.category));
+        const canonical = canonicalPath(`/produse?cat=${encodeURIComponent(resolvedSlug)}`);
         const title = category.seoTitle || `${category.label} | Produse și prețuri în Moldova | Teco.md`;
         const description = category.seoDescription || `Compară ${category.label} la Teco.md. Vezi specificațiile și prețurile produselor și cere o recomandare sau montaj în Moldova.`;
         const intro = category.seoIntro || `Compară specificațiile produselor din categoria ${category.label} și alege echipamentul potrivit pentru obiectul tău.`;
@@ -117,9 +123,8 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
       return dynamicPage("Ghiduri despre camere și alarme | Teco.md", "Ghiduri practice despre camere de supraveghere, sisteme de alarmă și montaj în Moldova. Descoperă cele mai recente articole Teco.md.", "/blog/", body, { "@context": "https://schema.org", "@type": "CollectionPage", name: "Ghiduri despre supraveghere și securitate", url: "https://teco.md/blog/" });
     } catch { /* The static blog remains available if the database is temporarily unavailable. */ }
   }
-  // Product details must reflect D1 even when a prerendered copy exists: stock
-  // and prices can change between deployments.
-  if (asset && !path.startsWith("/product/")) return response(asset, 200, url.searchParams.has("q"));
+  // Prices, article edits and publication status can change between builds.
+  if (asset && !path.startsWith("/product/") && !path.startsWith("/blog/")) return response(asset, 200, url.searchParams.has("q"));
   if (isPrivate) return response("/app", 200, true);
 
   // Products/articles created after the last build remain reachable. Missing
@@ -191,7 +196,7 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
         html = html.replace('<div id="root"></div>', `<div id="root"><main><h1>${title}</h1>${productDetails}<p>${description}</p>${extraCopy}${articleCopy}<a href="${dynamic[1] === "blog" ? "/blog/" : "/produse/"}">${dynamic[1] === "blog" ? "Articole TECO.md" : "Catalog TECO.md"}</a></main></div>`);
         return new Response(request.method === "HEAD" ? null : html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache" } });
       }
-      if (dynamic[1] === "product") return response("/404", 404, true);
+      return response("/404", 404, true);
     } catch {
       return new Response("Pagina nu este disponibilă temporar.", { status: 503, headers: { "Retry-After": "60", "Cache-Control": "no-store" } });
     }

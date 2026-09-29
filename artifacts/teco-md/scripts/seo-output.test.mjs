@@ -35,7 +35,7 @@ test("runtime sitemap reflects published articles and current products from D1",
 test("a new admin category with products is crawlable before another build", async () => {
   const db = { prepare(sql) { return {
     async first() { assert.ok(sql.includes("settings")); return { data: JSON.stringify({ categories: [{ id: "solar", slug: "solar", label: "Camere solare", seoTitle: "Camere solare | Teco.md", seoDescription: "Camere solare pentru terenuri în Moldova.", seoIntro: "Verifică autonomia și semnalul 4G." }] }) }; },
-    bind(slug) { assert.equal(slug, "solar"); return { async all() { return { results: [{ slug: "camera-solara", name: "Cameră solară 4G", price: 3100 }] }; } }; },
+    bind(...keys) { assert.deepEqual(keys, ["solar", "solar"]); return { async all() { return { results: [{ slug: "camera-solara", name: "Cameră solară 4G", price: 3100, category: "solar" }] }; } }; },
   }; } };
   const assets = { async fetch() { return new Response('<html><head><meta name="robots" content="noindex, follow"></head><body><div id="root"></div></body></html>'); } };
   const res = await serveHtml(new Request("https://teco.md/produse/?cat=solar"), { ASSETS: assets, DB: db }, { pages: {}, redirects: {} });
@@ -44,6 +44,42 @@ test("a new admin category with products is crawlable before another build", asy
   assert.ok(html.includes("Camere solare | Teco.md") && html.includes("Verifică autonomia"));
   assert.ok(html.includes('/product/camera-solara/') && html.includes('href="https://teco.md/produse/?cat=solar"'));
   assert.ok(!html.includes('name="robots" content="noindex'));
+});
+test("renamed alarm categories remain in the sitemap under the actual product category", async () => {
+  const assets = { async fetch() { return new Response(makeSitemap(["/", "/produse/?cat=alarme", "/seturi-camere-supraveghere/"])); } };
+  const db = { prepare(sql) { return {
+    async first() { return { data: JSON.stringify({ categories: [
+      { id: "alarme", slug: "Sisteme-De-Alarma ", label: "Sisteme Alarmă" },
+      { id: "kituri", slug: "Seturi-Complete-Camere-Supraveghere", label: "Seturi Complete" },
+    ] }) }; },
+    async all() { return { results: sql.includes("FROM products") ? [
+      { slug: "ajax-starter", category: "alarme" },
+      { slug: "kit-video", category: "Seturi-Complete-Camere-Supraveghere" },
+    ] : [] }; },
+  }; } };
+  const res = await serveHtml(new Request("https://teco.md/sitemap.xml"), { ASSETS: assets, DB: db }, { pages: {}, redirects: {} });
+  const xml = await res.text();
+  assert.ok(xml.includes("https://teco.md/produse/?cat=alarme</loc>"));
+  assert.ok(!xml.includes("?cat=Sisteme-De-Alarma") && !xml.includes("?cat=Seturi-Complete"));
+  assert.ok(xml.includes("https://teco.md/seturi-camere-supraveghere/</loc>"));
+});
+test("custom alarm metadata works when products use the historic category id", async () => {
+  const db = { prepare() { return {
+    async first() { return { data: JSON.stringify({ categories: [{ id: "alarme", slug: "Sisteme-De-Alarma ", label: "Sisteme Alarmă", seoTitle: "Alarme Ajax | Teco.md" }] }) }; },
+    bind(...keys) { assert.deepEqual(keys, ["Sisteme-De-Alarma ", "alarme"]); return { async all() { return { results: [{ slug: "ajax", name: "Ajax Starter", price: 10000, category: "alarme" }] }; } }; },
+  }; } };
+  const assets = { async fetch() { return new Response('<html><head></head><body><div id="root"></div></body></html>'); } };
+  const res = await serveHtml(new Request("https://teco.md/produse/?cat=alarme"), { ASSETS: assets, DB: db }, { pages: { "/produse/?cat=alarme": "/__seo/old/" }, redirects: {} });
+  const html = await res.text();
+  assert.ok(html.includes("Alarme Ajax | Teco.md") && html.includes('/product/ajax/'));
+  assert.ok(html.includes('rel="canonical" href="https://teco.md/produse/?cat=alarme"'));
+});
+test("unpublishing an article removes even a previously prerendered page", async () => {
+  const db = { prepare() { return { bind() { return { async first() { return null; } }; } }; } };
+  const assets = { async fetch() { return new Response("PAGE"); } };
+  const res = await serveHtml(new Request("https://teco.md/blog/removed/"), { ASSETS: assets, DB: db }, { pages: { "/blog/removed/": "/__seo/old/" }, redirects: {} });
+  assert.equal(res.status, 404);
+  assert.equal(res.headers.get("X-Robots-Tag"), "noindex, follow");
 });
 test("newly published articles appear in the crawlable blog index", async () => {
   const db = { prepare() { return { async all() { return { results: [{ slug: "ghid-ajax", title: "Ghid Ajax", description: "Alegerea senzorilor." }] }; } }; } };
@@ -172,13 +208,13 @@ test("live product HTML includes unique product information and bounded metadata
   assert.ok(html.includes('rel="canonical" href="https://teco.md/product/imou-bullet-3/"'));
 });
 
-test("a newly published article is crawlable without waiting for another deployment", async () => {
+test("article edits override prerendered content without another deployment", async () => {
   const article = { slug: "alegere-ajax", title: "Cum alegi o alarmă Ajax pentru casă", description: "Ghid pentru alegerea senzorilor Ajax.",
     meta_title: "Alarmă Ajax: alegerea senzorilor | Teco.md", meta_description: "Ghid practic pentru senzorii Ajax potriviți casei tale.",
     content: "## Ce protejezi?\nCompară intrarea, ferestrele și spațiile interioare.\n### Configurare\nAlege senzorii potriviți.", published_at: "2026-09-29", updated_at: "2026-09-30", image_url: "/product-images/ajax.webp" };
   const db = { prepare() { return { bind() { return { async first() { return article; } }; } }; } };
   const assets = { async fetch() { return new Response('<html><head></head><body><div id="root"></div></body></html>'); } };
-  const response = await serveHtml(new Request("https://teco.md/blog/alegere-ajax/"), { ASSETS: assets, DB: db }, { pages: {}, redirects: {} });
+  const response = await serveHtml(new Request("https://teco.md/blog/alegere-ajax/"), { ASSETS: assets, DB: db }, { pages: { "/blog/alegere-ajax/": "/__seo/stale/" }, redirects: {} });
   const html = await response.text();
   assert.equal(response.status, 200);
   assert.ok(html.includes("<h2>Ce protejezi?</h2>") && html.includes("Alege senzorii potriviți."));
