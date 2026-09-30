@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, CheckCircle2, ChevronRight, Building2, Home as HomeIcon, Warehouse, Store, Shield } from "lucide-react";
 import { Link, useSearch } from "wouter";
 import { storeActions } from "@/lib/store";
@@ -50,6 +50,11 @@ export default function RequestQuote() {
   const [discovery, setDiscovery] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    setStep(repair ? 3 : 1);
+    setError("");
+  }, [repair]);
 
   const handleSubmit = async () => {
     if (!name.trim() || !phone.trim()) {
