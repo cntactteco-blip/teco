@@ -134,7 +134,7 @@ export function BottomNav() {
                 <span className="absolute -top-1 -right-1.5 bg-[#FF4F00] w-2 h-2 rounded-full border border-white" />
               )}
             </div>
-            <span className="text-[9px] font-medium">{lang === "ru" ? "Акция" : "Ofertă"}</span>
+            <span className="text-[9px] font-medium">{lang === "ru" ? "Заявка" : "Cere ofertă"}</span>
           </button>
 
           <button
