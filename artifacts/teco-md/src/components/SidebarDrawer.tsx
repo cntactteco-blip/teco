@@ -29,6 +29,8 @@ export function SidebarDrawer({ open, onClose }: SidebarDrawerProps) {
   const facebookUrl = socialUrl(social?.facebook, "facebook");
 
   const pages = [
+    { href: "/oferta", icon: FileText, label: lang === "ru" ? "Запросить расчёт" : "Cere ofertă" },
+    { href: "/oferta?serviciu=reparatii", icon: Wrench, label: lang === "ru" ? "Запросить диагностику" : "Solicită diagnosticare" },
     { href: "/servicii#montaj",    icon: Wrench,   label: t("sidebar.install") },
     { href: "/servicii#reparatii", icon: FileText, label: t("sidebar.repair") },
     { href: "/blog",               icon: FileText, label: t("sidebar.blog") },
