@@ -47,17 +47,34 @@ export default function B2B() {
   const [formName, setFormName] = useState("");
   const [formPhone, setFormPhone] = useState("");
   const [formSector, setFormSector] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    storeActions.addLead({ name: formName, phone: formPhone, source: "B2B", notes: `Sector: ${formSector}` });
-    import("@/lib/notify").then(({ notifyLead }) =>
-      notifyLead({ name: formName, phone: formPhone, source: "B2B — Soluții Business", notes: `Sector: ${formSector}` })
-    );
+    if (submitting) return;
+    if (formPhone.replace(/\D/g, "").length < 8) {
+      setFormError(ro ? "Introdu un număr de telefon valid." : "Введите корректный номер телефона.");
+      return;
+    }
+    setFormError("");
+    setSubmitting(true);
+    const notes = `Sector: ${formSector || "nespecificat"}`;
+    try {
+      await storeActions.addLead({ name: formName.trim(), phone: formPhone.trim(), source: "B2B", notes }, { requireSaved: true });
+    } catch {
+      setFormError(ro ? "Cererea nu a fost salvată. Încearcă din nou sau sună-ne." : "Заявка не сохранилась. Повторите попытку или позвоните нам.");
+      setSubmitting(false);
+      return;
+    }
+    void import("@/lib/notify").then(({ notifyLead }) =>
+      notifyLead({ name: formName.trim(), phone: formPhone.trim(), source: "B2B — Soluții Business", notes })
+    ).catch(() => {});
     const msg = ro
       ? `Bună ziua! Solicit deviz comercial B2B.\nCompanie/Nume: ${formName}\nTelefon: ${formPhone}\nSector: ${formSector}`
       : `Здравствуйте! Запрашиваю коммерческое предложение B2B.\nКомпания/Имя: ${formName}\nТелефон: ${formPhone}\nСектор: ${formSector}`;
     window.location.href = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+    setSubmitting(false);
   };
 
   const jsonLd = [
@@ -227,9 +244,10 @@ export default function B2B() {
                 <option value="">{ro ? "Sectorul afacerii tale..." : "Сфера вашего бизнеса..."}</option>
                 {SECTORS.map((s) => <option key={s.ro} value={ro ? s.ro : s.ru}>{ro ? s.ro : s.ru}</option>)}
               </select>
-              <button type="submit" className="w-full bg-[#FF4F00] text-white font-black py-4 rounded-2xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2">
+              {formError && <p role="alert" className="text-sm font-semibold text-red-700">{formError}</p>}
+              <button type="submit" disabled={submitting} className="w-full bg-[#FF4F00] text-white font-black py-4 rounded-2xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-60">
                 <Phone className="w-4 h-4" />
-                {ro ? "Trimite cererea pe WhatsApp" : "Отправить запрос в WhatsApp"}
+                {submitting ? (ro ? "Se trimite..." : "Отправка...") : (ro ? "Trimite cererea pe WhatsApp" : "Отправить запрос в WhatsApp")}
               </button>
             </form>
           </div>

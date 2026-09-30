@@ -42,24 +42,38 @@ export function AppointmentBooker() {
   const [time, setTime] = useState<string | null>(null);
   const [contactName, setContactName] = useState("");
   const [contactPhone, setContactPhone] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [bookingError, setBookingError] = useState("");
 
   const days = getNextDays(7);
   const services = ro ? SERVICES_RO : SERVICES_RU;
 
-  const handleBook = () => {
-    if (!service || !day || !time || !contactName.trim() || !contactPhone.trim()) return;
+  const handleBook = async () => {
+    if (submitting || !service || !day || !time || !contactName.trim() || !contactPhone.trim()) return;
+    if (contactPhone.replace(/\D/g, "").length < 8) {
+      setBookingError(ro ? "Introdu un număr de telefon valid." : "Введите корректный номер телефона.");
+      return;
+    }
+    setBookingError("");
+    setSubmitting(true);
     const label = ro ? day.labelRo : day.labelRu;
     const apptNotes = `Serviciu: ${service} | Data: ${label} | Interval: ${time}`;
-    storeActions.addLead({
-      name: contactName.trim(),
-      phone: contactPhone.trim(),
-      source: "AppointmentBooker",
-      notes: apptNotes,
-    });
-    import("@/lib/notify").then(({ notifyLead }) =>
-      notifyLead({ name: contactName.trim(), phone: contactPhone.trim(), source: "📅 Programare Serviciu", notes: apptNotes })
-    );
-    setStep("done");
+    try {
+      await storeActions.addLead({
+        name: contactName.trim(),
+        phone: contactPhone.trim(),
+        source: "AppointmentBooker",
+        notes: apptNotes,
+      }, { requireSaved: true });
+      void import("@/lib/notify").then(({ notifyLead }) =>
+        notifyLead({ name: contactName.trim(), phone: contactPhone.trim(), source: "📅 Programare Serviciu", notes: apptNotes })
+      ).catch(() => {});
+      setStep("done");
+    } catch {
+      setBookingError(ro ? "Programarea nu a fost salvată. Încearcă din nou sau sună-ne." : "Запись не сохранилась. Повторите попытку или позвоните нам.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -165,9 +179,10 @@ export function AppointmentBooker() {
                 className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-[#FF4F00]" />
               <input type="tel" placeholder="+373 ..." required value={contactPhone} onChange={(e) => setContactPhone(e.target.value)}
                 className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-[#FF4F00]" />
-              <button type="submit" className="w-full bg-[#FF4F00] text-white font-black py-4 rounded-2xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2">
+              {bookingError && <p role="alert" className="text-sm font-semibold text-red-700">{bookingError}</p>}
+              <button type="submit" disabled={submitting} className="w-full bg-[#FF4F00] text-white font-black py-4 rounded-2xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-60">
                 <Phone className="w-4 h-4" />
-                {ro ? "Trimite Cererea" : "Отправить Заявку"}
+                {submitting ? (ro ? "Se trimite..." : "Отправка...") : (ro ? "Trimite Cererea" : "Отправить Заявку")}
               </button>
             </form>
           </>
