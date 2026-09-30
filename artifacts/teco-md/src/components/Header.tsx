@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, Suspense, lazy } from "react";
-import { ShoppingCart, Search, Menu, Settings2, X, Heart } from "lucide-react";
+import { ShoppingCart, Search, Menu, Settings2, X, Heart, ClipboardList, Wrench } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useCart } from "@/hooks/useCart";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -40,7 +40,7 @@ function LangSwitcher() {
 }
 
 export function Header() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const cartCount = useCart((state) => state.count);
   const openCart = useCart((state) => state.openCart);
   const { count: wishCount } = useWishlist();
@@ -124,12 +124,12 @@ export function Header() {
       )}
 
       <header
-        className={`sticky top-0 z-30 transition-all duration-300 border-b border-[#E4E4E7] h-16 sm:h-20 flex items-center px-4 md:px-6 ${
+        className={`sticky top-0 z-30 transition-all duration-300 border-b border-[#E4E4E7] flex flex-col px-4 md:px-6 ${
           scrolled ? "bg-white/90 backdrop-blur-md shadow-sm" : "bg-white"
         }`}
         data-testid="header"
       >
-        <div className="flex w-full max-w-7xl mx-auto items-center gap-3 md:gap-4">
+        <div className="flex w-full max-w-7xl mx-auto items-center gap-3 md:gap-4 h-16 sm:h-20">
           {/* Hamburger */}
           <button
             onClick={() => setDrawerOpen(true)}
@@ -247,6 +247,15 @@ export function Header() {
             </button>
           </div>
         </div>
+        <nav aria-label={lang === "ru" ? "Заявки на услуги" : "Cereri de servicii"} className="flex w-full max-w-7xl mx-auto items-center gap-2 border-t border-zinc-100 py-2">
+          <span className="hidden md:block flex-1 text-sm text-zinc-600">{lang === "ru" ? "Монтаж или ремонт? Отправьте заявку." : "Ai nevoie de montaj sau reparații? Trimite o cerere."}</span>
+          <Link href="/oferta" data-testid="header-request-quote" className="flex flex-1 md:flex-none items-center justify-center gap-2 rounded-full bg-[#FF4F00] px-4 py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-[#e64700] transition-colors">
+            <ClipboardList className="w-4 h-4 flex-shrink-0" />{lang === "ru" ? "Запросить расчёт" : "Cere ofertă"}
+          </Link>
+          <Link href="/oferta?serviciu=reparatii" data-testid="header-request-repair" className="flex flex-1 md:flex-none items-center justify-center gap-2 rounded-full border border-zinc-200 px-4 py-2.5 text-xs sm:text-sm font-semibold text-zinc-700 hover:border-[#FF4F00] transition-colors">
+            <Wrench className="w-4 h-4 flex-shrink-0" />{lang === "ru" ? "Диагностика" : "Diagnosticare"}
+          </Link>
+        </nav>
       </header>
     </>
   );
