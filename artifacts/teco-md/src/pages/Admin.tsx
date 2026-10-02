@@ -23,6 +23,7 @@ import { productSeoTitle, productSeoDescription } from "@/lib/product-copy";
 
 const ADMIN_PIN_FALLBACK = "teco2025";
 const brands = ["TAPO", "REOLINK", "UNIARCH", "DAHUA", "UNIVIEW", "TIANDY"] as const;
+const productBrandOptions: string[] = ["IMOU", "DAHUA", "HIKVISION", "EZVIZ", "TIANDY", "UNIVIEW", "UNIARCH", "TP-Link Tapo", "TP-Link VIGI", "TAPO", "REOLINK", "AJAX", "Ajax Systems", "CUDY", "MERCUSYS", "Ruijie Reyee", "Ubiquiti", "MikroTik", "Hiksemi", "Western Digital", "Seagate", "ZKTeco", "Akuvox", "Hikvision HiWatch"];
 type Tab = "dashboard" | "products" | "orders" | "leads" | "blog" | "settings" | "ai" | "import";
 
 // ─── Helpers ────────────────────────────────────────────────────────
@@ -517,8 +518,9 @@ function ProductModal({ product, onClose, categories }: { product: StoreProduct 
               <label className="block text-[11px] font-semibold text-zinc-400 mb-1 uppercase tracking-wider">Brand</label>
               <select value={form.brand} onChange={(e) => set("brand", e.target.value)}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#FF4F00]">
-                {[...new Set([...brands, "Ajax Systems", "IMOU", "TP-Link Tapo", "TP-Link VIGI", ...existingProducts.map((item) => item.brand), form.brand])].filter(Boolean).map((b) => <option key={b} value={b}>{b}</option>)}
+                {[...new Set([...productBrandOptions, ...existingProducts.map((item) => item.brand), form.brand])].filter(Boolean).map((b) => <option key={b} value={b}>{b}</option>)}
               </select>
+              <input type="text" value={form.brand} onChange={(e) => set("brand", e.target.value)} placeholder="Sau scrie orice brand nou" className="w-full mt-2 bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#FF4F00]" />
             </div>
             <div>
               <label className="block text-[11px] font-semibold text-zinc-400 mb-1 uppercase tracking-wider">Categorie</label>
