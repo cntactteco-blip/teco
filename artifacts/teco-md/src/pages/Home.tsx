@@ -1,6 +1,6 @@
 import { useState, useEffect, Suspense, lazy } from "react";
 import { Link } from "wouter";
-import { Camera, Shield, Server, Zap, Truck, Phone, Award, Star, CheckCircle2, ChevronDown, Wrench, Settings2 } from "lucide-react";
+import { Camera, Shield, Server, Zap, Truck, Phone, Award, Star, CheckCircle2, ChevronDown, Wrench, Settings2, ClipboardList } from "lucide-react";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { AppointmentBooker } from "@/components/AppointmentBooker";
 import BundleBuilder from "@/components/BundleBuilder";
@@ -28,37 +28,6 @@ function HomeFAQItem({ q, a }: { q: string; a: string }) {
         </div>
       )}
     </div>
-  );
-}
-
-function TecoServiceIcon({ type }: { type: "install" | "config" | "repair" | "care" }) {
-  const common = { fill: "none", strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
-  return (
-    <svg viewBox="0 0 64 64" className="w-14 h-14" aria-hidden="true">
-      <path d="M8 23h28l9 7v13H8z" stroke="#111111" strokeWidth="3.2" {...common} />
-      <circle cx="24" cy="33" r="7" stroke="#FF4F00" strokeWidth="3.2" {...common} />
-      <circle cx="24" cy="33" r="2.5" fill="#FF4F00" />
-      <path d="M45 33h8l4 4-4 4h-8" stroke="#111111" strokeWidth="3.2" {...common} />
-      {type === "install" && <>
-        <path d="M42 10l4 4-9 9-4-4zM47 9l4-4 4 4-4 4" stroke="#FF4F00" strokeWidth="3" {...common} />
-        <path d="M13 49v7M8 56h10" stroke="#FF4F00" strokeWidth="3" {...common} />
-      </>}
-      {type === "config" && <>
-        <path d="M10 12h18M34 12h16M10 18h8M24 18h26" stroke="#FF4F00" strokeWidth="3" {...common} />
-        <circle cx="31" cy="12" r="3" fill="#FF4F00" />
-        <circle cx="21" cy="18" r="3" fill="#FF4F00" />
-        <path d="M48 49c4-4 8-4 12 0M51 53c2-2 4-2 6 0" stroke="#FF4F00" strokeWidth="2.7" {...common} />
-      </>}
-      {type === "repair" && <>
-        <circle cx="49" cy="14" r="8" stroke="#FF4F00" strokeWidth="3" {...common} />
-        <path d="M55 20l5 5M11 52h8l3-5 5 10 4-5h9" stroke="#FF4F00" strokeWidth="3" {...common} />
-      </>}
-      {type === "care" && <>
-        <path d="M48 8l10 4v8c0 7-4 11-10 14-6-3-10-7-10-14v-8z" stroke="#FF4F00" strokeWidth="3" {...common} />
-        <path d="M44 20l3 3 6-7" stroke="#FF4F00" strokeWidth="3" {...common} />
-        <path d="M13 52h22" stroke="#FF4F00" strokeWidth="3" {...common} />
-      </>}
-    </svg>
   );
 }
 
@@ -446,15 +415,15 @@ export default function Home() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { href: "/montare-camere-supraveghere/", type: "install" as const, ro: "Instalare profesională", ru: "Профессиональный монтаж" },
-              { href: "/oferta/", type: "config" as const, ro: "Configurare sisteme", ru: "Настройка систем" },
-              { href: "/reparatii-camere-supraveghere/", type: "repair" as const, ro: "Diagnosticare și reparații", ru: "Диагностика и ремонт" },
-              { href: "/servicii/", type: "care" as const, ro: "Mentenanță și suport", ru: "Обслуживание и поддержка" },
-            ].map(({ href, type, ro, ru }) => (
+              { href: "/montare-camere-supraveghere/", Icon: Wrench, ro: "Instalare profesională", ru: "Профессиональный монтаж" },
+              { href: "/oferta/", Icon: Settings2, ro: "Configurare sisteme", ru: "Настройка систем" },
+              { href: "/reparatii-camere-supraveghere/", Icon: Wrench, ro: "Diagnosticare și reparații", ru: "Диагностика и ремонт" },
+              { href: "/servicii/", Icon: Shield, ro: "Mentenanță și suport", ru: "Обслуживание и поддержка" },
+            ].map(({ href, Icon, ro, ru }) => (
               <Link key={href + ro} href={href}
                 className="group min-h-[116px] rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm hover:shadow-md hover:border-orange-200 transition-all flex flex-col justify-between">
-                <span className="h-16 flex items-center">
-                  <TecoServiceIcon type={type} />
+                <span className="w-12 h-12 rounded-xl bg-[#FFF6EE] flex items-center justify-center">
+                  <Icon className="w-6 h-6 text-[#FF4F00]" strokeWidth={2.5} />
                 </span>
                 <div className="flex items-end justify-between gap-2 mt-3">
                   <span className="font-black text-sm md:text-base leading-tight text-zinc-950">{lang === "ro" ? ro : ru}</span>
