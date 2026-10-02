@@ -22,7 +22,7 @@ import { CatIconBadge, CatIconPicker, getCatIconDef } from "@/components/CatIcon
 import { productSeoTitle, productSeoDescription } from "@/lib/product-copy";
 
 const ADMIN_PIN_FALLBACK = "teco2025";
-const brands = ["IMOU", "DAHUA", "HIKVISION", "EZVIZ", "TIANDY", "UNIVIEW", "UNIARCH", "TAPO", "TP-Link Tapo", "TP-Link VIGI", "REOLINK", "Ajax Systems", "CUDY", "MERCUSYS", "Ruijie Reyee", "Ubiquiti", "MikroTik", "ZKTeco", "Akuvox", "Western Digital", "Seagate"];
+const brands = ["TAPO", "REOLINK", "UNIARCH", "DAHUA", "UNIVIEW", "TIANDY"] as const;
 type Tab = "dashboard" | "products" | "orders" | "leads" | "blog" | "settings" | "ai" | "import";
 
 // ─── Helpers ────────────────────────────────────────────────────────
@@ -517,7 +517,7 @@ function ProductModal({ product, onClose, categories }: { product: StoreProduct 
               <label className="block text-[11px] font-semibold text-zinc-400 mb-1 uppercase tracking-wider">Brand</label>
               <select value={form.brand} onChange={(e) => set("brand", e.target.value)}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#FF4F00]">
-                {[...new Set([...brands, ...existingProducts.map((item) => item.brand), form.brand])].filter(Boolean).map((b) => <option key={b} value={b}>{b}</option>)}
+                {[...new Set([...brands, "Ajax Systems", "IMOU", "TP-Link Tapo", "TP-Link VIGI", ...existingProducts.map((item) => item.brand), form.brand])].filter(Boolean).map((b) => <option key={b} value={b}>{b}</option>)}
               </select>
             </div>
             <div>
