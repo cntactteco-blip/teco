@@ -1,6 +1,6 @@
 import { useState, useEffect, Suspense, lazy } from "react";
 import { Link } from "wouter";
-import { Camera, Shield, Server, Zap, Truck, Phone, Award, Star, CheckCircle2, ChevronDown, Wrench, Settings2, ClipboardList } from "lucide-react";
+import { Camera, Shield, Server, Zap, Truck, Phone, Award, Star, CheckCircle2, ChevronDown, Wrench, Settings2, ClipboardList, Cctv, Search } from "lucide-react";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { AppointmentBooker } from "@/components/AppointmentBooker";
 import BundleBuilder from "@/components/BundleBuilder";
@@ -415,9 +415,9 @@ export default function Home() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { href: "/montare-camere-supraveghere/", Icon: Wrench, ro: "Instalare profesională", ru: "Профессиональный монтаж" },
+              { href: "/montare-camere-supraveghere/", Icon: Cctv, ro: "Instalare profesională", ru: "Профессиональный монтаж" },
               { href: "/oferta/", Icon: Settings2, ro: "Configurare sisteme", ru: "Настройка систем" },
-              { href: "/reparatii-camere-supraveghere/", Icon: Wrench, ro: "Diagnosticare și reparații", ru: "Диагностика и ремонт" },
+              { href: "/reparatii-camere-supraveghere/", Icon: Search, ro: "Diagnosticare și reparații", ru: "Диагностика и ремонт" },
               { href: "/servicii/", Icon: Shield, ro: "Mentenanță și suport", ru: "Обслуживание и поддержка" },
             ].map(({ href, Icon, ro, ru }) => (
               <Link key={href + ro} href={href}
