@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { storeActions } from "@/lib/store";
 import { ConsentCheckbox } from "@/components/ConsentCheckbox";
-import { trackLead } from "@/lib/analytics";
 
 export function LeadForm() {
   const [submitted, setSubmitted] = useState(false);
@@ -28,7 +27,6 @@ export function LeadForm() {
       import("@/lib/notify").then(({ notifyLead }) =>
         notifyLead({ name: name.trim(), phone: phone.trim(), source: "Banner — Configurare Gratuită" })
       );
-      trackLead("lead_form_banner");
       setSubmitted(true);
     } catch {
       setError("Cererea nu a putut fi salvată. Încearcă din nou.");
