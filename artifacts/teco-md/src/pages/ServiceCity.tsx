@@ -73,16 +73,15 @@ export default function ServiceCity() {
       "@type": "Service",
       name: `Teco.md — Montaj Camere ${city.ro}`,
       description: pageDesc,
-      url: `https://teco.md/servicii/${citySlug}`,
+      url: `https://teco.md/servicii/${citySlug}/`,
       telephone: "+37367200463",
       areaServed: { "@type": "City", name: cityName },
       provider: { "@type": "Organization", "@id": "https://teco.md/#business", name: "TECO.md", logo: "https://teco.md/logo.png" },
     },
-    schemas.service({ name: `Montaj Camere Supraveghere ${city.ro}`, description: pageDesc, url: `https://teco.md/servicii/${citySlug}`, price: "350" }),
     schemas.breadcrumb([
       { name: "Teco.md", url: "https://teco.md" },
-      { name: ro ? "Servicii" : "Услуги", url: "https://teco.md/servicii" },
-      { name: cityName, url: `https://teco.md/servicii/${citySlug}` },
+      { name: ro ? "Servicii" : "Услуги", url: "https://teco.md/servicii/" },
+      { name: cityName, url: `https://teco.md/servicii/${citySlug}/` },
     ]),
   ];
 
@@ -95,7 +94,7 @@ export default function ServiceCity() {
         <section className="bg-[#09090B] text-white py-12 md:py-16">
           <div className="max-w-5xl mx-auto px-4 md:px-6">
             <div className="flex items-center gap-2 text-zinc-400 text-sm mb-4">
-              <Link href="/servicii" className="hover:text-white transition-colors">{ro ? "Servicii" : "Услуги"}</Link>
+              <Link href="/servicii/" className="hover:text-white transition-colors">{ro ? "Servicii" : "Услуги"}</Link>
               <ArrowRight className="w-3.5 h-3.5" />
               <span className="text-white font-semibold">{cityName}</span>
             </div>
@@ -217,7 +216,7 @@ export default function ServiceCity() {
           <p className="text-xs font-bold text-zinc-400 text-center uppercase tracking-widest mb-4">{ro ? "ALTE LOCALITĂȚI" : "ДРУГИЕ ГОРОДА"}</p>
           <div className="flex flex-wrap justify-center gap-2">
             {Object.entries(CITY_DATA).filter(([slug]) => slug !== citySlug).slice(0, 10).map(([slug, c]) => (
-              <Link key={slug} href={`/servicii/${slug}`} className="inline-flex items-center gap-1.5 bg-zinc-100 hover:bg-orange-50 hover:text-[#FF4F00] text-zinc-600 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors">
+              <Link key={slug} href={`/servicii/${slug}/`} className="inline-flex items-center gap-1.5 bg-zinc-100 hover:bg-orange-50 hover:text-[#FF4F00] text-zinc-600 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors">
                 <MapPin className="w-3 h-3" />
                 {ro ? c.ro : c.ru}
               </Link>
