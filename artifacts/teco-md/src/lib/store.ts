@@ -982,11 +982,13 @@ export const storeActions = {
     if (options?.requireSaved) {
       const response = await saving;
       if (!response.ok) throw new Error("Lead could not be saved");
+      trackLead(newLead.source);
     } else {
-      saving.catch(() => {});
+      saving
+        .then((response) => { if (response.ok) trackLead(newLead.source); })
+        .catch(() => {});
     }
     setState((s) => ({ ...s, leads: [newLead, ...s.leads] }));
-    trackLead(newLead.source);
     return newLead;
   },
 
