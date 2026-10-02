@@ -140,6 +140,17 @@
 /camere-supraveghere-moldova-din-strainatate /camere-supraveghere-moldova-din-strainatate/ 301
 /nvr-moldova /nvr-moldova/ 301
 /camere-4g-moldova /camere-4g-moldova/ 301
+/router-4g-moldova /router-4g-moldova/ 301
+/cablu-utp-ftp-moldova /cablu-utp-ftp-moldova/ 301
+/interfoane-moldova /interfoane-moldova/ 301
+/router-4g-internet-rapid-fara-fir-oriunde-te-afli /router-4g-moldova/ 301
+/router-4g-internet-rapid-fara-fir-oriunde-te-afli/ /router-4g-moldova/ 301
+/cudy /router-4g-moldova/ 301
+/cudy/ /router-4g-moldova/ 301
+/internet-utp-ftp /cablu-utp-ftp-moldova/ 301
+/internet-utp-ftp/ /cablu-utp-ftp-moldova/ 301
+/interfoane-sisteme-de-control-i-management-al-accesului /interfoane-moldova/ 301
+/interfoane-sisteme-de-control-i-management-al-accesului/ /interfoane-moldova/ 301
 
 # Nu adăuga fallback /* -> /index.html. Build-ul prerandează paginile publice,
 # iar URL-urile inexistente trebuie să poată răspunde 404.
