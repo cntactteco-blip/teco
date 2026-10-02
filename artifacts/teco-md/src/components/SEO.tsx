@@ -68,8 +68,6 @@ export function SEO({
       <meta name="language" content={lang === "ro" ? "Romanian" : "Russian"} />
       <meta name="geo.region" content="MD" />
       <meta name="geo.placename" content="Chișinău, Moldova" />
-      <meta name="geo.position" content="47.0105;28.8638" />
-      <meta name="ICBM" content="47.0105, 28.8638" />
       <meta name="theme-color" content="#FF4F00" />
       <meta name="msapplication-TileColor" content="#FF4F00" />
       <meta name="msapplication-navbutton-color" content="#FF4F00" />
@@ -95,11 +93,9 @@ export function SEO({
       <meta property="og:image:alt" content={ogType === "product" ? finalTitle : "Teco.md — Sisteme de Supraveghere Moldova"} />
       <meta property="og:phone_number" content="+373-67-200-463" />
       <meta property="og:email" content="contact@teco.md" />
-      <meta property="og:street-address" content="Chișinău" />
       <meta property="og:locality" content="Chișinău" />
       <meta property="og:country-name" content="Moldova" />
       <meta property="og:region" content="Moldova" />
-      <meta property="og:postal-code" content="MD-2001" />
       <meta property="og:determiner" content="the" />
 
       {/* Twitter */}
@@ -382,9 +378,7 @@ export const schemas = {
         telephone: "+37367200463",
         address: {
           "@type": "PostalAddress",
-          streetAddress: "Chișinău",
           addressLocality: "Chișinău",
-          postalCode: "MD-2001",
           addressCountry: "MD",
         },
       },
