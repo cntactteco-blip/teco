@@ -103,7 +103,7 @@
 /cameras               /produse?cat=wifi   301
 /camere                /produse?cat=wifi   301
 /camere-supraveghere   /produse?cat=wifi   301
-/nvr                   /produse?cat=nvr    301
+/nvr                   /nvr-moldova/       301
 /kituri                /produse?cat=kituri 301
 /seturi                /produse?cat=kituri 301
 /alarme                /produse?cat=alarme 301
@@ -111,10 +111,10 @@
 /hdmi-extender         /produse            301
 
 # ── Articole vechi despre reparatii, indexate de Google ────────────────
-/repar-camere-care-nu-nregistreaza-dvr-nvr-hdd-setari-alimentare/  /servicii/chisinau  301
-/repar-camere-care-nu-nregistreaza-dvr-nvr-hdd-setari-alimentare   /servicii/chisinau  301
-/ru/repar-camere-de-supraveghere-n-chiinau-i-suburbii-rapid-sigur-i-la-pre-corect/  /servicii/chisinau  301
-/ru/repar-camere-de-supraveghere-n-chiinau-i-suburbii-rapid-sigur-i-la-pre-corect   /servicii/chisinau  301
+/repar-camere-care-nu-nregistreaza-dvr-nvr-hdd-setari-alimentare/  /reparatii-camere-supraveghere/  301
+/repar-camere-care-nu-nregistreaza-dvr-nvr-hdd-setari-alimentare   /reparatii-camere-supraveghere/  301
+/ru/repar-camere-de-supraveghere-n-chiinau-i-suburbii-rapid-sigur-i-la-pre-corect/  /reparatii-camere-supraveghere/  301
+/ru/repar-camere-de-supraveghere-n-chiinau-i-suburbii-rapid-sigur-i-la-pre-corect   /reparatii-camere-supraveghere/  301
 
 # ── Canonicalizare pentru paginile comerciale importante ─────────────
 # Cloudflare servește paginile prerandate ca directoare /ruta/index.html,
@@ -138,6 +138,8 @@
 /oferta /oferta/ 301
 /produse /produse/ 301
 /camere-supraveghere-moldova-din-strainatate /camere-supraveghere-moldova-din-strainatate/ 301
+/nvr-moldova /nvr-moldova/ 301
+/camere-4g-moldova /camere-4g-moldova/ 301
 
 # Nu adăuga fallback /* -> /index.html. Build-ul prerandează paginile publice,
 # iar URL-urile inexistente trebuie să poată răspunde 404.
