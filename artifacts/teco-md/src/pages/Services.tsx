@@ -46,7 +46,7 @@ const SERVICES = [
     border: "border-orange-100",
     title: "Montaj Camere de Supraveghere",
     titleRu: "Монтаж Камер Видеонаблюдения",
-    desc: "Echipa noastră de tehnicieni certificați instalează și configurează sisteme complete de supraveghere video la locuința sau afacerea ta. Venim la tine oriunde în Moldova.",
+    desc: "Echipa noastră instalează și configurează sisteme de supraveghere video pentru locuințe și afaceri. Venim la tine oriunde în Moldova.",
     descRu: "Наша команда сертифицированных техников устанавливает и настраивает полные системы видеонаблюдения у вас дома или на предприятии. Работаем по всей Молдове.",
     features: ["Montaj și cablare profesională", "Configurare NVR și aplicație mobilă", "Testare completă a sistemului", "Instruire utilizator inclusă"],
     featuresRu: ["Профессиональный монтаж и прокладка кабеля", "Настройка NVR и мобильного приложения", "Полное тестирование системы", "Обучение пользователя включено"],
@@ -211,8 +211,8 @@ const SERVICES = [
           </h1>
           <p className="text-white/70 text-base md:text-lg max-w-xl mb-8">
             {ro
-              ? "Tehnicieni certificați la tine acasă sau la afacere. Instalăm, configurăm și reparăm orice sistem de supraveghere din Moldova."
-              : "Сертифицированные техники у вас дома или на предприятии. Устанавливаем, настраиваем и ремонтируем любые системы видеонаблюдения в Молдове."}
+              ? "Echipă tehnică pentru locuințe și afaceri. Instalăm, configurăm și depanăm sisteme de supraveghere în Moldova."
+              : "Техническая оценка у вас дома или на предприятии. Устанавливаем, настраиваем и ремонтируем любые системы видеонаблюдения в Молдове."}
           </p>
           <div className="flex flex-wrap gap-3">
             <a
@@ -360,7 +360,7 @@ const SERVICES = [
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
             { icon: Clock, t: ro ? "Răspuns la solicitare" : "Ответ на заявку", d: ro ? "Suni sau scrii, iar echipa verifică solicitarea și revine cu detalii." : "Позвоните или напишите — команда проверит заявку и ответит с деталями." },
-            { icon: Star, t: ro ? "Tehnicieni certificați" : "Сертифицированные техники", d: ro ? "Toți tehnicii noștri au certificări și experiență dovedită." : "Все наши техники имеют сертификаты и подтвержденный опыт." },
+            { icon: Star, t: ro ? "Evaluare tehnică" : "Техническая оценка", d: ro ? "Lucrările sunt evaluate înainte de intervenție, iar soluția este adaptată echipamentului și obiectului." : "Все наши техники имеют сертификаты и подтвержденный опыт." },
             { icon: ShieldCheck, t: ro ? "Garanție pe lucrare" : "Гарантия на работу", d: ro ? "Orice lucrare efectuată vine cu garanție scrisă." : "Каждая выполненная работа сопровождается письменной гарантией." },
           ].map(({ icon: Icon, t, d }) => (
             <div key={t} className="bg-white rounded-2xl border border-zinc-200 p-5 flex gap-4">
@@ -454,13 +454,13 @@ const SERVICES = [
               </h2>
               <p className="text-zinc-300 text-base leading-relaxed mb-6 max-w-md">
                 {ro
-                  ? "Uită de griji. Monitorizăm sistemul tău lunar — actualizăm firmware, verificăm înregistrările, intervenim prioritar dacă ceva se defectează."
+                  ? "Uită de griji. Verificăm periodic sistemul, starea înregistrării și versiunile de firmware; intervențiile și actualizările se programează când sunt necesare."
                   : "Забудьте о проблемах. Ежемесячно мониторим вашу систему — обновляем прошивку, проверяем записи, приоритетно выезжаем при неисправности."}
               </p>
               <div className="space-y-2.5 mb-8">
                 {[
                   { icon: Wifi, ro: "Verificare remote lunară a sistemului", ru: "Ежемесячная удалённая проверка системы" },
-                  { icon: Zap, ro: "Actualizare automată firmware camere & NVR", ru: "Автоматическое обновление прошивки камер и NVR" },
+                  { icon: Zap, ro: "Verificare firmware și actualizare când este necesar și compatibil", ru: "Проверка прошивки и обновление при необходимости и совместимости" },
                   { icon: Wrench, ro: "Programare prioritară la defecțiuni", ru: "Приоритетная запись при неисправности" },
                   { icon: Shield, ro: "Raport lunar de stare a sistemului", ru: "Ежемесячный отчёт о состоянии системы" },
                   { icon: CheckCircle, ro: "Reducere 20% la orice reparație sau upgrade", ru: "Скидка 20% на любой ремонт или апгрейд" },
