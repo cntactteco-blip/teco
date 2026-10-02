@@ -183,11 +183,11 @@ export default function TripwireAI() {
           <div className="flex items-center gap-4 mt-4 pt-4 border-t border-white/10">
             <div className="flex items-center gap-1.5 text-xs text-zinc-400">
               <Users className="w-3.5 h-3.5 text-green-400" />
-              <span><strong className="text-white">312</strong> {ru ? "систем AI установлено в Молдове" : "sisteme AI instalate în MD"}</span>
+              <span>{ru ? "AI-функции зависят от совместимого оборудования" : "Funcțiile AI depind de echipamentul compatibil"}</span>
             </div>
             <div className="flex items-center gap-1.5 text-xs text-zinc-400">
               <Clock className="w-3.5 h-3.5 text-[#FF4F00]" />
-              <span>{ru ? "Монтаж " : "Instalare "}<strong className="text-white">{ru ? "завтра" : "mâine"}</strong>{ru ? " в Кишинёве" : " în Chișinău"}</span>
+              <span>{ru ? "Монтаж по предварительной записи" : "Instalare cu programare confirmată"}</span>
             </div>
           </div>
         </div>
