@@ -1,0 +1,43 @@
+name: TECO site checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "artifacts/teco-md/**"
+      - "lib/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/teco-ci.yml"
+  pull_request:
+    paths:
+      - "artifacts/teco-md/**"
+      - "lib/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+
+concurrency:
+  group: teco-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm --filter @workspace/teco-md run typecheck
+      - name: SEO and store tests
+        working-directory: artifacts/teco-md
+        run: node --test --test-isolation=none scripts/seo-output.test.mjs scripts/store-blog.test.mjs src/server/ai-provider.test.ts src/lib/chat-response.test.ts src/lib/category-routing.test.ts
+      - name: Offline SEO build
+        run: pnpm --filter @workspace/teco-md run seo-build
