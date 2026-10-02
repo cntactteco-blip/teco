@@ -26,19 +26,19 @@ export function AnnouncementBar() {
 
   return (
     <div
-      className="text-white text-sm py-2 px-4 relative flex items-center justify-center"
+      className="text-white text-[11px] sm:text-sm py-2 pl-3 pr-9 relative flex items-center justify-center overflow-hidden"
       style={{
         background: "linear-gradient(90deg, #09090b 45%, #1a1a1a 50%, #09090b 55%)",
         backgroundSize: "200% 100%",
         animation: "shimmer 3s infinite linear",
       }}
     >
-      <div key={message} className="text-center font-medium animate-in fade-in duration-500">
+      <div key={message} className="w-full text-center font-semibold animate-in fade-in duration-500 whitespace-nowrap overflow-hidden text-ellipsis">
         {message}
       </div>
       <button
         onClick={() => setVisible(false)}
-        className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors"
+        className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors"
       >
         <X size={16} />
       </button>
