@@ -130,7 +130,7 @@ const SERVICES = [
   };
 
   const FAQ_RO = [
-    { q: "Cât costă repararea unei camere de supraveghere în Moldova?", a: "Costul reparației depinde de tipul defecțiunii. Diagnosticarea on-site costă de la 350 MDL. Reparația propriu-zisă (înlocuire matrice, lentilă, modul IR, sursă) începe de la 150 MDL. Oferim evaluare gratuită înainte de a confirma lucrarea." },
+    { q: "Cât costă repararea unei camere de supraveghere în Moldova?", a: "Costul reparației depinde de tipul defecțiunii. Diagnosticarea on-site costă de la 350 MDL/vizită. Reparația propriu-zisă începe de la 400 MDL, în funcție de defecțiune și piesele necesare. Costul se confirmă înainte de lucrare." },
     { q: "Câte zile durează instalarea unui sistem complet de supraveghere?", a: "Un sistem de 4–8 camere se instalează în 1 zi lucrătoare. Sistemele mari (16+ camere, cablu structurat, NVR rack) pot dura 2–3 zile. Programarea deplasării se confirmă în funcție de localitate și disponibilitate." },
     { q: "Reparați sisteme vechi de supraveghere — DVR-uri, camere analogice HDCVI/AHD?", a: "Da, reparăm și diagnosticăm orice tip de sistem: IP modern, analogic HDCVI/AHD/TVI, sisteme hibride. Avem piese de schimb pentru cele mai frecvente branduri: Dahua, Hikvision, Uniview, TP-Link Tapo, Reolink." },
     { q: "Instalați sisteme de supraveghere și în afara Chișinăului?", a: "Da, lucrăm în toată Moldova: Bălți, Orhei, Ungheni, Cahul, Soroca, Tiraspol, Bender și localitățile din jur. Costul deplasării se calculează în funcție de distanță și se comunică înainte de confirmare." },
@@ -165,7 +165,7 @@ const SERVICES = [
   const jsonLd = [
     schemas.service({ name: "Montaj Camere de Supraveghere", description: "Instalare profesională camere IP, NVR și kituri complete în Moldova. Devizul se confirmă înainte de lucrare.", url: "https://teco.md/servicii" }),
     schemas.service({ name: "Diagnosticare si Reparatii Sisteme Supraveghere", description: "Reparatii camere IP, NVR, DVR, sisteme analogice si alarme. Diagnosticare on-site de la 350 MDL. Garantie 6 luni.", url: "https://teco.md/servicii", price: "350" }),
-    schemas.repairService({ name: "Reparare Camera Supraveghere Moldova", description: "Reparatii camere IP si analogice (Dahua, Hikvision, TP-Link, Reolink). Piese originale. Garantie 6 luni. Chisinau + toata Moldova.", price: "150" }),
+    schemas.repairService({ name: "Reparare Camera Supraveghere Moldova", description: "Reparatii camere IP si analogice in Chisinau si Moldova. Diagnosticare si cost confirmate inainte de lucrare.", price: "400" }),
     schemas.howTo({
       name: ro ? "Cum se instalează un sistem de supraveghere în Moldova" : "Как установить систему видеонаблюдения в Молдове",
       description: ro ? "Ghid pas cu pas pentru instalarea unui sistem complet de camere de supraveghere. Echipa Teco.md oferă instalare în Moldova cu programare confirmată." : "Пошаговое руководство по установке системы видеонаблюдения. Команда Teco.md выполняет монтаж по Молдове по согласованной записи.",
