@@ -31,7 +31,7 @@ export function getCategoryRedirects(): Record<string, string> {
 
 export function getPrerenderRoutes() {
   const state = getState();
-  const paths = ["/", "/produse", "/seturi-camere-supraveghere", "/servicii", "/montare-camere-supraveghere", "/camere-supraveghere-chisinau", "/sisteme-supraveghere-casa", "/camere-supraveghere-exterior", "/camere-supraveghere-moldova", "/camere-supraveghere-moldova-din-strainatate", "/reparatii-camere-supraveghere", "/contact", "/b2b", "/oferta", "/blog", "/termeni", "/confidentialitate", "/garantii", "/livrare"];
+  const paths = ["/", "/produse", "/seturi-camere-supraveghere", "/servicii", "/montare-camere-supraveghere", "/camere-supraveghere-chisinau", "/sisteme-supraveghere-casa", "/camere-supraveghere-exterior", "/camere-supraveghere-moldova", "/camere-supraveghere-moldova-din-strainatate", "/reparatii-camere-supraveghere", "/nvr-moldova", "/contact", "/b2b", "/oferta", "/blog", "/termeni", "/confidentialitate", "/garantii", "/livrare"];
   paths.push(...Object.keys(CITY_DATA).map(city => `/servicii/${city}`));
   paths.push(...state.products.map(product => `/product/${encodeURIComponent(product.slug || product.id)}`));
   paths.push(...[...new Set(state.products.map(product => product.category))].map(category => `/produse?cat=${encodeURIComponent(category)}`));
