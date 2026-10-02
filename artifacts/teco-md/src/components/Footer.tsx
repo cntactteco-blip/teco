@@ -37,6 +37,7 @@ export function Footer() {
             <li><Link href="/montare-camere-supraveghere" className="hover:text-[#FF4F00] transition-colors">{lang === "ru" ? "Цены на установку камер" : "Preț instalare camere"}</Link></li>
             <li><Link href="/servicii" className="hover:text-[#FF4F00] transition-colors">{t("footer.s.config")}</Link></li>
             <li><Link href="/reparatii-camere-supraveghere" className="hover:text-[#FF4F00] transition-colors">{t("footer.s.service")}</Link></li>
+            <li><Link href="/camere-supraveghere-moldova-din-strainatate" className="hover:text-[#FF4F00] transition-colors">{lang === "ru" ? "Для владельцев за границей" : "Pentru proprietari peste hotare"}</Link></li>
             <li><Link href="/servicii" className="hover:text-[#FF4F00] transition-colors">{t("footer.s.consult")}</Link></li>
             <li><Link href="/servicii" className="hover:text-[#FF4F00] transition-colors">{t("footer.s.audit")}</Link></li>
           </ul>
