@@ -343,16 +343,15 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="flex gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory -mx-4 px-4 pb-3 md:mx-0 md:px-0 md:pb-0 md:grid md:grid-cols-4">
             {categories
               .filter((cat) => storeProducts.some((product) => product.category === cat.slug && product.inStock !== false))
-              .slice(0, 4)
               .map((cat) => {
                 const catProducts = storeProducts.filter((p) => p.category === cat.slug && p.inStock !== false);
                 const catImg = cat.image || catProducts[0]?.imageUrl;
                 return (
                   <Link key={cat.id} href={`/produse?cat=${cat.slug}`}
-                    className="group min-h-[150px] rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm hover:shadow-md hover:border-orange-200 transition-all overflow-hidden">
+                    className="group snap-start shrink-0 w-[72vw] max-w-[280px] md:w-auto md:max-w-none min-h-[150px] rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm hover:shadow-md hover:border-orange-200 transition-all overflow-hidden">
                     <div className="h-20 md:h-24 flex items-center justify-center mb-2">
                       {catImg ? (
                         <img src={catImg} alt={cat.label} loading="lazy" className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105" />
