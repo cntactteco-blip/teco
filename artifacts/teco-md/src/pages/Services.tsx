@@ -9,7 +9,7 @@ import { AppointmentBooker } from "@/components/AppointmentBooker";
 
 const STEPS = [
   { n: "01", ro: { t: "Contactezi echipa", d: "Suni, scrii pe WhatsApp sau compleci formularul online" }, ru: { t: "Свяжитесь с нами", d: "Позвоните, напишите в WhatsApp или заполните форму" } },
-  { n: "02", ro: { t: "Primești oferta", d: "Evaluăm necesitățile și trimitem prețul în 30 min" }, ru: { t: "Получите предложение", d: "Оцениваем нужды и отправляем цену в течение 30 мин" } },
+  { n: "02", ro: { t: "Primești oferta", d: "Evaluăm necesitățile și confirmăm devizul după verificarea cererii" }, ru: { t: "Получите предложение", d: "Оцениваем заявку и подтверждаем смету после проверки" } },
   { n: "03", ro: { t: "Programăm instalarea", d: "Tehnicianul vine la adresa ta în intervalul ales" }, ru: { t: "Планируем установку", d: "Техник приедет по вашему адресу в удобное время" } },
   { n: "04", ro: { t: "Sistemul funcționează", d: "Predăm cheia în mână — totul configurat și testat" }, ru: { t: "Система работает", d: "Передаем готовую к работе систему — всё настроено" } },
 ];
@@ -67,8 +67,8 @@ const SERVICES = [
     descRu: "Система не работает? Наш техник выявит и устранит любую проблему: неисправная камера, потеря соединения, неправильная настройка или заблокированный NVR.",
     features: ["Diagnosticare completă on-site", "Verificare conexiuni și cabluri", "Resetare și reconfigurare sistem", "Raport tehnic detaliat"],
     featuresRu: ["Полная диагностика на месте", "Проверка соединений и кабелей", "Сброс и перенастройка системы", "Подробный технический отчет"],
-    price: sp?.diagnosticare || "de la 200 MDL/vizită",
-    priceRu: sp?.diagnosticare || "от 200 MDL/визит",
+    price: sp?.diagnosticare || "de la 350 MDL/vizită",
+    priceRu: sp?.diagnosticare || "от 350 MDL/визит",
     badge: null,
     badgeRu: null,
   },
@@ -130,28 +130,28 @@ const SERVICES = [
   };
 
   const FAQ_RO = [
-    { q: "Cât costă repararea unei camere de supraveghere în Moldova?", a: "Costul reparației depinde de tipul defecțiunii. Diagnosticarea on-site costă de la 200 MDL. Reparația propriu-zisă (înlocuire matrice, lentilă, modul IR, sursă) începe de la 150 MDL. Oferim evaluare gratuită înainte de a confirma lucrarea." },
-    { q: "Câte zile durează instalarea unui sistem complet de supraveghere?", a: "Un sistem de 4–8 camere se instalează în 1 zi lucrătoare. Sistemele mari (16+ camere, cablu structurat, NVR rack) pot dura 2–3 zile. Venimus la tine oriunde în Moldova în 24 de ore de la comandă." },
+    { q: "Cât costă repararea unei camere de supraveghere în Moldova?", a: "Costul reparației depinde de tipul defecțiunii. Diagnosticarea on-site costă de la 350 MDL. Reparația propriu-zisă (înlocuire matrice, lentilă, modul IR, sursă) începe de la 150 MDL. Oferim evaluare gratuită înainte de a confirma lucrarea." },
+    { q: "Câte zile durează instalarea unui sistem complet de supraveghere?", a: "Un sistem de 4–8 camere se instalează în 1 zi lucrătoare. Sistemele mari (16+ camere, cablu structurat, NVR rack) pot dura 2–3 zile. Programarea deplasării se confirmă în funcție de localitate și disponibilitate." },
     { q: "Reparați sisteme vechi de supraveghere — DVR-uri, camere analogice HDCVI/AHD?", a: "Da, reparăm și diagnosticăm orice tip de sistem: IP modern, analogic HDCVI/AHD/TVI, sisteme hibride. Avem piese de schimb pentru cele mai frecvente branduri: Dahua, Hikvision, Uniview, TP-Link Tapo, Reolink." },
     { q: "Instalați sisteme de supraveghere și în afara Chișinăului?", a: "Da, lucrăm în toată Moldova: Bălți, Orhei, Ungheni, Cahul, Soroca, Tiraspol, Bender și localitățile din jur. Costul deplasării se calculează în funcție de distanță și se comunică înainte de confirmare." },
-    { q: "Ce garanție oferiți pe lucrarea de instalare?", a: "Oferim 12 luni garanție pe lucrarea de instalare și 6 luni pe reparații. Garanția acoperă defecțiunile de montaj, conexiunile electrice și configurarea sistemului. Produsele au garanție producător 2–3 ani." },
-    { q: "Camera mea nu afișează imagine sau NVR-ul nu înregistrează — ce fac?", a: "Suni sau scrii pe WhatsApp și un inginer Teco.md îți răspunde în 15 minute. De multe ori problema se rezolvă remote (resetare, reconfigurare aplicație). Dacă e nevoie de intervenție fizică, trimitem un tehnician în aceeași zi." },
+    { q: "Ce garanție oferiți pe lucrarea de instalare?", a: "Oferim 12 luni garanție pe lucrarea de instalare și 6 luni pe reparații. Garanția acoperă defecțiunile de montaj, conexiunile electrice și configurarea sistemului. Garanția produselor diferă în funcție de model și producător." },
+    { q: "Camera mea nu afișează imagine sau NVR-ul nu înregistrează — ce fac?", a: "Scrie pe WhatsApp sau sună-ne; verificăm solicitarea și îți răspundem cât mai curând. Unele probleme pot fi evaluate remote. Dacă este necesară intervenția fizică, confirmăm programarea înainte de deplasare." },
     { q: "Puteți instala sisteme de supraveghere pentru afacere — magazin, depozit, birou?", a: "Da, aceasta este specialitatea noastră. Proiectăm și instalăm sisteme complete pentru retail, depozite, birouri, parcări și obiective industriale. Includem analiza riscurilor, planul de amplasare, cablu structurat și integrare cu sistemul de alarmă." },
     { q: "Ce include pachetul de instalare la cheie?", a: "Pachetul la cheie include: livrarea echipamentelor, cablare și montaj camere, configurarea NVR/DVR, setarea accesului remote pe telefon, testarea completă a sistemului și instruirea utilizatorului. Nu există costuri ascunse." },
     { q: "Oferiți intervenție de urgență pentru sisteme defecte?", a: "Da, oferim intervenție de urgență în Chișinău și localitățile apropiate. Timp de răspuns: 2–4 ore. Serviciul de urgență are un tarif suplimentar față de intervenția planificată." },
-    { q: "Care este diferența dintre diagnosticare și reparație?", a: "Diagnosticarea este procesul de identificare a defecțiunii — costă de la 200 MDL și include deplasarea, inspecția vizuală și testarea componentelor. Reparația este intervenția propriu-zisă. Dacă nu se poate repara, nu plătești pentru reparație — doar diagnosticarea." },
+    { q: "Care este diferența dintre diagnosticare și reparație?", a: "Diagnosticarea este procesul de identificare a defecțiunii — costă de la 350 MDL și include deplasarea, inspecția vizuală și testarea componentelor. Reparația este intervenția propriu-zisă. Dacă nu se poate repara, nu plătești pentru reparație — doar diagnosticarea." },
   ];
   const FAQ_RU = [
-    { q: "Сколько стоит ремонт камеры видеонаблюдения в Молдове?", a: "Стоимость ремонта зависит от типа неисправности. Диагностика на месте стоит от 200 MDL. Сам ремонт (замена матрицы, объектива, ИК-модуля, блока питания) начинается от 150 MDL. Предлагаем бесплатную оценку перед подтверждением работы." },
-    { q: "Сколько времени занимает установка системы видеонаблюдения?", a: "Система на 4–8 камер устанавливается за 1 рабочий день. Большие системы (16+ камер, структурированный кабель, NVR) могут занять 2–3 дня. Приедем к вам по всей Молдове в течение 24 часов после заказа." },
+    { q: "Сколько стоит ремонт камеры видеонаблюдения в Молдове?", a: "Стоимость ремонта зависит от типа неисправности. Диагностика на месте стоит от 350 MDL. Сам ремонт (замена матрицы, объектива, ИК-модуля, блока питания) начинается от 150 MDL. Предлагаем бесплатную оценку перед подтверждением работы." },
+    { q: "Сколько времени занимает установка системы видеонаблюдения?", a: "Система на 4–8 камер устанавливается за 1 рабочий день. Большие системы (16+ камер, структурированный кабель, NVR) могут занять 2–3 дня. Время выезда подтверждается с учётом населённого пункта и доступности." },
     { q: "Вы ремонтируете старые системы видеонаблюдения — DVR, аналоговые камеры?", a: "Да, ремонтируем и диагностируем любые системы: IP, аналоговые HDCVI/AHD/TVI, гибридные. Имеем запчасти для популярных брендов: Dahua, Hikvision, Uniview, TP-Link Tapo, Reolink." },
     { q: "Вы устанавливаете системы видеонаблюдения за пределами Кишинева?", a: "Да, работаем по всей Молдове: Бельцы, Оргеев, Унгены, Кагул, Сорока, Тирасполь, Бендеры и окрестности. Стоимость выезда рассчитывается в зависимости от расстояния и сообщается заранее." },
-    { q: "Какую гарантию вы даёте на монтажные работы?", a: "Предоставляем 12 месяцев гарантии на монтажные работы и 6 месяцев на ремонт. Гарантия покрывает дефекты монтажа, электрические соединения и настройку системы. На оборудование действует гарантия производителя 2–3 года." },
+    { q: "Какую гарантию вы даёте на монтажные работы?", a: "Предоставляем 12 месяцев гарантии на монтажные работы и 6 месяцев на ремонт. Гарантия покрывает дефекты монтажа, электрические соединения и настройку системы. Гарантия оборудования зависит от модели и производителя." },
     { q: "Камера не показывает изображение или NVR не записывает — что делать?", a: "Позвоните или напишите в WhatsApp — инженер Teco.md ответит в течение 15 минут. Часто проблему можно решить удаленно (сброс настроек, перенастройка приложения). Если нужен выезд — отправим техника в тот же день." },
     { q: "Устанавливаете ли системы видеонаблюдения для бизнеса?", a: "Да, это наша специализация. Проектируем и устанавливаем комплексные системы для магазинов, складов, офисов, парковок и промышленных объектов. Включает анализ рисков, схему расстановки и интеграцию с охранной сигнализацией." },
     { q: "Что включает установка под ключ?", a: "Монтаж под ключ включает: доставку оборудования, прокладку кабеля и монтаж камер, настройку NVR/DVR, настройку удалённого доступа со смартфона, полное тестирование и обучение пользователя. Скрытых платежей нет." },
     { q: "Есть ли экстренный выезд при поломке?", a: "Да, предоставляем экстренный выезд в Кишиневе и пригородах. Время реагирования: 2–4 часа. Услуга экстренного выезда имеет дополнительную стоимость по сравнению с плановым обслуживанием." },
-    { q: "В чем разница между диагностикой и ремонтом?", a: "Диагностика — это процесс выявления неисправности (от 200 MDL, включая выезд и тестирование). Ремонт — это непосредственное устранение проблемы. Если ремонт невозможен, платите только за диагностику." },
+    { q: "В чем разница между диагностикой и ремонтом?", a: "Диагностика — это процесс выявления неисправности (от 350 MDL, включая выезд и тестирование). Ремонт — это непосредственное устранение проблемы. Если ремонт невозможен, платите только за диагностику." },
   ];
 
   const FAQ = ro ? FAQ_RO : FAQ_RU;
@@ -164,11 +164,11 @@ const SERVICES = [
 
   const jsonLd = [
     schemas.service({ name: "Montaj Camere de Supraveghere", description: "Instalare profesională camere IP, NVR și kituri complete în Moldova. Devizul se confirmă înainte de lucrare.", url: "https://teco.md/servicii" }),
-    schemas.service({ name: "Diagnosticare si Reparatii Sisteme Supraveghere", description: "Reparatii camere IP, NVR, DVR, sisteme analogice si alarme. Diagnosticare on-site de la 200 MDL. Garantie 6 luni.", url: "https://teco.md/servicii", price: "200" }),
+    schemas.service({ name: "Diagnosticare si Reparatii Sisteme Supraveghere", description: "Reparatii camere IP, NVR, DVR, sisteme analogice si alarme. Diagnosticare on-site de la 350 MDL. Garantie 6 luni.", url: "https://teco.md/servicii", price: "350" }),
     schemas.repairService({ name: "Reparare Camera Supraveghere Moldova", description: "Reparatii camere IP si analogice (Dahua, Hikvision, TP-Link, Reolink). Piese originale. Garantie 6 luni. Chisinau + toata Moldova.", price: "150" }),
     schemas.howTo({
       name: ro ? "Cum se instalează un sistem de supraveghere în Moldova" : "Как установить систему видеонаблюдения в Молдове",
-      description: ro ? "Ghid pas cu pas pentru instalarea unui sistem complet de camere de supraveghere. Echipa Teco.md instalează oriunde în Moldova în 24h." : "Пошаговое руководство по установке системы видеонаблюдения. Команда Teco.md устанавливает по всей Молдове за 24 часа.",
+      description: ro ? "Ghid pas cu pas pentru instalarea unui sistem complet de camere de supraveghere. Echipa Teco.md oferă instalare în Moldova cu programare confirmată." : "Пошаговое руководство по установке системы видеонаблюдения. Команда Teco.md выполняет монтаж по Молдове по согласованной записи.",
       totalTime: "PT8H",
       supply: ro ? ["Camere IP sau WiFi", "NVR sau DVR", "Cablu UTP Cat6", "Surse de alimentare", "Monitoare sau router"] : ["IP или WiFi камеры", "NVR или DVR регистратор", "Кабель UTP Cat6", "Блоки питания", "Монитор или роутер"],
       tool: ro ? ["Burghiu profesional", "Cleste sertizat", "Multimetru", "Laptop configurare"] : ["Профессиональная дрель", "Кримпер", "Мультиметр", "Ноутбук для настройки"],
@@ -315,7 +315,7 @@ const SERVICES = [
               <div className="text-center py-6">
                 <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
                 <p className="font-bold text-zinc-900">{ro ? "Cererea a fost inregistrata!" : "Zayavka zaregistrirovana!"}</p>
-                <p className="text-sm text-zinc-500 mt-1">{ro ? "Te contactam in cel mult 15 minute." : "Svyazhemsya s vami v techenie 15 minut."}</p>
+                <p className="text-sm text-zinc-500 mt-1">{ro ? "Îți confirmăm solicitarea după verificare." : "Подтвердим заявку после проверки."}</p>
               </div>
             ) : (
               <form onSubmit={handleServiceLeadSubmit} className="flex flex-col gap-3">
@@ -359,7 +359,7 @@ const SERVICES = [
       <section className="max-w-5xl mx-auto px-4 md:px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
-            { icon: Clock, t: ro ? "Răspuns în 15 minute" : "Ответ за 15 минут", d: ro ? "Suni sau scrii și ești contactat imediat de un inginer." : "Позвоните или напишите — инженер ответит немедленно." },
+            { icon: Clock, t: ro ? "Răspuns la solicitare" : "Ответ на заявку", d: ro ? "Suni sau scrii, iar echipa verifică solicitarea și revine cu detalii." : "Позвоните или напишите — команда проверит заявку и ответит с деталями." },
             { icon: Star, t: ro ? "Tehnicieni certificați" : "Сертифицированные техники", d: ro ? "Toți tehnicii noștri au certificări și experiență dovedită." : "Все наши техники имеют сертификаты и подтвержденный опыт." },
             { icon: ShieldCheck, t: ro ? "Garanție pe lucrare" : "Гарантия на работу", d: ro ? "Orice lucrare efectuată vine cu garanție scrisă." : "Каждая выполненная работа сопровождается письменной гарантией." },
           ].map(({ icon: Icon, t, d }) => (
@@ -427,7 +427,7 @@ const SERVICES = [
         </div>
         <div className="mt-10 text-center">
           <p className="text-zinc-500 text-sm mb-4">
-            {ro ? "Nu ai găsit răspunsul? Scrie-ne direct — răspundem în 15 minute." : "Не нашли ответа? Напишите нам — ответим в течение 15 минут."}
+            {ro ? "Nu ai găsit răspunsul? Scrie-ne direct și revenim după verificarea solicitării." : "Не нашли ответа? Напишите нам — ответим после проверки заявки."}
           </p>
           <a
             href={`https://wa.me/${phone}?text=${encodeURIComponent(ro ? "Bună ziua! Am o întrebare despre servicii." : "Здравствуйте! У меня вопрос об услугах.")}`}
@@ -461,7 +461,7 @@ const SERVICES = [
                 {[
                   { icon: Wifi, ro: "Verificare remote lunară a sistemului", ru: "Ежемесячная удалённая проверка системы" },
                   { icon: Zap, ro: "Actualizare automată firmware camere & NVR", ru: "Автоматическое обновление прошивки камер и NVR" },
-                  { icon: Wrench, ro: "Intervenție prioritară 4h la defecțiuni", ru: "Приоритетный выезд за 4ч при неисправности" },
+                  { icon: Wrench, ro: "Programare prioritară la defecțiuni", ru: "Приоритетная запись при неисправности" },
                   { icon: Shield, ro: "Raport lunar de stare a sistemului", ru: "Ежемесячный отчёт о состоянии системы" },
                   { icon: CheckCircle, ro: "Reducere 20% la orice reparație sau upgrade", ru: "Скидка 20% на любой ремонт или апгрейд" },
                 ].map(({ icon: Icon, ro: roLabel, ru: ruLabel }) => (
@@ -504,7 +504,7 @@ const SERVICES = [
               {ro ? "Programează vizita tehnicianului" : "Запишитесь на визит техника"}
             </h2>
             <p className="text-zinc-500 text-sm max-w-md mx-auto">
-              {ro ? "Alege serviciul, data și intervalul orar — tehnicianul confirmă în 15 minute pe WhatsApp." : "Выберите услугу, дату и время — техник подтвердит в течение 15 минут в WhatsApp."}
+              {ro ? "Alege serviciul, data și intervalul; echipa confirmă programarea pe WhatsApp." : "Выберите услугу, дату и время; команда подтвердит запись в WhatsApp."}
             </p>
           </div>
           <div className="max-w-md mx-auto">
@@ -521,7 +521,7 @@ const SERVICES = [
           </h2>
           <p className="text-white/60 mb-8 max-w-md mx-auto">
             {ro
-              ? "Contactează-ne acum și un inginer TECO te sună în 15 minute cu o ofertă personalizată."
+              ? "Trimite solicitarea și echipa TECO revine cu o ofertă după evaluarea proiectului."
               : "Свяжитесь с нами сейчас, и инженер TECO перезвонит вам в течение 15 минут с персональным предложением."}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
