@@ -30,8 +30,12 @@ export function LangProvider({ children }: { children: ReactNode }) {
 
   const homeText = useStore((s) => s.settings.homeText);
   const translate = (key: TranslationKey, vars?: Record<string, string | number>): string => {
-    const override = (homeText?.[lang] as Record<string, string> | undefined)?.[key]
-      ?? (homeText?.ro as Record<string, string> | undefined)?.[key];
+    // hero.ticker is controlled by the current storefront copy.
+    // Ignore stale Admin/D1 homeText overrides for this sales bar.
+    const override = key === "hero.ticker"
+      ? undefined
+      : (homeText?.[lang] as Record<string, string> | undefined)?.[key]
+        ?? (homeText?.ro as Record<string, string> | undefined)?.[key];
     const str: string = override
       ?? (t[lang] as Record<string, string>)[key]
       ?? (t.ro as Record<string, string>)[key]
