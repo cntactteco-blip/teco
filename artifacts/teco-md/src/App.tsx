@@ -42,6 +42,7 @@ const RequestQuote = lazy(() => import("@/pages/RequestQuote"));
 const B2B = lazy(() => import("@/pages/B2B"));
 const ServiceCity = lazy(() => import("@/pages/ServiceCity"));
 const NvrMoldova = lazy(() => import("@/pages/NvrMoldova"));
+const Camere4G = lazy(() => import("@/pages/Camere4G"));
 
 const queryClient = new QueryClient();
 
@@ -124,6 +125,7 @@ function ShopRoutes() {
         <Route path="/camere-supraveghere-moldova-din-strainatate" component={SearchLanding} />
         <Route path="/reparatii-camere-supraveghere" component={SearchLanding} />
         <Route path="/nvr-moldova" component={NvrMoldova} />
+        <Route path="/camere-4g-moldova" component={Camere4G} />
         <Route path="/contact" component={SearchLanding} />
         <Route path="/product/:slug" component={ProductDetail} />
         <Route path="/servicii" component={Services} />
