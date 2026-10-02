@@ -575,12 +575,6 @@ export function useStore<T>(selector: (s: StoreState) => T): T {
   }, [state]);
 }
 
-const IMOU_PRODUCT_IDS = new Set([25, 26, 89, 94, 95, 96, 97, 98, 100, 101, 102, 103, 104, 105, 106, 107, 111, 112, 113, 115, 117]);
-
-function normalizedBrand(row: { id?: number; brand?: string }): string {
-  return IMOU_PRODUCT_IDS.has(Number(row.id)) ? "IMOU" : (row.brand ?? "");
-}
-
 // ─── DB helpers ─────────────────────────────────────────────────────
 function dbProductToStore(row: any): StoreProduct {
   return {
@@ -588,7 +582,7 @@ function dbProductToStore(row: any): StoreProduct {
     slug: row.slug ?? undefined,
     name: row.name,
     model: row.model,
-    brand: normalizedBrand(row),
+    brand: row.brand,
     price: row.price,
     oldPrice: row.old_price,
     specs: row.specs,
