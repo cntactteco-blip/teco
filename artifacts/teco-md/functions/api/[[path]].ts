@@ -296,7 +296,7 @@ const app = new Hono<{ Bindings: Env }>().basePath("/api");
 const notifiedSessions = new Set<string>();
 const chatNotifyCounts = new Map<string, number>();
 const CHAT_NOTIFY_LIMIT = 3;
-const VISITOR_IP_DAILY_LIMIT = 1;
+const VISITOR_IP_DAILY_LIMIT = 20;
 const LEAD_PHONE_DAILY_LIMIT = 1;
 
 // ─── Settings ────────────────────────────────────────────────────────────────
