@@ -17,8 +17,8 @@ interface Message {
 const RECOMMEND_RE = /RECOMMEND:\[(\d+),\s*(\d+),\s*(\d+)\]/;
 
 const GREET: Record<string, string> = {
-  ro: "Salut! Cu ce te pot ajuta azi?",
-  ru: "Привет! Чем могу помочь?",
+  ro: "Salut! 👋 Te ajut să alegi sistemul potrivit. Cauți camere pentru casă, curte, afacere sau altă locație?",
+  ru: "Здравствуйте! 👋 Помогу подобрать подходящую систему. Камеры нужны для дома, двора, бизнеса или другого объекта?",
 };
 
 function renderMarkdown(text: string) {
