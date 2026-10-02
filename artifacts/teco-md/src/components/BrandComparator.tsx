@@ -44,7 +44,7 @@ const BRAND_VISUAL: Record<Brand, {
     filter: "brightness(0.75) contrast(1.15) hue-rotate(10deg)",
     label: "4MP | WizSense AI | TiOC", labelColor: "#4ade80",
     quality: { ro: "Excelentă (AI)", ru: "Отличное (ИИ)" },
-    risk: { ro: "AI detectează persoane & vehicule — zero alarme false", ru: "ИИ определяет людей и транспорт — ноль ложных тревог" },
+    risk: { ro: "AI poate diferenția persoane și vehicule pe modelele compatibile", ru: "ИИ различает людей и транспорт на совместимых моделях" },
     riskColor: "#4ade80",
   },
   UNIVIEW: {
@@ -87,11 +87,11 @@ const FALLBACK: Record<Brand, { id: number; name: string; price: number; specs: 
     badge: "RECOMANDAT", desc: { ro: "Raport excelent preț/calitate.",                 ru: "Отличное соотношение цена/качество." },
     urgency: { ro: "Cel mai vândut", ru: "Самый продаваемый" } },
   DAHUA:   { id: 304, name: "Camera Dahua WizSense 4MP",       price: 1890, specs: "4MP | AI SMD+ | IR 40m | TiOC",
-    badge: "POPULAR",    desc: { ro: "Detectare AI precisă — zero alarme false.",       ru: "Точное обнаружение ИИ — ноль ложных тревог." },
+    badge: "POPULAR",    desc: { ro: "Detectare AI pentru persoane și vehicule pe modelele compatibile.",       ru: "AI-обнаружение людей и транспорта на совместимых моделях." },
     urgency: { ro: "3 bucăți rămase", ru: "Осталось 3 штуки" } },
   UNIVIEW: { id: 305, name: "UNV IPC3612LB ColorHunter 2MP",   price: 900,  specs: "2MP | ColorHunter 0.005Lux | PoE",
     badge: "BEST SELLER", desc: { ro: "Color noapte la 0.005 Lux.",                    ru: "Цветная картинка ночью при 0.005 Лк." },
-    urgency: { ro: "Stoc limitat", ru: "Ограниченный запас" } },
+    urgency: { ro: "Verifică disponibilitatea", ru: "Проверьте наличие" } },
   TIANDY:  { id: 306, name: "Tiandy TC-C34XN 4MP S+265",       price: 990,  specs: "4MP | S+265 | IR 30m | IP66",
     badge: "PREMIUM",    desc: { ro: "Robustă și fiabilă la condiții extreme.",         ru: "Прочная и надёжная в экстремальных условиях." },
     urgency: { ro: "Instalare gratuită", ru: "Монтаж бесплатно" } },
@@ -150,7 +150,7 @@ export default function BrandComparator() {
             </span>
             <div className="flex items-center gap-1.5 text-xs text-zinc-500">
               <TrendingUp className="w-3.5 h-3.5 text-[#FF4F00]" />
-              <span><strong className="text-[#09090B]">847</strong> {ru ? "клиентов выбрали камеру после сравнения" : "clienți au ales camera după comparație"}</span>
+              <span>{ru ? "Сравните характеристики перед выбором" : "Compară caracteristicile înainte de alegere"}</span>
             </div>
           </div>
           <h2 className="font-black text-2xl md:text-3xl text-[#09090B] tracking-tight">
