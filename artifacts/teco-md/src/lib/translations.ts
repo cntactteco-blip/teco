@@ -14,9 +14,9 @@ const t = {
     "nav.results_found": "rezultate pentru",
 
     // ── Announcement Bar ───────────────────────────────────────────
-    "ann.free_delivery": "Livrare în Moldova — verifică opțiunile pentru adresa ta",
-    "ann.limited_stock": "Produsele disponibile și stocul actual sunt afișate în catalog",
-    "ann.free_install": "Instalare profesională disponibilă la solicitare",
+    "ann.free_delivery": "🔒 Nu cumpăra camere la întâmplare — îți recomandăm sistemul potrivit pentru casa sau afacerea ta",
+    "ann.limited_stock": "✓ 847 instalări realizate — experiență reală, de la alegerea camerelor până la configurarea pe telefon",
+    "ann.free_install": "📞 Spune-ne ce vrei să protejezi — primești o recomandare clară înainte să cheltui bani",
 
     // ── Hero ───────────────────────────────────────────────────────
     "hero.badge": "Sisteme de securitate pentru casă și afacere",
@@ -34,7 +34,7 @@ const t = {
     "hero.badge_install": "Montaj disponibil la solicitare",
     "hero.limited_offer": "Produs recomandat",
     "hero.add": "Adaugă",
-    "hero.ticker": "Camere de supraveghere • Kituri complete • Sisteme de alarmă • Instalare profesională • Diagnosticare și reparații • Consultanță pentru alegerea sistemului",
+    "hero.ticker": "Protejează ce contează • Vezi proprietatea de oriunde • Alege corect din prima • Instalare profesională • Suport după instalare • Soluții pentru casă și afacere",
 
     // ── Home sections ──────────────────────────────────────────────
     "home.trust.installs": "Instalări",
@@ -263,9 +263,9 @@ const t = {
     "nav.results_found": "результатов для",
 
     // ── Announcement Bar ───────────────────────────────────────────
-    "ann.free_delivery": "Доставка по Молдове — проверьте варианты для вашего адреса",
-    "ann.limited_stock": "Доступные товары и актуальные остатки указаны в каталоге",
-    "ann.free_install": "Профессиональная установка доступна по запросу",
+    "ann.free_delivery": "🔒 Не покупайте камеры наугад — подберём систему именно для вашего дома или бизнеса",
+    "ann.limited_stock": "✓ 847 выполненных установок — реальный опыт от выбора камер до настройки на телефоне",
+    "ann.free_install": "📞 Расскажите, что хотите защитить — получите понятную рекомендацию до того, как потратите деньги",
 
     // ── Hero ───────────────────────────────────────────────────────
     "hero.badge": "Системы безопасности для дома и бизнеса",
@@ -283,7 +283,7 @@ const t = {
     "hero.badge_install": "Установка по запросу",
     "hero.limited_offer": "Рекомендуемый товар",
     "hero.add": "Добавить",
-    "hero.ticker": "Камеры видеонаблюдения • Готовые комплекты • Системы сигнализации • Профессиональная установка • Диагностика и ремонт • Помощь с выбором системы",
+    "hero.ticker": "Защитите то, что важно • Смотрите объект из любой точки • Выберите правильно с первого раза • Профессиональная установка • Поддержка после монтажа • Решения для дома и бизнеса",
 
     // ── Home sections ──────────────────────────────────────────────
     "home.trust.installs": "Установок",
