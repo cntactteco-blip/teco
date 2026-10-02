@@ -332,8 +332,8 @@ export default function RequestQuote() {
               </h2>
               <p className="text-zinc-500 mb-2">
                 {ro
-                  ? `Mulțumim, ${name.split(" ")[0]}! Te contactăm în cel mult 30 de minute.`
-                  : `Спасибо, ${name.split(" ")[0]}! Свяжемся с вами в течение 30 минут.`}
+                  ? `Mulțumim, ${name.split(" ")[0]}! Cererea a fost înregistrată și revenim după verificare.`
+                  : `Спасибо, ${name.split(" ")[0]}! Заявка зарегистрирована; мы свяжемся после проверки.`}
               </p>
               <p className="text-sm text-zinc-400 mb-8">
                 {repair ? (ro ? "Vom discuta problema și detaliile necesare pentru evaluarea sistemului existent." : "Обсудим неисправность и сведения, необходимые для оценки существующей системы.") : (ro
