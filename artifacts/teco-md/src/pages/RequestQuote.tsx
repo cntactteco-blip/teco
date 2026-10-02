@@ -113,7 +113,7 @@ export default function RequestQuote() {
                 {repair ? (ro ? "Solicită diagnosticare" : "Запросить диагностику") : (ro ? "Solicită Ofertă" : "Запросить Предложение")}
               </h1>
               <p className="text-zinc-500 text-sm mt-0.5">
-                {repair ? (ro ? "Cerere fără obligații · Costul intervenției se confirmă după evaluare" : "Запрос без обязательств · Стоимость работ согласуется после оценки") : (ro ? "Gratuit · Fără obligații · Răspuns în 30 min" : "Бесплатно · Без обязательств · Ответ за 30 мин")}
+                {repair ? (ro ? "Cerere fără obligații · Costul intervenției se confirmă după evaluare" : "Запрос без обязательств · Стоимость работ согласуется после оценки") : (ro ? "Gratuit · Fără obligații · Răspuns după verificarea cererii" : "Бесплатно · Без обязательств · Ответ после проверки заявки")}
               </p>
             </div>
           </div>
