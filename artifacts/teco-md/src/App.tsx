@@ -60,15 +60,11 @@ function SessionTracker() {
   const notifiedRef = useRef(false);
 
   const syncSession = useCallback(async (notifyVisitor: boolean) => {
-    if (!isAnalyticsAllowed()) return;
     const payload = getSessionPayload();
-    const requests: Promise<Response>[] = [
-      fetch("/api/sessions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      }),
-    ];
+    const requests: Promise<Response>[] = [];
+
+    // Telegram visitor alerts are an operational site notification and must not
+    // silently disappear when a visitor has not opted into analytics cookies.
     if (notifyVisitor && !notifiedRef.current) {
       notifiedRef.current = true;
       requests.push(fetch("/api/notify/visitor", {
@@ -77,6 +73,16 @@ function SessionTracker() {
         body: JSON.stringify({ session: payload }),
       }));
     }
+
+    // Persistent analytics/session storage remains consent-gated.
+    if (isAnalyticsAllowed()) {
+      requests.push(fetch("/api/sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }));
+    }
+
     await Promise.allSettled(requests);
   }, []);
 
