@@ -12,6 +12,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(__dirname, "../src/lib/catalog-snapshot.json");
 const IMG_DIR = path.join(__dirname, "../public/product-images");
 const DB_NAME = "teco-db";
+const IMOU_PRODUCT_IDS = new Set([25, 26, 89, 94, 95, 96, 97, 98, 100, 101, 102, 103, 104, 105, 106, 107, 111, 112, 113, 115, 117]);
+
+function normalizeKnownProductData(product) {
+  return IMOU_PRODUCT_IDS.has(Number(product.id)) ? { ...product, brand: "IMOU" } : product;
+}
 
 function readExistingSnapshot() {
   if (!existsSync(OUT)) return null;
@@ -91,7 +96,7 @@ function extractBase64Images(products) {
 try {
   const existingSnapshot = readExistingSnapshot();
   const { products: rawProducts, source } = await readProducts();
-  const prods = rawProducts.map((p) => ({
+  const prods = rawProducts.map(normalizeKnownProductData).map((p) => ({
     ...p,
     images: typeof p.images === "string" ? JSON.parse(p.images || "[]") : (p.images ?? []),
     in_stock: p.in_stock === 1 || p.in_stock === true,
