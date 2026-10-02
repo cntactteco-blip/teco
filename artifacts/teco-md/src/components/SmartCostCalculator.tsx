@@ -61,6 +61,8 @@ export default function SmartCostCalculator() {
   const [step, setStep] = useState(1);
   const [selections, setSelections] = useState({ objective: "", cameras: "", storage: "", installation: "" });
   const [formData, setFormData] = useState({ name: "", phone: "" });
+  const [leadSubmitting, setLeadSubmitting] = useState(false);
+  const [leadError, setLeadError] = useState("");
   const [calcConsent, setCalcConsent] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -114,15 +116,27 @@ export default function SmartCostCalculator() {
     if (key !== "installation") setTimeout(() => setStep((prev) => prev + 1), 300);
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.phone.trim()) { alert(s("Introduceți numărul de telefon", "Введите номер телефона")); return; }
-    storeActions.addLead({
-      name: formData.name,
-      phone: formData.phone,
-      source: s("Calculator Cost", "Калькулятор стоимости"),
-      selections,
-    });
+    if (leadSubmitting) return;
+    if (formData.phone.replace(/\D/g, "").length < 8) {
+      setLeadError(s("Introdu un număr de telefon valid.", "Введите корректный номер телефона."));
+      return;
+    }
+    setLeadError("");
+    setLeadSubmitting(true);
+    try {
+      await storeActions.addLead({
+        name: formData.name.trim(),
+        phone: formData.phone.trim(),
+        source: "Calculator Cost",
+        selections,
+      }, { requireSaved: true });
+    } catch {
+      setLeadError(s("Cererea nu a fost salvată. Încearcă din nou sau sună-ne.", "Заявка не сохранилась. Повторите попытку или позвоните нам."));
+      setLeadSubmitting(false);
+      return;
+    }
 
     const { equipmentCost, installCost, totalCost } = getCalculations();
     const session = getSessionPayload();
@@ -142,6 +156,7 @@ export default function SmartCostCalculator() {
     }).catch(() => {});
 
     setStep(7);
+    setLeadSubmitting(false);
   };
 
   const extractCameraCount = (p: { name: string; specs: string }): number | null => {
@@ -366,10 +381,11 @@ export default function SmartCostCalculator() {
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#FF4F00]" data-testid="calc-form-phone" />
                 <ConsentCheckbox checked={calcConsent} onChange={setCalcConsent} dark />
-                <button type="submit" disabled={!calcConsent}
+                {leadError && <p role="alert" className="text-sm font-semibold text-red-300">{leadError}</p>}
+                <button type="submit" disabled={!calcConsent || leadSubmitting}
                   className="w-full bg-[#FF4F00] text-white font-bold py-4 rounded-xl hover:bg-orange-600 active:scale-95 transition-all mt-2 shadow-[0_4px_14px_rgba(255,79,0,0.4)] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
                   data-testid="calc-form-submit">
-                  {s("Deblochează Prețul + Obține Voucherul", "Разблокировать цену + получить ваучер")}
+                  {leadSubmitting ? s("Se trimite...", "Отправка...") : s("Deblochează Prețul + Obține Voucherul", "Разблокировать цену + получить ваучер")}
                 </button>
               </form>
             </div>

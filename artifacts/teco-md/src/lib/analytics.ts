@@ -77,7 +77,8 @@ export function initializeAnalytics() {
       if (!link) return;
       const href = link.getAttribute("href") || "";
       const method = href.startsWith("tel:") ? "phone"
-        : /^https?:\/\/(?:wa\.me|api\.whatsapp\.com|web\.whatsapp\.com)\//i.test(href) ? "whatsapp" : null;
+        : /^https?:\/\/(?:wa\.me|api\.whatsapp\.com|web\.whatsapp\.com)\//i.test(href) ? "whatsapp"
+        : href.startsWith("viber:") ? "viber" : null;
       if (!method) return;
       // A contact click is an intent signal, not a confirmed lead or sale.
       gtag("event", "contact_click", { contact_method: method, page_path: window.location.pathname });
@@ -149,7 +150,11 @@ export function trackPurchase(orderId: string, total: number, items: Array<{ id:
 }
 
 export function trackLead(source: string) {
-  gtag("event", "generate_lead", { event_category: "lead", event_label: source });
+  gtag("event", "generate_lead", { lead_source: source, page_path: window.location.pathname });
+  const funnelEvent = source === "B2B" ? "b2b_lead"
+    : source === "AppointmentBooker" ? "appointment_request"
+    : source === "Calculator Cost" ? "calculator_lead" : null;
+  if (funnelEvent) gtag("event", funnelEvent, { lead_source: source, page_path: window.location.pathname });
   fbq("track", "Lead", { content_name: source });
 }
 
