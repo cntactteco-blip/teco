@@ -24,6 +24,7 @@ export default function RemotePropertyHelp({ repair = false }: { repair?: boolea
     <div className="mt-6 flex flex-wrap gap-3">
       <a href={`https://wa.me/${phone}?text=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-[#FF4F00] px-5 py-3 font-bold text-white"><MessageCircle size={18} />{ro ? "Discută proiectul pe WhatsApp" : "Обсудить проект в WhatsApp"}</a>
       {!repair && <Link href="/oferta" className="inline-flex items-center rounded-xl border border-zinc-200 px-5 py-3 font-semibold text-zinc-950">{ro ? "Trimite o cerere de ofertă" : "Запросить предложение"}</Link>}
+      <Link href="/camere-supraveghere-moldova-din-strainatate" className="inline-flex items-center rounded-xl border border-zinc-200 px-5 py-3 font-semibold text-zinc-950">{ro ? "Montaj și reparații din străinătate" : "Монтаж и ремонт из-за границы"}</Link>
     </div>
   </section>;
 }
