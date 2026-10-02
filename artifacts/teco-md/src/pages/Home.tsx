@@ -1,6 +1,6 @@
 import { useState, useEffect, Suspense, lazy } from "react";
 import { Link } from "wouter";
-import { Camera, Shield, Server, Zap, Truck, Phone, Award, Star, CheckCircle2, ChevronDown } from "lucide-react";
+import { Camera, Shield, Server, Zap, Truck, Phone, Award, Star, CheckCircle2, ChevronDown, Wrench, Settings2 } from "lucide-react";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { AppointmentBooker } from "@/components/AppointmentBooker";
 import BundleBuilder from "@/components/BundleBuilder";
@@ -331,20 +331,72 @@ export default function Home() {
 
       </section>
 
-      {/* 5. TRUST STRIP */}
-      <section className="bg-white border-y border-zinc-100 py-5 md:py-10">
+      {/* 5. QUICK SHOP — categories first, services second */}
+      <section className="bg-white border-y border-zinc-100 py-7 md:py-10">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
-          <div className="grid grid-cols-2 gap-y-4 md:grid-cols-4 md:divide-x md:divide-zinc-100">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl md:text-2xl font-black text-zinc-950 tracking-tight">
+              {lang === "ro" ? "Categorii populare" : "Популярные категории"}
+            </h2>
+            <Link href="/produse" className="text-[#FF4F00] text-xs md:text-sm font-bold">
+              {lang === "ro" ? "Vezi toate →" : "Смотреть все →"}
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {categories
+              .filter((cat) => storeProducts.some((product) => product.category === cat.slug && product.inStock !== false))
+              .slice(0, 4)
+              .map((cat) => {
+                const catProducts = storeProducts.filter((p) => p.category === cat.slug && p.inStock !== false);
+                const catImg = cat.image || catProducts[0]?.imageUrl;
+                return (
+                  <Link key={cat.id} href={`/produse?cat=${cat.slug}`}
+                    className="group min-h-[150px] rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm hover:shadow-md hover:border-orange-200 transition-all overflow-hidden">
+                    <div className="h-20 md:h-24 flex items-center justify-center mb-2">
+                      {catImg ? (
+                        <img src={catImg} alt={cat.label} loading="lazy" className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105" />
+                      ) : (
+                        <Camera className="w-10 h-10 text-[#FF4F00]" />
+                      )}
+                    </div>
+                    <div className="flex items-end justify-between gap-2">
+                      <span className="font-black text-sm md:text-base leading-tight text-zinc-950">
+                        {lang === "ro" ? cat.label : (cat.labelRu || cat.label)}
+                      </span>
+                      <span className="text-[#FF4F00] font-black text-lg">→</span>
+                    </div>
+                  </Link>
+                );
+              })}
+          </div>
+
+          <div className="flex items-center justify-between mt-8 mb-4">
+            <h2 className="text-xl md:text-2xl font-black text-zinc-950 tracking-tight">
+              {lang === "ro" ? "Serviciile noastre" : "Наши услуги"}
+            </h2>
+            <Link href="/servicii" className="text-[#FF4F00] text-xs md:text-sm font-bold">
+              {lang === "ro" ? "Vezi toate →" : "Смотреть все →"}
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { num: lang === "ro" ? "Montaj" : "Монтаж", label: lang === "ro" ? "disponibil la solicitare" : "доступен по запросу" },
-              { num: lang === "ro" ? "Consultanță" : "Консультация", label: lang === "ro" ? "pentru alegerea sistemului" : "по выбору системы" },
-              { num: lang === "ro" ? "Reparații" : "Ремонт", label: lang === "ro" ? "și diagnosticare" : "и диагностика" },
-              { num: lang === "ro" ? "Garanție" : "Гарантия", label: lang === "ro" ? "pentru echipamente" : "на оборудование" },
-            ].map(({ num, label }) => (
-              <div key={label} className="flex min-w-0 flex-col items-center px-2 py-2 text-center md:py-4 gap-1">
-                <span className="text-[#FF4F00] font-black text-lg sm:text-xl md:text-4xl leading-tight tracking-tight break-words">{num}</span>
-                <span className="text-zinc-400 text-[10px] md:text-sm uppercase tracking-widest break-words">{label}</span>
-              </div>
+              { href: "/montare-camere-supraveghere/", Icon: Camera, ro: "Instalare profesională", ru: "Профессиональный монтаж" },
+              { href: "/oferta/", Icon: Settings2, ro: "Configurare sisteme", ru: "Настройка систем" },
+              { href: "/reparatii-camere-supraveghere/", Icon: Wrench, ro: "Diagnosticare și reparații", ru: "Диагностика и ремонт" },
+              { href: "/servicii/", Icon: Shield, ro: "Mentenanță și suport", ru: "Обслуживание и поддержка" },
+            ].map(({ href, Icon, ro, ru }) => (
+              <Link key={href + ro} href={href}
+                className="group min-h-[116px] rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm hover:shadow-md hover:border-orange-200 transition-all flex flex-col justify-between">
+                <span className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
+                  <Icon className="w-5 h-5 text-[#FF4F00]" />
+                </span>
+                <div className="flex items-end justify-between gap-2 mt-3">
+                  <span className="font-black text-sm md:text-base leading-tight text-zinc-950">{lang === "ro" ? ro : ru}</span>
+                  <span className="text-[#FF4F00] font-black text-lg">→</span>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
