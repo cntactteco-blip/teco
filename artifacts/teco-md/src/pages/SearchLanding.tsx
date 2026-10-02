@@ -201,7 +201,7 @@ export default function SearchLanding() {
         description: copy.description,
         url: canonicalUrl(path),
         serviceType: "Security Camera Installation and Repair",
-        provider: { "@type": "Organization", "@id": "https://teco.md/#business", name: "TECO.md" },
+        provider: { "@type": "Organization", "@id": "https://teco.md/#business", name: "TECO.md", url: "https://teco.md/", logo: "https://teco.md/logo.png" },
         areaServed: { "@type": "Country", name: "Moldova" },
       },
       schemas.faq(DIASPORA_FAQS[lang]),
