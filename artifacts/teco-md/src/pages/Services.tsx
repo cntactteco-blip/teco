@@ -82,8 +82,8 @@ const SERVICES = [
     titleRu: "Ремонт Оборудования",
     desc: "Reparăm camere IP, NVR-uri, DVR-uri și sisteme de alarmă. Folosim piese originale sau compatibile de calitate și oferim garanție pe reparațiile efectuate.",
     descRu: "Ремонтируем IP-камеры, NVR, DVR и системы охраны. Используем оригинальные или качественные совместимые детали. Предоставляем гарантию на выполненные ремонты.",
-    features: ["Reparație camere IP și NVR/DVR", "Înlocuire piese defecte", "Garanție 6 luni pe reparație", "Evaluare gratuită prealabilă"],
-    featuresRu: ["Ремонт IP-камер, NVR/DVR", "Замена неисправных деталей", "Гарантия 6 месяцев на ремонт", "Бесплатная предварительная оценка"],
+    features: ["Reparație camere IP și NVR/DVR", "Înlocuire piese defecte", "Condiții de garanție confirmate înainte de lucrare", "Evaluare prealabilă"],
+    featuresRu: ["Ремонт IP-камер, NVR/DVR", "Замена неисправных деталей", "Условия гарантии подтверждаются до начала работ", "Предварительная оценка"],
     price: "de la 400 MDL",
     priceRu: "от 400 MDL",
     badge: null,
@@ -142,11 +142,11 @@ const SERVICES = [
     { q: "Care este diferența dintre diagnosticare și reparație?", a: "Diagnosticarea este procesul de identificare a defecțiunii — costă de la 350 MDL și include deplasarea, inspecția vizuală și testarea componentelor. Reparația este intervenția propriu-zisă. Dacă nu se poate repara, nu plătești pentru reparație — doar diagnosticarea." },
   ];
   const FAQ_RU = [
-    { q: "Сколько стоит ремонт камеры видеонаблюдения в Молдове?", a: "Стоимость ремонта зависит от типа неисправности. Диагностика на месте стоит от 350 MDL. Сам ремонт (замена матрицы, объектива, ИК-модуля, блока питания) начинается от 150 MDL. Предлагаем бесплатную оценку перед подтверждением работы." },
+    { q: "Сколько стоит ремонт камеры видеонаблюдения в Молдове?", a: "Стоимость ремонта зависит от типа неисправности. Диагностика на месте стоит от 350 MDL за выезд. Сам ремонт начинается от 400 MDL в зависимости от неисправности и необходимых деталей. Стоимость подтверждается до начала работ." },
     { q: "Сколько времени занимает установка системы видеонаблюдения?", a: "Система на 4–8 камер устанавливается за 1 рабочий день. Большие системы (16+ камер, структурированный кабель, NVR) могут занять 2–3 дня. Время выезда подтверждается с учётом населённого пункта и доступности." },
     { q: "Вы ремонтируете старые системы видеонаблюдения — DVR, аналоговые камеры?", a: "Да, ремонтируем и диагностируем любые системы: IP, аналоговые HDCVI/AHD/TVI, гибридные. Имеем запчасти для популярных брендов: Dahua, Hikvision, Uniview, TP-Link Tapo, Reolink." },
     { q: "Вы устанавливаете системы видеонаблюдения за пределами Кишинева?", a: "Да, работаем по всей Молдове: Бельцы, Оргеев, Унгены, Кагул, Сорока, Тирасполь, Бендеры и окрестности. Стоимость выезда рассчитывается в зависимости от расстояния и сообщается заранее." },
-    { q: "Какую гарантию вы даёте на монтажные работы?", a: "Предоставляем 12 месяцев гарантии на монтажные работы и 6 месяцев на ремонт. Гарантия покрывает дефекты монтажа, электрические соединения и настройку системы. Гарантия оборудования зависит от модели и производителя." },
+    { q: "Какую гарантию вы даёте на монтажные работы?", a: "Условия гарантии на монтаж, ремонт и оборудование указываются в предложении до подтверждения и зависят от выполненных работ, деталей и выбранного оборудования." },
     { q: "Камера не показывает изображение или NVR не записывает — что делать?", a: "Позвоните или напишите в WhatsApp — инженер Teco.md ответит в течение 15 минут. Часто проблему можно решить удаленно (сброс настроек, перенастройка приложения). Если нужен выезд — отправим техника в тот же день." },
     { q: "Устанавливаете ли системы видеонаблюдения для бизнеса?", a: "Да, это наша специализация. Проектируем и устанавливаем комплексные системы для магазинов, складов, офисов, парковок и промышленных объектов. Включает анализ рисков, схему расстановки и интеграцию с охранной сигнализацией." },
     { q: "Что включает установка под ключ?", a: "Монтаж под ключ включает: доставку оборудования, прокладку кабеля и монтаж камер, настройку NVR/DVR, настройку удалённого доступа со смартфона, полное тестирование и обучение пользователя. Скрытых платежей нет." },
@@ -164,7 +164,7 @@ const SERVICES = [
 
   const jsonLd = [
     schemas.service({ name: "Montaj Camere de Supraveghere", description: "Instalare profesională camere IP, NVR și kituri complete în Moldova. Devizul se confirmă înainte de lucrare.", url: "https://teco.md/servicii" }),
-    schemas.service({ name: "Diagnosticare si Reparatii Sisteme Supraveghere", description: "Reparatii camere IP, NVR, DVR, sisteme analogice si alarme. Diagnosticare on-site de la 350 MDL. Garantie 6 luni.", url: "https://teco.md/servicii", price: "350" }),
+    schemas.service({ name: "Diagnosticare si Reparatii Sisteme Supraveghere", description: "Reparatii camere IP, NVR, DVR, sisteme analogice si alarme. Diagnosticare on-site de la 350 MDL/vizita. Reparatii de la 400 MDL; conditiile de garantie se confirma in oferta.", url: "https://teco.md/servicii", price: "350" }),
     schemas.repairService({ name: "Reparare Camera Supraveghere Moldova", description: "Reparatii camere IP si analogice in Chisinau si Moldova. Diagnosticare si cost confirmate inainte de lucrare.", price: "400" }),
     schemas.howTo({
       name: ro ? "Cum se instalează un sistem de supraveghere în Moldova" : "Как установить систему видеонаблюдения в Молдове",
@@ -183,7 +183,7 @@ const SERVICES = [
         { name: "Выбор оборудования", text: "На основе анализа рекомендуем подходящие камеры (WiFi, PoE, 4G), тип NVR/DVR и необходимые аксессуары. Детальное предложение с фиксированными ценами." },
         { name: "Монтаж и прокладка кабеля", text: "Техник Teco.md приедет к вам и выполнит физический монтаж камер, скрытую прокладку кабеля, установку NVR и все подключения." },
         { name: "Настройка системы", text: "Настраиваем NVR, автоматическую запись, датчики движения и удалённый доступ со смартфона (iOS/Android)." },
-        { name: "Тестирование и сдача", text: "Полностью тестируем систему, проверяем все камеры, передаём готовую систему и обучаем пользователя. Гарантия 12 месяцев на работу." },
+        { name: "Тестирование и сдача", text: "Полностью тестируем систему, проверяем все камеры, передаём готовую систему и обучаем пользователя. Условия гарантии подтверждаются в предложении." },
       ],
     }),
     schemas.faq(FAQ.map((x) => ({ question: x.q, answer: x.a }))),
