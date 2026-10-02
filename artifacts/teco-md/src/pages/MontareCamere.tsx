@@ -33,11 +33,11 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 }
 
 const PRICES = [
-  { cameras: 2, label: "2 Camere", price: "de la 1,400".replace(",", ".") + " MDL", priceNum: 1400, note: "Casă mică, apartament" },
-  { cameras: 4, label: "4 Camere", price: "de la 2,700".replace(",", ".") + " MDL", priceNum: 2700, note: "Casă standard, vilă" },
-  { cameras: 6, label: "6 Camere", price: "de la 4,000".replace(",", ".") + " MDL", priceNum: 4000, note: "Casă mare, curte extinsă", popular: true },
-  { cameras: 8, label: "8 Camere", price: "de la 5,300".replace(",", ".") + " MDL", priceNum: 5300, note: "Afacere mică, depozit" },
-  { cameras: 16, label: "16 Camere", price: "de la 10,500".replace(",", ".") + " MDL", priceNum: 10500, note: "Afacere mare, complex" },
+  { cameras: 2, label: "2 Camere", price: "de la 1.800 MDL", priceNum: 1800, note: "Casă mică, apartament" },
+  { cameras: 4, label: "4 Camere", price: "de la 3.600 MDL", priceNum: 3600, note: "Casă standard, vilă" },
+  { cameras: 6, label: "6 Camere", price: "de la 5.400 MDL", priceNum: 5400, note: "Casă mare, curte extinsă", popular: true },
+  { cameras: 8, label: "8 Camere", price: "de la 7.200 MDL", priceNum: 7200, note: "Afacere mică, depozit" },
+  { cameras: 16, label: "16 Camere", price: "de la 14.400 MDL", priceNum: 14400, note: "Afacere mare, complex" },
 ];
 
 const STEPS = [
@@ -65,7 +65,7 @@ const FEATURES = [
 const FAQS = [
   {
     q: "Cât costă montarea camerelor de supraveghere în Moldova?",
-    a: "Prețul de montare a camerelor de supraveghere în Moldova este 750 MDL pentru prima cameră și 650 MDL pentru fiecare cameră suplimentară, incluzând cablare, fixare și configurare. Doar montajul pentru 4 camere costă 2.700 MDL. Contactați-ne pentru o ofertă personalizată gratuită.",
+    a: "Prețul de bază pentru montarea unei camere de supraveghere este de la 900 MDL/cameră. Pentru 4 camere, montajul pornește de la 3.600 MDL. Traseele dificile, lucrul la înălțime, materialele suplimentare și deplasarea în afara Chișinăului se confirmă separat în ofertă.",
   },
   {
     q: "Cât durează instalarea unui sistem de supraveghere?",
@@ -101,7 +101,7 @@ const FAQS = [
   },
   {
     q: "Instalați și sisteme de alarmă?",
-    a: "Da, instalăm sisteme de alarmă wireless Ajax — cele mai bune din Moldova. Includ detectoare de mișcare, senzori de ușă/fereastră, sirenă și monitorizare 24/7 prin aplicație.",
+    a: "Da, instalăm sisteme de alarmă wireless Ajax, configurate în funcție de obiect. Includ detectoare de mișcare, senzori de ușă/fereastră, sirenă și monitorizare 24/7 prin aplicație.",
   },
   {
     q: "Cablurile vor fi vizibile?",
@@ -109,17 +109,17 @@ const FAQS = [
   },
   {
     q: "Pot monta camere și în exterior, rezistente la ploaie?",
-    a: "Toate camerele de exterior pe care le montăm au protecție IP66 sau IP67 — rezistă la ploaie, zăpadă, praf și temperaturi de la -30°C la +60°C.",
+    a: "Pentru exterior alegem modele cu grad de protecție adecvat, de regulă IP66/IP67; limitele exacte de temperatură și rezistență depind de modelul ales.",
   },
 ];
 
 export default function MontareCamere() {
   const { lang } = useLang();
   const sp = useStore(s => s.settings.servicePrices);
-  const montajPrice = sp?.montaj?.replace(/^de la /i, "") || "750 MDL/cameră";
+  const montajPrice = sp?.montaj?.replace(/^de la /i, "") || "900 MDL/cameră";
 
-  const title = "Instalare Camere Supraveghere: Preț de la 750 MDL | TECO.md";
-  const description = "Montaj camere de supraveghere în Moldova, de la 750 MDL/cameră. Vezi ce include instalarea și cere un deviz adaptat locației tale.";
+  const title = "Instalare Camere Supraveghere: Preț de la 900 MDL | TECO.md";
+  const description = "Montaj camere de supraveghere în Moldova, de la 900 MDL/cameră. Vezi ce include instalarea și cere un deviz adaptat locației tale.";
   const keywords = "montare camere supraveghere moldova, instalare sistem supraveghere chisinau, montaj camere ip wifi, instalare nvr dahua uniview, montare camere exterior, pret montaj camera supraveghere moldova, instalare sisteme securitate chisinau, teco.md montaj";
 
   const jsonLd = [
