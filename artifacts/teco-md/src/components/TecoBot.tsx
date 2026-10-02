@@ -58,6 +58,7 @@ export function TecoBot() {
   const [streaming, setStreaming] = useState(false);
   const [leadCaptured, setLeadCaptured] = useState(false);
   const [unread, setUnread] = useState(0);
+  const [launcherHint, setLauncherHint] = useState(false);
   const [vpHeight, setVpHeight] = useState<number>(() => typeof window === "undefined" ? 640 : window.visualViewport?.height ?? window.innerHeight);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -82,6 +83,14 @@ export function TecoBot() {
     if (open) { document.body.style.overflow = "hidden"; }
     else { document.body.style.overflow = ""; }
     return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
+  // Discreet proactive help: reveal a short hint once, then retreat to the small launcher.
+  useEffect(() => {
+    if (open) { setLauncherHint(false); return; }
+    const show = window.setTimeout(() => setLauncherHint(true), 5500);
+    const hide = window.setTimeout(() => setLauncherHint(false), 12000);
+    return () => { window.clearTimeout(show); window.clearTimeout(hide); };
   }, [open]);
 
   useEffect(() => {
@@ -194,17 +203,28 @@ export function TecoBot() {
 
   return (
     <>
-      <button
-        onClick={() => setOpen((v) => !v)}
-        aria-label="TecoBot AI"
-        className="fixed bottom-[4.5rem] left-3 md:bottom-6 md:left-6 z-40 flex h-11 w-11 items-center justify-center bg-gradient-to-br from-[#FF4F00] to-orange-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 md:h-auto md:w-auto md:gap-2 md:px-4 md:py-3"
-      >
-        <Bot className="w-5 h-5 flex-shrink-0" />
-        <span className="hidden text-sm font-bold md:inline">TecoBot AI</span>
-        {unread > 0 && (
-          <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">{unread}</span>
+      <div className="fixed bottom-[4.5rem] left-3 md:bottom-6 md:left-6 z-40 flex items-center gap-2">
+        {launcherHint && !open && (
+          <button
+            onClick={() => { setLauncherHint(false); setOpen(true); }}
+            className="max-w-[190px] rounded-2xl rounded-bl-sm border border-zinc-200 bg-white px-3 py-2 text-left shadow-lg animate-in fade-in slide-in-from-left-2 duration-300"
+          >
+            <span className="block text-[11px] font-black text-zinc-900">{lang === "ru" ? "Нужна помощь?" : "Ai nevoie de ajutor?"}</span>
+            <span className="block text-[10px] leading-tight text-zinc-500 mt-0.5">{lang === "ru" ? "Подберу камеру или систему." : "Îți recomand camera sau sistemul potrivit."}</span>
+          </button>
         )}
-      </button>
+        <button
+          onClick={() => { setLauncherHint(false); setOpen((v) => !v); }}
+          aria-label={lang === "ru" ? "Консультант TECO" : "Consultant TECO"}
+          className="relative flex h-11 w-11 items-center justify-center bg-gradient-to-br from-[#FF4F00] to-orange-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 md:h-auto md:w-auto md:gap-2 md:px-4 md:py-3"
+        >
+          <Bot className="w-5 h-5 flex-shrink-0" />
+          <span className="hidden text-sm font-bold md:inline">{lang === "ru" ? "Консультант TECO" : "Consultant TECO"}</span>
+          {unread > 0 && (
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">{unread}</span>
+          )}
+        </button>
+      </div>
 
       {open && (
         <div
@@ -221,7 +241,7 @@ export function TecoBot() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-white font-bold text-sm">TecoBot AI</span>
+                  <span className="text-white font-bold text-sm">{lang === "ru" ? "Консультант TECO" : "Consultant TECO"}</span>
                   <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
                 </div>
                 <div className="flex items-center gap-1">
