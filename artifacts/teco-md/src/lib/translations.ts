@@ -34,7 +34,7 @@ const t = {
     "hero.badge_install": "Montaj disponibil la solicitare",
     "hero.limited_offer": "Produs recomandat",
     "hero.add": "Adaugă",
-    "hero.ticker": "Livrare în toată Moldova • Plată la livrare • Garanție conform produsului • 847 instalări realizate • Montaj profesional de la 900 MDL/cameră • Configurare pe telefon • Camere WiFi, PoE și 4G • Diagnostic și reparații",
+    "hero.ticker": "Kituri complete de supraveghere • Camere exterior zi/noapte • Camere 4G pentru locații fără internet fix • Camere WiFi și PoE • NVR și stocare video • Video-interfoane și control acces • Sisteme de alarmă • Soluții pentru casă, curte și afacere",
 
     // ── Home sections ──────────────────────────────────────────────
     "home.trust.installs": "Instalări",
@@ -283,7 +283,7 @@ const t = {
     "hero.badge_install": "Установка по запросу",
     "hero.limited_offer": "Рекомендуемый товар",
     "hero.add": "Добавить",
-    "hero.ticker": "Доставка по всей Молдове • Оплата при получении • Гарантия согласно товару • 847 выполненных установок • Профессиональный монтаж от 900 MDL/камера • Настройка на телефоне • WiFi, PoE и 4G камеры • Диагностика и ремонт",
+    "hero.ticker": "Готовые комплекты видеонаблюдения • Уличные камеры день/ночь • 4G камеры для объектов без проводного интернета • WiFi и PoE камеры • NVR и хранение записей • Видеодомофоны и контроль доступа • Системы сигнализации • Решения для дома, двора и бизнеса",
 
     // ── Home sections ──────────────────────────────────────────────
     "home.trust.installs": "Установок",
