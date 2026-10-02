@@ -14,9 +14,9 @@ const t = {
     "nav.results_found": "rezultate pentru",
 
     // ── Announcement Bar ───────────────────────────────────────────
-    "ann.free_delivery": "🔒 Nu cumpăra camere la întâmplare — îți recomandăm sistemul potrivit pentru casa sau afacerea ta",
-    "ann.limited_stock": "✓ 847 instalări realizate — experiență reală, de la alegerea camerelor până la configurarea pe telefon",
-    "ann.free_install": "📞 Spune-ne ce vrei să protejezi — primești o recomandare clară înainte să cheltui bani",
+    "ann.free_delivery": "🎯 Alegi camere? Te ajutăm să alegi corect din prima",
+    "ann.limited_stock": "✓ 847 instalări realizate • Consultanță înainte de cumpărare",
+    "ann.free_install": "📞 Ai nevoie de ajutor? Îți recomandăm sistemul potrivit",
 
     // ── Hero ───────────────────────────────────────────────────────
     "hero.badge": "Sisteme de securitate pentru casă și afacere",
@@ -34,7 +34,7 @@ const t = {
     "hero.badge_install": "Montaj disponibil la solicitare",
     "hero.limited_offer": "Produs recomandat",
     "hero.add": "Adaugă",
-    "hero.ticker": "Protejează ce contează • Vezi proprietatea de oriunde • Alege corect din prima • Instalare profesională • Suport după instalare • Soluții pentru casă și afacere",
+    "hero.ticker": "Livrare în toată Moldova • Plată la livrare • Garanție conform produsului • 847 instalări realizate • Montaj profesional de la 900 MDL/cameră • Configurare pe telefon • Camere WiFi, PoE și 4G • Diagnostic și reparații",
 
     // ── Home sections ──────────────────────────────────────────────
     "home.trust.installs": "Instalări",
@@ -263,9 +263,9 @@ const t = {
     "nav.results_found": "результатов для",
 
     // ── Announcement Bar ───────────────────────────────────────────
-    "ann.free_delivery": "🔒 Не покупайте камеры наугад — подберём систему именно для вашего дома или бизнеса",
-    "ann.limited_stock": "✓ 847 выполненных установок — реальный опыт от выбора камер до настройки на телефоне",
-    "ann.free_install": "📞 Расскажите, что хотите защитить — получите понятную рекомендацию до того, как потратите деньги",
+    "ann.free_delivery": "🎯 Выбираете камеры? Поможем выбрать правильно с первого раза",
+    "ann.limited_stock": "✓ 847 выполненных установок • Консультация перед покупкой",
+    "ann.free_install": "📞 Нужна помощь? Подберём подходящую систему",
 
     // ── Hero ───────────────────────────────────────────────────────
     "hero.badge": "Системы безопасности для дома и бизнеса",
@@ -283,7 +283,7 @@ const t = {
     "hero.badge_install": "Установка по запросу",
     "hero.limited_offer": "Рекомендуемый товар",
     "hero.add": "Добавить",
-    "hero.ticker": "Защитите то, что важно • Смотрите объект из любой точки • Выберите правильно с первого раза • Профессиональная установка • Поддержка после монтажа • Решения для дома и бизнеса",
+    "hero.ticker": "Доставка по всей Молдове • Оплата при получении • Гарантия согласно товару • 847 выполненных установок • Профессиональный монтаж от 900 MDL/камера • Настройка на телефоне • WiFi, PoE и 4G камеры • Диагностика и ремонт",
 
     // ── Home sections ──────────────────────────────────────────────
     "home.trust.installs": "Установок",
