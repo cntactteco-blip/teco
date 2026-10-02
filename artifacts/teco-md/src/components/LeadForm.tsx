@@ -8,16 +8,33 @@ export function LeadForm() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [consent, setConsent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !phone || !consent) return;
-    storeActions.addLead({ name, phone, source: "LeadForm Banner" });
-    import("@/lib/notify").then(({ notifyLead }) =>
-      notifyLead({ name, phone, source: "Banner — Configurare Gratuită" })
-    );
-    trackLead("lead_form_banner");
-    setSubmitted(true);
+    if (!name.trim() || !phone.trim() || !consent) return;
+    if (phone.replace(/\D/g, "").length < 8) {
+      setError("Număr de telefon invalid.");
+      return;
+    }
+    setSubmitting(true);
+    setError("");
+    try {
+      await storeActions.addLead(
+        { name: name.trim(), phone: phone.trim(), source: "LeadForm Banner" },
+        { requireSaved: true },
+      );
+      import("@/lib/notify").then(({ notifyLead }) =>
+        notifyLead({ name: name.trim(), phone: phone.trim(), source: "Banner — Configurare Gratuită" })
+      );
+      trackLead("lead_form_banner");
+      setSubmitted(true);
+    } catch {
+      setError("Cererea nu a putut fi salvată. Încearcă din nou.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
