@@ -90,8 +90,6 @@
 /product/88   /produse  301
 
 # ── Rute vechi indexate de Google de pe site-ul precedent ──────────────
-/camere-supraveghere-moldova/   /produse?cat=wifi   301
-/camere-supraveghere-moldova    /produse?cat=wifi   301
 /sisteme-supraveghere/          /produse            301
 /sisteme-supraveghere           /produse            301
 /seturi-supraveghere/           /produse?cat=kituri 301
@@ -118,8 +116,18 @@
 /ru/repar-camere-de-supraveghere-n-chiinau-i-suburbii-rapid-sigur-i-la-pre-corect/  /servicii/chisinau  301
 /ru/repar-camere-de-supraveghere-n-chiinau-i-suburbii-rapid-sigur-i-la-pre-corect   /servicii/chisinau  301
 
-# ── Fallback general pentru orice alt URL vechi tip /ru/... care nu mai exista
-/ru/*  /servicii/chisinau  301
+# ── Canonicalizare pentru paginile comerciale importante ─────────────
+/contacts/                 /contact                 301
+/contacts                  /contact                 301
+/servicii/                 /servicii                301
+/servicii/chisinau/        /servicii/chisinau       301
+/servicii/balti/           /servicii/balti          301
+/servicii/orhei/           /servicii/orhei          301
+/servicii/ialoveni/        /servicii/ialoveni       301
+/servicii/straseni/        /servicii/straseni       301
+/servicii/cahul/           /servicii/cahul          301
+/montare-camere-supraveghere/ /montare-camere-supraveghere 301
+/reparatii-camere-supraveghere/ /reparatii-camere-supraveghere 301
 
-# ── SPA fallback ───────────────────────────────────────────────────────
-/*  /index.html  200
+# Nu adăuga fallback /* -> /index.html. Build-ul prerandează paginile publice,
+# iar URL-urile inexistente trebuie să poată răspunde 404.
