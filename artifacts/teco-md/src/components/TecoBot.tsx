@@ -335,8 +335,8 @@ export function TecoBot() {
                   <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                   <span className="text-white/80 text-[11px]">
                     {lang === "ru"
-                      ? "Онлайн • Консультант"
-                      : "Online • Consultant"}
+                      ? "Онлайн • Виртуальный помощник"
+                      : "Online • Asistent virtual"}
                   </span>
                 </div>
               </div>
@@ -632,7 +632,7 @@ export function TecoBot() {
                 </button>
               </div>
               <p className="text-[10px] text-zinc-400 text-center mt-1.5">
-                Powered by Groq · Teco.md
+                TECO.md · {lang === "ru" ? "Помощь в выборе систем безопасности" : "Te ajutăm să alegi sistemul potrivit"}
               </p>
             </div>
           </div>

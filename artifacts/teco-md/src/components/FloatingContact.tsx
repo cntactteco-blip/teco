@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Wrench, Bot } from "lucide-react";
+import { X, Wrench, MessageCircle } from "lucide-react";
 import { Link } from "wouter";
 import { useStore } from "@/lib/store";
 import { useLang } from "@/contexts/LangContext";
@@ -48,11 +48,16 @@ export function FloatingContact() {
             type="button"
             aria-haspopup="dialog"
             onClick={() => { setOpen(false); window.dispatchEvent(new Event("teco:open-consultant")); }}
-            className="flex items-center gap-2.5 bg-zinc-950 text-white text-sm font-bold pl-3 pr-4 py-2.5 rounded-2xl shadow-lg hover:opacity-90 active:scale-95 transition-all"
+            className="flex items-center gap-3 bg-[#FF4F00] text-white text-sm font-bold pl-2.5 pr-4 py-2.5 rounded-2xl border border-orange-300/40 shadow-[0_4px_20px_rgba(255,79,0,0.25)] hover:bg-orange-600 active:scale-95 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF4F00]"
           >
-            <Bot className="w-5 h-5" />
-            <span>{lang === "ru" ? "AI-консультант" : "Consultant AI"}</span>
-            <span className="flex items-center gap-1 text-[11px] font-semibold text-green-400"><span className="h-2 w-2 rounded-full bg-green-400" />Online</span>
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/20"><MessageCircle className="w-5 h-5" /></span>
+            <span className="flex flex-col items-start gap-0.5">
+              <span>{lang === "ru" ? "Консультант TECO" : "Consultant TECO"}</span>
+              <span className="flex items-center gap-1.5 text-[10px] font-medium text-white/90">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-300 ring-2 ring-white/20" />
+                {lang === "ru" ? "Онлайн · Поможем выбрать" : "Online · Te ajutăm să alegi"}
+              </span>
+            </span>
           </button>
           {/* Solicită Montaj */}
           <Link
