@@ -218,7 +218,7 @@ const DEFAULT_SETTINGS: ModuleSettings = {
   social: { facebook: "", instagram: "", tiktok: "", googleReviews: "" },
   delivery: { freeThreshold: 5000, price: 150 },
   servicePrices: {
-    montaj: "de la 750 MDL/cameră",
+    montaj: "de la 900 MDL/cameră",
     diagnosticare: "de la 350 MDL/vizită",
     reparatii: "de la 400 MDL",
   },
@@ -702,6 +702,12 @@ function storeBlogPostToDb(p: BlogPost) {
 
 // ─── Merge settings with defaults (handles missing keys on load) ─────
 function mergeSettings(loaded: any): ModuleSettings {
+  const loadedServicePrices = { ...(loaded?.servicePrices ?? {}) };
+  // Migrare 2026-10: prețul de bază aprobat pentru montaj este 900 MDL/cameră.
+  // Snapshot-urile/D1 mai vechi nu trebuie să readucă 300/650/750 MDL în UI sau SEO.
+  if (/\b(?:300|650|750)\b/.test(String(loadedServicePrices.montaj ?? ""))) {
+    loadedServicePrices.montaj = "de la 900 MDL/cameră";
+  }
   return {
     ...DEFAULT_SETTINGS,
     ...loaded,
@@ -714,7 +720,7 @@ function mergeSettings(loaded: any): ModuleSettings {
     storeInfo: { ...DEFAULT_SETTINGS.storeInfo, ...(loaded?.storeInfo ?? {}) },
     social: { ...DEFAULT_SETTINGS.social, ...(loaded?.social ?? {}) },
     delivery: { ...DEFAULT_SETTINGS.delivery, ...(loaded?.delivery ?? {}) },
-    servicePrices: { ...DEFAULT_SETTINGS.servicePrices, ...(loaded?.servicePrices ?? {}) },
+    servicePrices: { ...DEFAULT_SETTINGS.servicePrices, ...loadedServicePrices },
   };
 }
 
