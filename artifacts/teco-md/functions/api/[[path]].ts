@@ -304,7 +304,17 @@ const LEAD_PHONE_DAILY_LIMIT = 1;
 app.get("/settings", async (c) => {
   const row = await c.env.DB.prepare("SELECT data FROM settings WHERE id = 1").first<{ data: string }>();
   const data = row ? JSON.parse(row.data) : null;
-  return c.json({ data });
+  const sanitize = (value: any): any => {
+    if (Array.isArray(value)) return value.map(sanitize);
+    if (!value || typeof value !== "object") return value;
+    const out: Record<string, any> = {};
+    for (const [key, child] of Object.entries(value)) {
+      if (key === "adminPin") continue;
+      out[key] = sanitize(child);
+    }
+    return out;
+  };
+  return c.json({ data: sanitize(data) });
 });
 
 app.post("/settings", async (c) => {
