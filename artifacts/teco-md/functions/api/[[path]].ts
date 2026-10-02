@@ -309,7 +309,9 @@ app.get("/settings", async (c) => {
     if (!value || typeof value !== "object") return value;
     const out: Record<string, any> = {};
     for (const [key, child] of Object.entries(value)) {
-      if (key === "adminPin") continue;
+      // adminPin is a secret; legacy nested `data` is a stale duplicate created by an old save path.
+      // Neither belongs in the public settings payload.
+      if (key === "adminPin" || key === "data") continue;
       out[key] = sanitize(child);
     }
     return out;
