@@ -42,6 +42,8 @@ export function Footer() {
             <li><Link href="/servicii/orhei/" className="hover:text-[#FF4F00] transition-colors">{lang === "ru" ? "Монтаж камер в Оргееве" : "Montaj camere Orhei"}</Link></li>
             <li><Link href="/servicii/ialoveni/" className="hover:text-[#FF4F00] transition-colors">{lang === "ru" ? "Монтаж камер в Яловенах" : "Montaj camere Ialoveni"}</Link></li>
             <li><Link href="/servicii/straseni/" className="hover:text-[#FF4F00] transition-colors">{lang === "ru" ? "Монтаж камер в Страшенах" : "Montaj camere Strășeni"}</Link></li>
+            <li><Link href="/camere-4g-moldova/" className="hover:text-[#FF4F00] transition-colors">{lang === "ru" ? "4G камеры с SIM" : "Camere 4G cu SIM"}</Link></li>
+            <li><Link href="/nvr-moldova/" className="hover:text-[#FF4F00] transition-colors">{lang === "ru" ? "NVR регистраторы" : "Înregistratoare NVR"}</Link></li>
             <li><Link href="/servicii/" className="hover:text-[#FF4F00] transition-colors">{t("footer.s.consult")}</Link></li>
             <li><Link href="/servicii/" className="hover:text-[#FF4F00] transition-colors">{t("footer.s.audit")}</Link></li>
           </ul>
