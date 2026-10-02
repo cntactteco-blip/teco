@@ -1,5 +1,14 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Bot, X, Send, Loader2, Sparkles, User, ShoppingCart } from "lucide-react";
+import {
+  Bot,
+  X,
+  Send,
+  Loader2,
+  Sparkles,
+  User,
+  ShoppingCart,
+} from "lucide-react";
+import { useLocation } from "wouter";
 import { useLang } from "@/contexts/LangContext";
 import { storeActions, useStore } from "@/lib/store";
 import { useCart } from "@/hooks/useCart";
@@ -35,19 +44,39 @@ function renderMarkdown(text: string) {
 
 function extractProductIds(text: string): number[] {
   const matches = text.matchAll(/\[(\d+)\]/g);
-  return [...new Set([...matches].map(m => parseInt(m[1])))];
+  return [...new Set([...matches].map((m) => parseInt(m[1])))];
 }
 
 export function TecoBot() {
   const { lang } = useLang();
+  const [location] = useLocation();
   const allProducts = useStore((s) => s.products);
-  const products = useMemo(() => allProducts.map((p) => ({
-    id: p.id, name: p.name, brand: p.brand,
-    price: p.price, oldPrice: p.oldPrice,
-    specs: p.specs, category: p.category,
-    badge: p.badge, inStock: p.inStock,
-    imageUrl: (p as any).imageUrl || (p as any).image_url || "",
-  })), [allProducts]);
+  const products = useMemo(
+    () =>
+      allProducts.map((p) => ({
+        id: p.id,
+        name: p.name,
+        brand: p.brand,
+        price: p.price,
+        oldPrice: p.oldPrice,
+        specs: p.specs,
+        category: p.category,
+        badge: p.badge,
+        inStock: p.inStock,
+        imageUrl: (p as any).imageUrl || (p as any).image_url || "",
+      })),
+    [allProducts],
+  );
+  const productSlug = location.match(/^\/product\/([^/]+)\/?$/)?.[1];
+  const currentProduct = allProducts.find(
+    (p) =>
+      productSlug && (p.slug === productSlug || String(p.id) === productSlug),
+  );
+  const greeting = currentProduct
+    ? lang === "ru"
+      ? `Вас интересует ${currentProduct.model || currentProduct.name}? Расскажите, где хотите установить оборудование — помогу проверить, подходит ли оно и что ещё понадобится.`
+      : `Te interesează ${currentProduct.model || currentProduct.name}? Spune-mi unde vrei să instalezi echipamentul și te ajut să verifici dacă se potrivește și ce mai ai nevoie.`
+    : (GREET[lang] ?? GREET.ro);
   const cartAddItem = useCart((s) => s.addItem);
   const cartOpen = useCart((s) => s.openCart);
   const adminPhone = useStore((s) => s.settings.general?.adminPhone ?? "");
@@ -58,8 +87,11 @@ export function TecoBot() {
   const [streaming, setStreaming] = useState(false);
   const [leadCaptured, setLeadCaptured] = useState(false);
   const [unread, setUnread] = useState(0);
-  const [launcherHint, setLauncherHint] = useState(false);
-  const [vpHeight, setVpHeight] = useState<number>(() => typeof window === "undefined" ? 640 : window.visualViewport?.height ?? window.innerHeight);
+  const [vpHeight, setVpHeight] = useState<number>(() =>
+    typeof window === "undefined"
+      ? 640
+      : (window.visualViewport?.height ?? window.innerHeight),
+  );
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -72,45 +104,69 @@ export function TecoBot() {
     const update = () => {
       setVpHeight(vv.height);
       setVpOffset({ top: vv.offsetTop, left: vv.offsetLeft });
-      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+      setTimeout(
+        () => bottomRef.current?.scrollIntoView({ behavior: "smooth" }),
+        50,
+      );
     };
     vv.addEventListener("resize", update);
     vv.addEventListener("scroll", update);
-    return () => { vv.removeEventListener("resize", update); vv.removeEventListener("scroll", update); };
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+    };
   }, []);
 
   useEffect(() => {
-    if (open) { document.body.style.overflow = "hidden"; }
-    else { document.body.style.overflow = ""; }
-    return () => { document.body.style.overflow = ""; };
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [open]);
 
-  // Discreet proactive help: reveal a short hint once, then retreat to the small launcher.
+  // Help opens only when requested. No timed overlays or repeated prompts.
   useEffect(() => {
-    if (open) { setLauncherHint(false); return; }
-    const show = window.setTimeout(() => setLauncherHint(true), 5500);
-    const hide = window.setTimeout(() => setLauncherHint(false), 12000);
-    return () => { window.clearTimeout(show); window.clearTimeout(hide); };
-  }, [open]);
+    const requestOpen = () => setOpen(true);
+    window.addEventListener("teco:open-consultant", requestOpen);
+    return () =>
+      window.removeEventListener("teco:open-consultant", requestOpen);
+  }, []);
 
   useEffect(() => {
     if (open && messages.length === 0) {
-      setMessages([{ role: "assistant", content: GREET[lang] ?? GREET.ro, ts: Date.now() }]);
+      setMessages([{ role: "assistant", content: greeting, ts: Date.now() }]);
       setUnread(0);
     }
-    if (open) { setTimeout(() => inputRef.current?.focus(), 100); setUnread(0); }
+    if (open) {
+      setTimeout(() => inputRef.current?.focus(), 100);
+      setUnread(0);
+    }
   }, [open]);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-  const extractLead = useCallback((text: string) => {
-    const match = text.match(/LEAD_CAPTURED:name=([^,\n]+),phone=([^\n]+)/);
-    if (match && !leadCaptured) {
-      setLeadCaptured(true);
-      storeActions.addLead({ name: match[1].trim(), phone: match[2].trim(), notes: "TecoBot AI Chat", source: "tecobot" });
-    }
-    return text.replace(/LEAD_CAPTURED:[^\n]*/g, "").trim();
-  }, [leadCaptured]);
+  const extractLead = useCallback(
+    (text: string) => {
+      const match = text.match(/LEAD_CAPTURED:name=([^,\n]+),phone=([^\n]+)/);
+      if (match && !leadCaptured) {
+        setLeadCaptured(true);
+        storeActions.addLead({
+          name: match[1].trim(),
+          phone: match[2].trim(),
+          notes: "TecoBot AI Chat",
+          source: "tecobot",
+        });
+      }
+      return text.replace(/LEAD_CAPTURED:[^\n]*/g, "").trim();
+    },
+    [leadCaptured],
+  );
 
   const send = useCallback(async () => {
     const text = input.trim();
@@ -118,13 +174,18 @@ export function TecoBot() {
     setInput("");
 
     // Notificare Telegram la primul mesaj în chat
-    const isFirstUserMsg = messages.filter((m) => m.role === "user").length === 0;
+    const isFirstUserMsg =
+      messages.filter((m) => m.role === "user").length === 0;
     if (isFirstUserMsg) {
       const API = import.meta.env.VITE_API_URL || "";
       fetch(API + "/api/notify/chat-notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, page: window.location.pathname, session: getSessionPayload() }),
+        body: JSON.stringify({
+          message: text,
+          page: window.location.pathname,
+          session: getSessionPayload(),
+        }),
       }).catch(() => {});
     }
 
@@ -142,20 +203,36 @@ export function TecoBot() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: allMessages.filter((m, i) => !(i === 0 && m.role === "assistant")).map((m) => ({ role: m.role, content: m.content })),
-          lang, products,
+          messages: allMessages.map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+          lang,
+          products,
         }),
         signal: abortRef.current.signal,
       });
       const showResponse = (value: string) => {
         const recMatch = value.match(RECOMMEND_RE);
-        const cleaned = value.replace(RECOMMEND_RE, "").replace(/LEAD_CAPTURED:[^\n]*/g, "").trim();
+        const cleaned = value
+          .replace(RECOMMEND_RE, "")
+          .replace(/LEAD_CAPTURED:[^\n]*/g, "")
+          .trim();
         const pids = recMatch
-          ? [parseInt(recMatch[1]), parseInt(recMatch[2]), parseInt(recMatch[3])]
+          ? [
+              parseInt(recMatch[1]),
+              parseInt(recMatch[2]),
+              parseInt(recMatch[3]),
+            ]
           : extractProductIds(cleaned);
         setMessages((prev) => {
           const updated = [...prev];
-          updated[updated.length - 1] = { ...botMsg, content: cleaned, products: pids, isRecommendation: !!recMatch };
+          updated[updated.length - 1] = {
+            ...botMsg,
+            content: cleaned,
+            products: pids,
+            isRecommendation: !!recMatch,
+          };
           return updated;
         });
       };
@@ -163,7 +240,9 @@ export function TecoBot() {
       extractLead(accumulated);
 
       // Dacă AI-ul a capturat un lead (LEAD_CAPTURED în răspuns), trimite notificare Telegram
-      const leadMatch = accumulated.match(/LEAD_CAPTURED:name=([^,\n]+),phone=([^\n]+)/);
+      const leadMatch = accumulated.match(
+        /LEAD_CAPTURED:name=([^,\n]+),phone=([^\n]+)/,
+      );
       if (leadMatch && !leadNotifiedRef.current) {
         leadNotifiedRef.current = true;
         const lName = leadMatch[1].trim();
@@ -178,13 +257,21 @@ export function TecoBot() {
         fetch(API + "/api/notify/chat-lead", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: lName, phone: lPhone, messages: chatHistory, session: getSessionPayload() }),
+          body: JSON.stringify({
+            name: lName,
+            phone: lPhone,
+            messages: chatHistory,
+            session: getSessionPayload(),
+          }),
         }).catch(() => {});
       }
     } catch (err: unknown) {
       setMessages((prev) => {
         const updated = [...prev];
-        updated[updated.length - 1] = { ...botMsg, content: `Momentan nu pot răspunde. Sunați-ne: **+${phone}**` };
+        updated[updated.length - 1] = {
+          ...botMsg,
+          content: `Momentan nu pot răspunde. Sunați-ne: **+${phone}**`,
+        };
         return updated;
       });
     } finally {
@@ -195,45 +282,61 @@ export function TecoBot() {
   }, [input, messages, streaming, lang, open, extractLead, products, phone]);
 
   const handleKey = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
   };
 
   const cleanContent = (content: string) =>
-    content.replace(/RECOMMEND:\[\d+,\s*\d+,\s*\d+\]/g, "").replace(/\[\d+\]/g, "").trim();
+    content
+      .replace(/RECOMMEND:\[\d+,\s*\d+,\s*\d+\]/g, "")
+      .replace(/\[\d+\]/g, "")
+      .trim();
 
   return (
     <>
-      <div className="fixed bottom-[4.5rem] left-3 md:bottom-6 md:left-6 z-40 flex items-center gap-2">
-        {launcherHint && !open && (
-          <button
-            onClick={() => { setLauncherHint(false); setOpen(true); }}
-            className="max-w-[190px] rounded-2xl rounded-bl-sm border border-zinc-200 bg-white px-3 py-2 text-left shadow-lg animate-in fade-in slide-in-from-left-2 duration-300"
-          >
-            <span className="block text-[11px] font-black text-zinc-900">{lang === "ru" ? "Нужна помощь?" : "Ai nevoie de ajutor?"}</span>
-            <span className="block text-[10px] leading-tight text-zinc-500 mt-0.5">{lang === "ru" ? "Подберу камеру или систему." : "Îți recomand camera sau sistemul potrivit."}</span>
-          </button>
-        )}
+      <div className="hidden md:flex fixed bottom-6 left-6 z-40 items-center gap-2">
         <button
-          onClick={() => { setLauncherHint(false); setOpen((v) => !v); }}
+          onClick={() => setOpen((v) => !v)}
           aria-label={lang === "ru" ? "Консультант TECO" : "Consultant TECO"}
           className="relative flex h-11 w-11 items-center justify-center bg-gradient-to-br from-[#FF4F00] to-orange-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 md:h-auto md:w-auto md:gap-2 md:px-4 md:py-3"
         >
           <Bot className="w-5 h-5 flex-shrink-0" />
-          <span className="hidden text-sm font-bold md:inline">{lang === "ru" ? "Консультант TECO" : "Consultant TECO"}</span>
+          <span className="hidden text-sm font-bold md:inline">
+            {lang === "ru" ? "Консультант TECO" : "Consultant TECO"}
+          </span>
           {unread > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">{unread}</span>
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">
+              {unread}
+            </span>
           )}
         </button>
       </div>
 
       {open && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={lang === "ru" ? "Консультант TECO" : "Consultant TECO"}
           className="fixed z-50 flex items-end justify-start pointer-events-none"
-          style={{ top: vpOffset.top, left: vpOffset.left, width: window.visualViewport ? `${window.visualViewport.width}px` : "100%", height: `${vpHeight}px` }}
+          style={{
+            top: vpOffset.top,
+            left: vpOffset.left,
+            width: window.visualViewport
+              ? `${window.visualViewport.width}px`
+              : "100%",
+            height: `${vpHeight}px`,
+          }}
         >
           <div
             className="pointer-events-auto w-full md:w-[400px] md:ml-6 md:mb-24 bg-white rounded-t-2xl md:rounded-2xl shadow-2xl border border-[#E4E4E7] flex flex-col overflow-hidden"
-            style={{ height: window.innerWidth >= 768 ? "min(640px, calc(100vh - 80px))" : `${vpHeight}px` }}
+            style={{
+              height:
+                window.innerWidth >= 768
+                  ? "min(640px, calc(100vh - 80px))"
+                  : `${vpHeight}px`,
+            }}
           >
             <div className="bg-gradient-to-r from-[#FF4F00] to-orange-500 px-4 py-3 flex items-center gap-3 flex-shrink-0">
               <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
@@ -241,135 +344,246 @@ export function TecoBot() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-white font-bold text-sm">{lang === "ru" ? "Консультант TECO" : "Consultant TECO"}</span>
+                  <span className="text-white font-bold text-sm">
+                    {lang === "ru" ? "Консультант TECO" : "Consultant TECO"}
+                  </span>
                   <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                  <span className="text-white/80 text-[11px]">{lang === "ru" ? "Онлайн • Консультант" : "Online • Consultant"}</span>
+                  <span className="text-white/80 text-[11px]">
+                    {lang === "ru"
+                      ? "Онлайн • Консультант"
+                      : "Online • Consultant"}
+                  </span>
                 </div>
               </div>
-              <button onClick={() => setOpen(false)} className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors flex-shrink-0">
+              <button
+                aria-label={
+                  lang === "ru"
+                    ? "Закрыть консультацию"
+                    : "Închide consultantul"
+                }
+                onClick={() => setOpen(false)}
+                className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors flex-shrink-0"
+              >
                 <X className="w-4 h-4 text-white" />
               </button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#FAFAFA]">
               {messages.map((msg, i) => (
-                <div key={i} className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}>
-                  <div className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} w-full`}>
+                <div
+                  key={i}
+                  className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}`}
+                >
+                  <div
+                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} w-full`}
+                  >
                     {msg.role === "assistant" && (
                       <div className="w-7 h-7 rounded-full bg-[#FF4F00] flex items-center justify-center flex-shrink-0 mr-2 mt-0.5">
                         <Bot className="w-3.5 h-3.5 text-white" />
                       </div>
                     )}
-                    <div className={`max-w-[82%] px-3 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                      msg.role === "user"
-                        ? "bg-[#FF4F00] text-white rounded-tr-sm"
-                        : "bg-white border border-[#E4E4E7] text-[#09090B] rounded-tl-sm shadow-sm"
-                    }`}>
+                    <div
+                      className={`max-w-[82%] px-3 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                        msg.role === "user"
+                          ? "bg-[#FF4F00] text-white rounded-tr-sm"
+                          : "bg-white border border-[#E4E4E7] text-[#09090B] rounded-tl-sm shadow-sm"
+                      }`}
+                    >
                       {msg.role === "assistant" ? (
-                        <span dangerouslySetInnerHTML={{ __html: renderMarkdown(cleanContent(msg.content)) }} />
-                      ) : msg.content}
-                      {msg.role === "assistant" && streaming && i === messages.length - 1 && msg.content === "" && (
-                        <span className="inline-flex gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: "0ms" }} />
-                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: "150ms" }} />
-                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce" style={{ animationDelay: "300ms" }} />
-                        </span>
+                        <span
+                          dangerouslySetInnerHTML={{
+                            __html: renderMarkdown(cleanContent(msg.content)),
+                          }}
+                        />
+                      ) : (
+                        msg.content
                       )}
+                      {msg.role === "assistant" &&
+                        streaming &&
+                        i === messages.length - 1 &&
+                        msg.content === "" && (
+                          <span className="inline-flex gap-1">
+                            <span
+                              className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce"
+                              style={{ animationDelay: "0ms" }}
+                            />
+                            <span
+                              className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce"
+                              style={{ animationDelay: "150ms" }}
+                            />
+                            <span
+                              className="w-1.5 h-1.5 rounded-full bg-zinc-400 animate-bounce"
+                              style={{ animationDelay: "300ms" }}
+                            />
+                          </span>
+                        )}
                     </div>
                   </div>
 
-                  {msg.role === "assistant" && msg.products && msg.products.length > 0 && msg.isRecommendation && (
-                    /* ── Carduri mari de recomandare — 3 variante ── */
-                    <div className="mt-2 w-full flex flex-col gap-2">
-                      {[...msg.products]
-                        .map(pid => products.find(x => x.id === pid))
-                        .filter((p): p is typeof products[number] => !!p)
-                        .sort((a, b) => a.price - b.price)
-                        .map((p, idx) => {
-                        const labels = lang === "ru"
-                          ? ["💰 Самый доступный", "⭐ Оптимальный", "🏆 Премиум"]
-                          : ["💰 Cel mai accesibil", "⭐ Echilibrat calitate/preț", "🏆 Premium"];
-                        return (
-                          <div key={p.id} className="bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden flex">
-                            {/* Imagine stânga */}
-                            <div className="w-24 h-24 bg-zinc-50 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                              {p.imageUrl
-                                ? <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
-                                : <Bot className="w-8 h-8 text-zinc-300" />}
-                            </div>
-                            {/* Info dreapta */}
-                            <div className="flex-1 p-2.5 flex flex-col justify-between min-w-0">
-                              <div>
-                                <span className="text-[10px] font-bold text-[#FF4F00] uppercase tracking-wide">{labels[idx]}</span>
-                                <p className="text-xs font-semibold text-zinc-800 leading-tight mt-0.5 line-clamp-2">{p.brand} {p.name}</p>
-                                {p.specs && <p className="text-[10px] text-zinc-400 mt-0.5 line-clamp-1">{p.specs}</p>}
+                  {msg.role === "assistant" &&
+                    msg.products &&
+                    msg.products.length > 0 &&
+                    msg.isRecommendation && (
+                      /* ── Carduri mari de recomandare — 3 variante ── */
+                      <div className="mt-2 w-full flex flex-col gap-2">
+                        {[...msg.products]
+                          .map((pid) => products.find((x) => x.id === pid))
+                          .filter((p): p is (typeof products)[number] => !!p)
+                          .sort((a, b) => a.price - b.price)
+                          .map((p, idx) => {
+                            const labels =
+                              lang === "ru"
+                                ? [
+                                    "💰 Самый доступный",
+                                    "⭐ Оптимальный",
+                                    "🏆 Премиум",
+                                  ]
+                                : [
+                                    "💰 Cel mai accesibil",
+                                    "⭐ Echilibrat calitate/preț",
+                                    "🏆 Premium",
+                                  ];
+                            return (
+                              <div
+                                key={p.id}
+                                className="bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden flex"
+                              >
+                                {/* Imagine stânga */}
+                                <div className="w-24 h-24 bg-zinc-50 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                  {p.imageUrl ? (
+                                    <img
+                                      src={p.imageUrl}
+                                      alt={p.name}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <Bot className="w-8 h-8 text-zinc-300" />
+                                  )}
+                                </div>
+                                {/* Info dreapta */}
+                                <div className="flex-1 p-2.5 flex flex-col justify-between min-w-0">
+                                  <div>
+                                    <span className="text-[10px] font-bold text-[#FF4F00] uppercase tracking-wide">
+                                      {labels[idx]}
+                                    </span>
+                                    <p className="text-xs font-semibold text-zinc-800 leading-tight mt-0.5 line-clamp-2">
+                                      {p.brand} {p.name}
+                                    </p>
+                                    {p.specs && (
+                                      <p className="text-[10px] text-zinc-400 mt-0.5 line-clamp-1">
+                                        {p.specs}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center justify-between mt-1.5 gap-2">
+                                    <div>
+                                      <span className="text-[#FF4F00] font-black text-sm">
+                                        {p.price.toLocaleString()} MDL
+                                      </span>
+                                      {p.oldPrice && (
+                                        <span className="text-zinc-400 text-[10px] line-through ml-1">
+                                          {p.oldPrice}
+                                        </span>
+                                      )}
+                                    </div>
+                                    <button
+                                      onClick={() => {
+                                        cartAddItem({
+                                          id: p.id,
+                                          name: `${p.brand} ${p.name}`,
+                                          price: p.price,
+                                          imageUrl: p.imageUrl,
+                                        });
+                                        cartOpen();
+                                        setOpen(false);
+                                      }}
+                                      className="flex-shrink-0 bg-[#FF4F00] text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 hover:opacity-90 active:scale-95 transition-all"
+                                    >
+                                      <ShoppingCart className="w-3 h-3" />
+                                      {lang === "ru" ? "Comandă" : "Comandă"}
+                                    </button>
+                                  </div>
+                                </div>
                               </div>
-                              <div className="flex items-center justify-between mt-1.5 gap-2">
-                                <div>
-                                  <span className="text-[#FF4F00] font-black text-sm">{p.price.toLocaleString()} MDL</span>
-                                  {p.oldPrice && <span className="text-zinc-400 text-[10px] line-through ml-1">{p.oldPrice}</span>}
+                            );
+                          })}
+                      </div>
+                    )}
+
+                  {msg.role === "assistant" &&
+                    msg.products &&
+                    msg.products.length > 0 &&
+                    !msg.isRecommendation && (
+                      /* ── Carduri mici orizontale pentru menționări obișnuite ── */
+                      <div className="ml-9 mt-2 flex gap-2 overflow-x-auto pb-1 w-full scrollbar-hide">
+                        {msg.products.map((pid) => {
+                          const p = products.find((x) => x.id === pid);
+                          if (!p) return null;
+                          return (
+                            <div
+                              key={pid}
+                              className="flex-shrink-0 w-44 bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden"
+                            >
+                              <div className="h-28 bg-zinc-50 flex items-center justify-center overflow-hidden">
+                                {p.imageUrl ? (
+                                  <img
+                                    src={p.imageUrl}
+                                    alt={p.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <Bot className="w-10 h-10 text-zinc-300" />
+                                )}
+                              </div>
+                              <div className="p-2">
+                                <p className="text-[11px] font-semibold text-zinc-800 line-clamp-2 leading-tight mb-1">
+                                  {p.brand} {p.name}
+                                </p>
+                                <div className="flex items-center gap-1 mb-2">
+                                  <span className="text-[#FF4F00] font-black text-sm">
+                                    {p.price} MDL
+                                  </span>
+                                  {p.oldPrice && (
+                                    <span className="text-zinc-400 text-[10px] line-through">
+                                      {p.oldPrice}
+                                    </span>
+                                  )}
                                 </div>
                                 <button
                                   onClick={() => {
-                                    cartAddItem({ id: p.id, name: `${p.brand} ${p.name}`, price: p.price, imageUrl: p.imageUrl });
+                                    cartAddItem({
+                                      id: p.id,
+                                      name: `${p.brand} ${p.name}`,
+                                      price: p.price,
+                                      imageUrl: p.imageUrl,
+                                    });
                                     cartOpen();
-                                    setOpen(false);
                                   }}
-                                  className="flex-shrink-0 bg-[#FF4F00] text-white text-[11px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 hover:opacity-90 active:scale-95 transition-all"
+                                  className="w-full bg-[#FF4F00] text-white text-[11px] font-bold py-1.5 rounded-lg flex items-center justify-center gap-1 hover:opacity-90 active:scale-95 transition-all"
                                 >
                                   <ShoppingCart className="w-3 h-3" />
-                                  {lang === "ru" ? "Comandă" : "Comandă"}
+                                  {lang === "ru" ? "В корзину" : "În coș"}
                                 </button>
                               </div>
                             </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {msg.role === "assistant" && msg.products && msg.products.length > 0 && !msg.isRecommendation && (
-                    /* ── Carduri mici orizontale pentru menționări obișnuite ── */
-                    <div className="ml-9 mt-2 flex gap-2 overflow-x-auto pb-1 w-full scrollbar-hide">
-                      {msg.products.map(pid => {
-                        const p = products.find(x => x.id === pid);
-                        if (!p) return null;
-                        return (
-                          <div key={pid} className="flex-shrink-0 w-44 bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden">
-                            <div className="h-28 bg-zinc-50 flex items-center justify-center overflow-hidden">
-                              {p.imageUrl
-                                ? <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
-                                : <Bot className="w-10 h-10 text-zinc-300" />}
-                            </div>
-                            <div className="p-2">
-                              <p className="text-[11px] font-semibold text-zinc-800 line-clamp-2 leading-tight mb-1">{p.brand} {p.name}</p>
-                              <div className="flex items-center gap-1 mb-2">
-                                <span className="text-[#FF4F00] font-black text-sm">{p.price} MDL</span>
-                                {p.oldPrice && <span className="text-zinc-400 text-[10px] line-through">{p.oldPrice}</span>}
-                              </div>
-                              <button
-                                onClick={() => { cartAddItem({ id: p.id, name: `${p.brand} ${p.name}`, price: p.price, imageUrl: p.imageUrl }); cartOpen(); }}
-                                className="w-full bg-[#FF4F00] text-white text-[11px] font-bold py-1.5 rounded-lg flex items-center justify-center gap-1 hover:opacity-90 active:scale-95 transition-all"
-                              >
-                                <ShoppingCart className="w-3 h-3" />
-                                {lang === "ru" ? "В корзину" : "În coș"}
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                          );
+                        })}
+                      </div>
+                    )}
                 </div>
               ))}
               {leadCaptured && (
                 <div className="flex justify-center">
                   <div className="bg-green-50 border border-green-200 rounded-xl px-3 py-2 text-xs text-green-700 font-medium flex items-center gap-1.5">
                     <span>✓</span>
-                    <span>{lang === "ru" ? "Запрос сохранён — вам перезвонят" : "Cerere salvată — vă vom contacta"}</span>
+                    <span>
+                      {lang === "ru"
+                        ? "Запрос сохранён — вам перезвонят"
+                        : "Cerere salvată — vă vom contacta"}
+                    </span>
                   </div>
                 </div>
               )}
@@ -385,20 +599,40 @@ export function TecoBot() {
                   className="w-full flex items-center justify-center gap-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-semibold py-2 rounded-xl text-xs transition-all"
                 >
                   <User className="w-3.5 h-3.5" />
-                  {lang === "ru" ? "Поговорить с человеком" : "Vorbesc cu un om"}
+                  {lang === "ru"
+                    ? "Поговорить с человеком"
+                    : "Vorbesc cu un om"}
                 </a>
               </div>
             )}
 
-            <div className="border-t border-[#E4E4E7] bg-white flex-shrink-0" style={{ padding: "12px", paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
+            <div
+              className="border-t border-[#E4E4E7] bg-white flex-shrink-0"
+              style={{
+                padding: "12px",
+                paddingBottom: "max(12px, env(safe-area-inset-bottom))",
+              }}
+            >
               <div className="flex gap-2 items-center">
                 <input
                   ref={inputRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKey}
-                  onFocus={() => setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 100)}
-                  placeholder={lang === "ru" ? "Напишите вопрос..." : "Scrie întrebarea ta..."}
+                  onFocus={() =>
+                    setTimeout(
+                      () =>
+                        bottomRef.current?.scrollIntoView({
+                          behavior: "smooth",
+                        }),
+                      100,
+                    )
+                  }
+                  placeholder={
+                    lang === "ru"
+                      ? "Напишите вопрос..."
+                      : "Scrie întrebarea ta..."
+                  }
                   disabled={streaming}
                   style={{ fontSize: "16px" }}
                   className="flex-1 min-w-0 bg-[#F4F4F5] rounded-xl px-3.5 py-2.5 text-[#09090B] placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#FF4F00]/20 focus:bg-white transition-all disabled:opacity-50"
@@ -408,10 +642,16 @@ export function TecoBot() {
                   disabled={!input.trim() || streaming}
                   className="w-10 h-10 rounded-xl bg-[#FF4F00] text-white flex items-center justify-center hover:opacity-90 active:scale-95 transition-all disabled:opacity-40 flex-shrink-0"
                 >
-                  {streaming ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  {streaming ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
                 </button>
               </div>
-              <p className="text-[10px] text-zinc-400 text-center mt-1.5">Powered by Groq · Teco.md</p>
+              <p className="text-[10px] text-zinc-400 text-center mt-1.5">
+                Powered by Groq · Teco.md
+              </p>
             </div>
           </div>
         </div>
