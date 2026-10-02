@@ -4,6 +4,8 @@ import { Link, useSearch } from "wouter";
 import { storeActions } from "@/lib/store";
 import { useLang } from "@/contexts/LangContext";
 import { SEO } from "@/components/SEO";
+import { ConsentCheckbox } from "@/components/ConsentCheckbox";
+import { trackLead } from "@/lib/analytics";
 
 type PropertyType = "casa" | "apartament" | "birou" | "depozit" | "comercial";
 type CameraCount = "2" | "4" | "8" | "12+";
@@ -50,6 +52,7 @@ export default function RequestQuote() {
   const [discovery, setDiscovery] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [consent, setConsent] = useState(false);
 
   useEffect(() => {
     setStep(repair ? 3 : 1);
@@ -57,7 +60,7 @@ export default function RequestQuote() {
   }, [repair]);
 
   const handleSubmit = async () => {
-    if (!name.trim() || !phone.trim()) {
+    if (!name.trim() || !phone.trim() || !consent) {
       setError(ro ? "Completați toate câmpurile" : "Заполните все поля");
       return;
     }
@@ -80,6 +83,7 @@ export default function RequestQuote() {
       import("@/lib/notify").then(({ notifyLead }) =>
         notifyLead({ name: name.trim(), phone: phone.trim(), source, notes: leadNotes })
       );
+      trackLead(repair ? "request_quote_repair" : "request_quote_installation");
       setStep("done");
     } catch {
       setError(ro ? "Eroare. Încearcă din nou." : "Ошибка. Попробуйте снова.");
@@ -278,13 +282,17 @@ export default function RequestQuote() {
                 </select>
               </label>
 
+              <div className="mb-4">
+                <ConsentCheckbox checked={consent} onChange={setConsent} />
+              </div>
+
               {error && (
                 <p className="text-red-500 text-sm font-medium mb-3">{error}</p>
               )}
 
               <button
                 onClick={handleSubmit}
-                disabled={submitting}
+                disabled={submitting || !consent}
                 className="w-full bg-[#FF4F00] text-white font-black text-base py-4 rounded-2xl flex items-center justify-center gap-2 shadow-[0_4px_24px_rgba(255,79,0,0.35)] active:scale-[0.98] transition-all disabled:opacity-60"
               >
                 {submitting ? (
