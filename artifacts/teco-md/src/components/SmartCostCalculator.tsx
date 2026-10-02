@@ -114,15 +114,21 @@ export default function SmartCostCalculator() {
     if (key !== "installation") setTimeout(() => setStep((prev) => prev + 1), 300);
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.phone.trim()) { alert(s("Introduceți numărul de telefon", "Введите номер телефона")); return; }
-    storeActions.addLead({
+    if (!formData.phone.trim() || formData.phone.replace(/\D/g, "").length < 8) { alert(s("Introduceți un număr de telefon valid", "Введите корректный номер телефона")); return; }
+    if (!calcConsent) { alert(s("Confirmă acordul pentru prelucrarea datelor", "Подтвердите согласие на обработку данных")); return; }
+    try {
+      await storeActions.addLead({
       name: formData.name,
       phone: formData.phone,
       source: s("Calculator Cost", "Калькулятор стоимости"),
       selections,
-    });
+      }, { requireSaved: true });
+    } catch {
+      alert(s("Cererea nu a putut fi salvată. Încearcă din nou.", "Не удалось сохранить заявку. Попробуйте ещё раз."));
+      return;
+    }
 
     const { equipmentCost, installCost, totalCost } = getCalculations();
     const session = getSessionPayload();
@@ -157,7 +163,7 @@ export default function SmartCostCalculator() {
 
   const getCalculations = () => {
     const cameraCount = parseInt(selections.cameras) || 2;
-    const installCost = cameraCount <= 1 ? 750 : 650 * cameraCount;
+    const installCost = 900 * cameraCount;
     const seturi = allProducts
       .filter((p) => p.category === "kituri" && p.inStock !== false)
       .map((p) => ({ product: p, count: extractCameraCount(p) }))
