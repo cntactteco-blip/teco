@@ -422,8 +422,10 @@ export default function Home() {
             ].map(({ href, Icon, ro, ru }) => (
               <Link key={href + ro} href={href}
                 className="group min-h-[116px] rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm hover:shadow-md hover:border-orange-200 transition-all flex flex-col justify-between">
-                <span className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
-                  <Icon className="w-5 h-5 text-[#FF4F00]" />
+                <span className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-50 via-white to-orange-100/70 border border-orange-100 shadow-[0_6px_18px_rgba(255,79,0,0.12)] flex items-center justify-center overflow-hidden group-hover:-translate-y-0.5 group-hover:shadow-[0_8px_22px_rgba(255,79,0,0.18)] transition-all duration-300">
+                  <span className="absolute -top-3 -right-3 w-7 h-7 rounded-full bg-[#FF4F00]/10" />
+                  <span className="absolute bottom-1 left-1 w-1.5 h-1.5 rounded-full bg-[#FF4F00]/30" />
+                  <Icon className="relative z-10 w-6 h-6 text-[#FF4F00] stroke-[2.25]" />
                 </span>
                 <div className="flex items-end justify-between gap-2 mt-3">
                   <span className="font-black text-sm md:text-base leading-tight text-zinc-950">{lang === "ro" ? ro : ru}</span>
