@@ -343,7 +343,41 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="flex gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory -mx-4 px-4 pb-3 md:mx-0 md:px-0 md:pb-0 md:grid md:grid-cols-4">
+          <div className="md:hidden flex overflow-x-auto no-scrollbar snap-x snap-mandatory -mx-4">
+            {Array.from({ length: Math.ceil(categories.filter((cat) => storeProducts.some((product) => product.category === cat.slug && product.inStock !== false)).length / 4) }).map((_, pageIndex) => {
+              const visibleCategories = categories
+                .filter((cat) => storeProducts.some((product) => product.category === cat.slug && product.inStock !== false))
+                .slice(pageIndex * 4, pageIndex * 4 + 4);
+              return (
+                <div key={pageIndex} className="snap-start shrink-0 w-full px-4 grid grid-cols-2 gap-3">
+                  {visibleCategories.map((cat) => {
+                    const catProducts = storeProducts.filter((p) => p.category === cat.slug && p.inStock !== false);
+                    const catImg = cat.image || catProducts[0]?.imageUrl;
+                    return (
+                      <Link key={cat.id} href={`/produse?cat=${cat.slug}`}
+                        className="group min-h-[150px] rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm overflow-hidden">
+                        <div className="h-20 flex items-center justify-center mb-2">
+                          {catImg ? (
+                            <img src={catImg} alt={cat.label} loading="lazy" className="max-h-full max-w-full object-contain" />
+                          ) : (
+                            <Camera className="w-10 h-10 text-[#FF4F00]" />
+                          )}
+                        </div>
+                        <div className="flex items-end justify-between gap-2">
+                          <span className="font-black text-sm leading-tight text-zinc-950">
+                            {lang === "ro" ? cat.label : (cat.labelRu || cat.label)}
+                          </span>
+                          <span className="text-[#FF4F00] font-black text-lg">→</span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="hidden md:grid md:grid-cols-4 gap-3">
             {categories
               .filter((cat) => storeProducts.some((product) => product.category === cat.slug && product.inStock !== false))
               .map((cat) => {
@@ -351,8 +385,8 @@ export default function Home() {
                 const catImg = cat.image || catProducts[0]?.imageUrl;
                 return (
                   <Link key={cat.id} href={`/produse?cat=${cat.slug}`}
-                    className="group snap-start shrink-0 w-[72vw] max-w-[280px] md:w-auto md:max-w-none min-h-[150px] rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm hover:shadow-md hover:border-orange-200 transition-all overflow-hidden">
-                    <div className="h-20 md:h-24 flex items-center justify-center mb-2">
+                    className="group min-h-[150px] rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm hover:shadow-md hover:border-orange-200 transition-all overflow-hidden">
+                    <div className="h-24 flex items-center justify-center mb-2">
                       {catImg ? (
                         <img src={catImg} alt={cat.label} loading="lazy" className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105" />
                       ) : (
@@ -360,7 +394,7 @@ export default function Home() {
                       )}
                     </div>
                     <div className="flex items-end justify-between gap-2">
-                      <span className="font-black text-sm md:text-base leading-tight text-zinc-950">
+                      <span className="font-black text-base leading-tight text-zinc-950">
                         {lang === "ro" ? cat.label : (cat.labelRu || cat.label)}
                       </span>
                       <span className="text-[#FF4F00] font-black text-lg">→</span>
