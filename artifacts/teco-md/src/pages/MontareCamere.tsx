@@ -116,7 +116,7 @@ const FAQS = [
 export default function MontareCamere() {
   const { lang } = useLang();
   const sp = useStore(s => s.settings.servicePrices);
-  const montajPrice = sp?.montaj?.replace(/^de la /i, "") || "900 MDL/cameră";
+  const montajPrice = "900 MDL/cameră";
 
   const title = "Instalare Camere Supraveghere – Preț 900 MDL | TECO.md";
   const description = "Instalare camere de supraveghere în Moldova de la 900 MDL/cameră. Vezi prețul montajului pentru casă, curte sau afacere și cere un deviz adaptat locației.";
