@@ -306,6 +306,18 @@ export default function MontareCamere() {
           </div>
         </section>
 
+        <section className="py-14 px-4">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-black text-[#09090B] mb-4">Montare camere de supraveghere la curte</h2>
+            <p className="text-zinc-600 leading-relaxed">Pentru curte, punctele importante sunt poarta și intrarea, accesul auto, aleile și zonele fără vizibilitate. Înainte de montaj verificăm traseul cablului, alimentarea, semnalul dacă se folosesc camere WiFi, poziția NVR-ului și iluminarea pe timp de noapte. Pentru un sistem PoE, cablul de rețea poate transporta datele și alimentarea către camere compatibile.</p>
+            <p className="mt-4 text-zinc-600 leading-relaxed">Prețul standard al manoperei pornește de la <strong>900 MDL/cameră</strong>. Înălțimea, traseele dificile, materialele suplimentare și deplasarea se confirmă în deviz înainte de lucrare.</p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Link href="/camere-supraveghere-exterior/" className="font-semibold text-[#FF4F00] underline underline-offset-4">Camere pentru exterior</Link>
+              <Link href="/camere-supraveghere-moldova-din-strainatate/" className="font-semibold text-[#FF4F00] underline underline-offset-4">Ai proprietatea în Moldova și locuiești peste hotare?</Link>
+            </div>
+          </div>
+        </section>
+
         {/* ── Calculator ─────────────────────────────────────────── */}
         <div id="calculator-pret" className="scroll-mt-24">
           <Suspense fallback={<div className="h-64 bg-white" aria-hidden="true" />}>
