@@ -130,6 +130,7 @@
 /servicii/cahul            /servicii/cahul/          301
 /montare-camere-supraveghere /montare-camere-supraveghere/ 301
 /reparatii-camere-supraveghere /reparatii-camere-supraveghere/ 301
+/camere-supraveghere-moldova-din-strainatate /camere-supraveghere-moldova-din-strainatate/ 301
 
 # Nu adăuga fallback /* -> /index.html. Build-ul prerandează paginile publice,
 # iar URL-urile inexistente trebuie să poată răspunde 404.
