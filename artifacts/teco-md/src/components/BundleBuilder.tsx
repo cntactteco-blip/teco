@@ -259,7 +259,7 @@ export default function BundleBuilder({ onClose }: { onClose?: () => void } = {}
               <div className="space-y-1.5">
                 {[
                   ro ? "Livrare gratuită peste 5.000 MDL" : "Бесплатная доставка от 5000 MDL",
-                  ro ? "Garanție 2–5 ani pe echipamente" : "Гарантия 2–5 лет на оборудование",
+                  ro ? "Garanție conform produsului și producătorului" : "Гарантия согласно товару и производителю",
                   ro ? "Suport tehnic inclus" : "Техническая поддержка включена",
                 ].map((f) => (
                   <div key={f} className="flex items-center gap-1.5 text-xs text-zinc-500">
