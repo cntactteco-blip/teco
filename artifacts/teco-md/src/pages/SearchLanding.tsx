@@ -26,6 +26,21 @@ const CAMERA_FAQS: Record<"ro" | "ru", FAQ[]> = {
   ],
 };
 
+const DIASPORA_FAQS: Record<"ro" | "ru", FAQ[]> = {
+  ro: [
+    { question: "Pot organiza instalarea camerelor în Moldova dacă locuiesc în străinătate?", answer: "Da. Evaluarea inițială poate începe de la distanță cu localitatea, fotografii sau video și date despre internet și alimentare. Accesul la proprietate și programarea se coordonează cu persoana indicată de proprietar în Moldova." },
+    { question: "Voi putea vedea camerele din Italia, Germania, Franța sau UK?", answer: "Pentru echipamentele compatibile cu acces remote, configurarea poate include verificarea vizualizării din aplicația producătorului. Sistemul de la proprietate trebuie să aibă alimentare și conexiunea la internet necesară modelului ales." },
+    { question: "Puteți repara sistemul dacă proprietarul nu este în Moldova?", answer: "Da, dacă o persoană autorizată de proprietar poate oferi acces la echipamente. Înainte de deplasare sunt utile modelul DVR/NVR sau al camerelor, simptomele și fotografii ale instalației." },
+    { question: "Cât costă montajul camerelor pentru o proprietate din Moldova?", answer: "Montajul standard pornește de la 900 MDL pentru o cameră. Devizul final depinde de cablare, înălțime, acces, consumabile, echipamente și localitatea proprietății și se confirmă înainte de lucrare." },
+  ],
+  ru: [
+    { question: "Можно организовать установку камер в Молдове, находясь за границей?", answer: "Да. Первичную оценку можно начать дистанционно: укажите населённый пункт, пришлите фото или видео и данные об интернете и питании. Доступ и время работ согласуются с указанным владельцем человеком в Молдове." },
+    { question: "Смогу ли я смотреть камеры из Италии, Германии, Франции или Великобритании?", answer: "Для оборудования с удалённым доступом настройка может включать проверку просмотра через приложение производителя. На объекте должны быть питание и интернет, необходимые выбранной модели." },
+    { question: "Можно отремонтировать систему, если владелец не находится в Молдове?", answer: "Да, если уполномоченный владельцем человек может предоставить доступ к оборудованию. До выезда полезно прислать модель DVR/NVR или камер, описание проблемы и фотографии системы." },
+    { question: "Сколько стоит монтаж камер на объекте в Молдове?", answer: "Стандартный монтаж начинается от 900 MDL за одну камеру. Итоговая смета зависит от кабеля, высоты, доступа, расходных материалов, оборудования и населённого пункта и согласуется до работ." },
+  ],
+};
+
 const REPAIR_FAQS: Record<"ro" | "ru", FAQ[]> = {
   ro: [
     { question: "Reparați camere care nu mai afișează imagine?", answer: "Da. Diagnosticarea verifică alimentarea, cablul, conectorii, rețeaua și camera. Spune-ne dacă problema afectează o singură cameră sau întregul sistem." },
@@ -177,6 +192,21 @@ export default function SearchLanding() {
     );
   }
   if (isCamera) jsonLd.push(schemas.faq(CAMERA_FAQS[lang]));
+  if (isDiaspora) {
+    jsonLd.push(
+      {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        name: copy.heading,
+        description: copy.description,
+        url: canonicalUrl(path),
+        serviceType: "Security Camera Installation and Repair",
+        provider: { "@type": "Organization", "@id": "https://teco.md/#business", name: "TECO.md" },
+        areaServed: { "@type": "Country", name: "Moldova" },
+      },
+      schemas.faq(DIASPORA_FAQS[lang]),
+    );
+  }
   return <>
     <SEO title={copy.title} description={copy.description} canonical={path} lang={lang} jsonLd={jsonLd} />
     <main className="flex-1 bg-[#FAFAFA] pb-20 md:pb-0">
