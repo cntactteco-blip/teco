@@ -247,7 +247,7 @@ export function Header() {
             </button>
           </div>
         </div>
-        <nav aria-label={lang === "ru" ? "Заявки на услуги" : "Cereri de servicii"} className="flex w-full max-w-7xl mx-auto items-center gap-2 border-t border-zinc-100 py-2">
+        <nav aria-label={lang === "ru" ? "Заявки на услуги" : "Cereri de servicii"} className="hidden md:flex w-full max-w-7xl mx-auto items-center gap-2 border-t border-zinc-100 py-2">
           <span className="hidden md:block flex-1 text-sm text-zinc-600">{lang === "ru" ? "Монтаж или ремонт? Отправьте заявку." : "Ai nevoie de montaj sau reparații? Trimite o cerere."}</span>
           <Link href="/oferta" data-testid="header-request-quote" className="flex flex-1 md:flex-none items-center justify-center gap-2 rounded-full bg-[#FF4F00] px-4 py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-[#e64700] transition-colors">
             <ClipboardList className="w-4 h-4 flex-shrink-0" />{lang === "ru" ? "Запросить расчёт" : "Cere ofertă"}
