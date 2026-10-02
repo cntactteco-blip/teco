@@ -18,7 +18,7 @@ const NVR_MAP: Record<number, string> = { 2: "4ch", 4: "4ch", 6: "8ch", 8: "8ch"
 // Fallback unit prices (MDL) when no matching products exist in the store
 const DEFAULT_CAM_PRICE: Record<"wifi" | "poe", number> = { wifi: 1_200, poe: 1_650 };
 const DEFAULT_NVR_PRICE = 1_700;
-const INSTALL_PRICE_PER_CAMERA = 650;
+const INSTALL_PRICE_PER_CAMERA = 900;
 
 export default function BundleBuilder({ onClose }: { onClose?: () => void } = {}) {
   const { lang } = useLang();
