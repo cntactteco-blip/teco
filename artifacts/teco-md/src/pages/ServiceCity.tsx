@@ -29,14 +29,14 @@ export const CITY_DATA: Record<string, {
 };
 
 const SERVICES_RO = [
-  { title: "Montaj Camere de Supraveghere", desc: "Instalare profesională camere IP WiFi și PoE la casă sau afacere.", price: "de la 750 MDL/cameră" },
-  { title: "Diagnosticare & Depanare Sistem", desc: "Identificăm și rezolvăm orice problemă a sistemului tău de supraveghere.", price: "de la 200 MDL/vizită" },
+  { title: "Montaj Camere de Supraveghere", desc: "Instalare profesională camere IP WiFi și PoE la casă sau afacere.", price: "de la 650 MDL/cameră" },
+  { title: "Diagnosticare & Depanare Sistem", desc: "Identificăm și rezolvăm orice problemă a sistemului tău de supraveghere.", price: "de la 350 MDL/vizită" },
   { title: "Reparații Camere & NVR", desc: "Reparăm camere IP, NVR-uri, DVR-uri și sisteme de alarmă.", price: "prețuri la evaluare" },
   { title: "Configurare Acces Remote", desc: "Setăm accesul de pe telefon la camerele tale.", price: "de la 150 MDL" },
 ];
 const SERVICES_RU = [
-  { title: "Монтаж Камер Видеонаблюдения", desc: "Профессиональная установка IP WiFi и PoE камер дома или в офисе.", price: "от 750 MDL/камера" },
-  { title: "Диагностика и Устранение Неисправностей", desc: "Найдём и устраним любую проблему вашей системы видеонаблюдения.", price: "от 200 MDL/визит" },
+  { title: "Монтаж Камер Видеонаблюдения", desc: "Профессиональная установка IP WiFi и PoE камер дома или в офисе.", price: "от 650 MDL/камера" },
+  { title: "Диагностика и Устранение Неисправностей", desc: "Найдём и устраним любую проблему вашей системы видеонаблюдения.", price: "от 350 MDL/визит" },
   { title: "Ремонт Камер и NVR", desc: "Ремонтируем IP-камеры, NVR, DVR и охранные системы.", price: "по результатам оценки" },
   { title: "Настройка Удалённого Доступа", desc: "Настроим доступ с телефона к вашим камерам.", price: "от 150 MDL" },
 ];
@@ -64,8 +64,8 @@ export default function ServiceCity() {
     ? `Montaj și Reparații Camere Supraveghere ${city.ro} — Teco.md`
     : `Монтаж и Ремонт Камер Видеонаблюдения ${city.ru} — Teco.md`;
   const pageDesc = ro
-    ? `Montaj profesional camere de supraveghere în ${city.ro}. Instalare în ${city.eta_ro}, reparații NVR și camere IP. Prețuri de la 200 MDL. ☎ +373 67 200 463`
-    : `Профессиональный монтаж камер видеонаблюдения в ${city.ru}. Установка за ${city.eta_ru}, ремонт NVR и IP-камер. Цены от 200 MDL. ☎ +373 67 200 463`;
+    ? `Montaj profesional camere de supraveghere în ${city.ro}. Programare pentru montaj, reparații NVR și camere IP. Diagnosticare de la 350 MDL. ☎ +373 67 200 463`
+    : `Профессиональный монтаж камер видеонаблюдения в ${city.ru}. Запись на монтаж, ремонт NVR и IP-камер. Диагностика от 350 MDL. ☎ +373 67 200 463`;
 
   const jsonLd = [
     {
@@ -78,7 +78,7 @@ export default function ServiceCity() {
       areaServed: { "@type": "City", name: cityName },
       provider: { "@type": "Organization", "@id": "https://teco.md/#business", name: "TECO.md", logo: "https://teco.md/logo.png" },
     },
-    schemas.service({ name: `Montaj Camere Supraveghere ${city.ro}`, description: pageDesc, url: `https://teco.md/servicii/${citySlug}`, price: "200" }),
+    schemas.service({ name: `Montaj Camere Supraveghere ${city.ro}`, description: pageDesc, url: `https://teco.md/servicii/${citySlug}`, price: "350" }),
     schemas.breadcrumb([
       { name: "Teco.md", url: "https://teco.md" },
       { name: ro ? "Servicii" : "Услуги", url: "https://teco.md/servicii" },
@@ -110,8 +110,8 @@ export default function ServiceCity() {
             </h1>
             <p className="text-zinc-300 text-base max-w-xl mb-6 leading-relaxed">
               {ro
-                ? `Tehnicieni certificați Teco.md ajung în ${city.ro} în ${city.eta_ro}. Instalăm, depanăm și reparăm orice sistem de supraveghere video în ${city.region_ro}.`
-                : `Сертифицированные техники Teco.md приедут в ${city.ru} за ${city.eta_ru}. Устанавливаем, диагностируем и ремонтируем любые системы видеонаблюдения в ${city.region_ru}.`}
+                ? `Echipa Teco.md oferă servicii în ${city.ro}. Instalăm, depanăm și reparăm orice sistem de supraveghere video în ${city.region_ro}.`
+                : `Команда Teco.md предоставляет услуги в ${city.ru}. Устанавливаем, диагностируем и ремонтируем любые системы видеонаблюдения в ${city.region_ru}.`}
             </p>
             <div className="flex flex-wrap gap-3">
               <a href={`https://wa.me/${phone}?text=${encodeURIComponent(ro ? `Bună ziua! Solicit instalare camere de supraveghere în ${city.ro}.` : `Здравствуйте! Прошу установку камер видеонаблюдения в ${city.ru}.`)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-[#FF4F00] text-white font-bold px-6 py-3 rounded-xl hover:opacity-90 active:scale-95 transition-all">
@@ -176,7 +176,7 @@ export default function ServiceCity() {
               {[
                 { n: "01", ro: "Suni sau scrii", ru: "Позвоните или напишите", d_ro: "Contactează-ne pe WhatsApp sau telefon", d_ru: "Свяжитесь с нами в WhatsApp или по телефону" },
                 { n: "02", ro: "Primești oferta", ru: "Получите предложение", d_ro: "Deviz complet în 30 minute", d_ru: "Полный расчёт за 30 минут" },
-                { n: "03", ro: "Tehnicianul vine", ru: "Техник приедет", d_ro: `Ajungem în ${city.ro} în ${city.eta_ro}`, d_ru: `Приедем в ${city.ru} за ${city.eta_ru}` },
+                { n: "03", ro: "Tehnicianul vine", ru: "Техник приедет", d_ro: `Stabilim programarea pentru ${city.ro}`, d_ru: `Согласуем время выезда в ${city.ru}` },
                 { n: "04", ro: "Sistem funcțional", ru: "Система работает", d_ro: "Totul configurat și testat — cheie în mână", d_ru: "Всё настроено и протестировано под ключ" },
               ].map(({ n, ro: rt, ru: rut, d_ro, d_ru }) => (
                 <div key={n} className="text-center">
@@ -195,10 +195,10 @@ export default function ServiceCity() {
         <section className="max-w-5xl mx-auto px-4 md:px-6 py-12">
           <div className="bg-[#09090B] rounded-3xl p-8 md:p-12 text-center">
             <h2 className="font-black text-2xl md:text-3xl text-white mb-3">
-              {ro ? `Montaj camere în ${city.ro} — în ${city.eta_ro}` : `Монтаж камер в ${city.ru} — за ${city.eta_ru}`}
+              {ro ? `Montaj camere în ${city.ro}` : `Монтаж камер в ${city.ru}`}
             </h2>
             <p className="text-white/60 mb-7 text-sm max-w-md mx-auto">
-              {ro ? `Suni acum și un inginer Teco.md ajunge în ${city.ro} în ${city.eta_ro} cu ofertă personalizată.` : `Позвоните сейчас — инженер Teco.md приедет в ${city.ru} за ${city.eta_ru} с персональным предложением.`}
+              {ro ? `Solicită o ofertă pentru ${city.ro}; confirmăm costul și programarea înainte de deplasare.` : `Запросите предложение для ${city.ru}; стоимость и время выезда согласуем заранее.`}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <a href={`https://wa.me/${phone}?text=${encodeURIComponent(ro ? `Bună ziua! Vreau montaj camere în ${city.ro}.` : `Здравствуйте! Хочу монтаж камер в ${city.ru}.`)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 bg-[#FF4F00] text-white font-bold px-8 py-4 rounded-2xl hover:opacity-90 active:scale-95 transition-all">
