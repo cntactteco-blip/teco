@@ -97,7 +97,7 @@ export function AppointmentBooker() {
               {day ? (ro ? day.labelRo : day.labelRu) : ""} • {time}
             </p>
             <p className="text-zinc-400 text-xs mt-3">
-              {ro ? "Un inginer vă va confirma în 15 minute pe WhatsApp." : "Инженер подтвердит запись в течение 15 минут в WhatsApp."}
+              {ro ? "Echipa TECO vă va confirma programarea pe WhatsApp." : "Команда TECO подтвердит запись в WhatsApp."}
             </p>
             <button onClick={() => { setStep("service"); setService(null); setDay(null); setTime(null); }} className="mt-5 text-[#FF4F00] font-semibold text-sm hover:underline">
               {ro ? "Programează altă vizită" : "Записаться на другой визит"}
