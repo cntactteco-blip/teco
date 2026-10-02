@@ -373,14 +373,11 @@ export const schemas = {
       url: p.url || "https://teco.md/servicii",
       image: p.imageUrl,
       provider: {
-        "@type": "LocalBusiness",
-        name: "Teco.md",
+        "@type": "Organization",
+        "@id": "https://teco.md/#business",
+        name: "TECO.md",
+        url: "https://teco.md/",
         telephone: "+37367200463",
-        address: {
-          "@type": "PostalAddress",
-          addressLocality: "Chișinău",
-          addressCountry: "MD",
-        },
       },
       areaServed: { "@type": "Country", name: "Moldova" },
       serviceType: "Security Systems Installation",
@@ -388,7 +385,6 @@ export const schemas = {
         "@type": "Offer",
         price: p.price,
         priceCurrency: "MDL",
-        priceValidUntil: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
       } } : {}),
     };
   },
