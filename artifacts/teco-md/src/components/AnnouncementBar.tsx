@@ -30,19 +30,9 @@ export function AnnouncementBar() {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => window.dispatchEvent(new Event("teco:open-consultant"))}
-        className="md:hidden w-full min-h-10 bg-zinc-950 text-white text-[11px] font-semibold px-3 py-2 text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-orange-500"
-        aria-haspopup="dialog"
-      >
-        {lang === "ru"
-          ? "Нужна помощь с выбором? Спросите консультанта TECO"
-          : "Ai nevoie de ajutor? Întreabă consultantul TECO"}
-      </button>
       {visible && (
         <div
-          className="hidden md:flex text-white text-[11px] sm:text-sm py-2 pl-3 pr-9 relative flex items-center justify-center overflow-hidden"
+          className="text-white text-[11px] sm:text-sm py-2 pl-3 pr-9 relative flex items-center justify-center overflow-hidden"
           style={{
             background:
               "linear-gradient(90deg, #09090b 45%, #1a1a1a 50%, #09090b 55%)",

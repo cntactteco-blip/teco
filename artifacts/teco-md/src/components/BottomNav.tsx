@@ -1,4 +1,4 @@
-import { Home, Grid2x2, ShoppingCart, X, Wrench, ClipboardList } from "lucide-react";
+import { Home, Grid2x2, ShoppingCart, X, Wrench, ClipboardList, Bot } from "lucide-react";
 import { useLocation, useRouter } from "wouter";
 import { useCart } from "@/hooks/useCart";
 import { useStore } from "@/lib/store";
@@ -30,7 +30,30 @@ export function BottomNav() {
   const openCart = useCart((state) => state.openCart);
   const adminPhone = useStore((s) => s.settings.general?.adminPhone ?? "");
   const [contactOpen, setContactOpen] = useState(false);
+  const [helpHint, setHelpHint] = useState(false);
+  const [hintsStopped, setHintsStopped] = useState(false);
   const contactRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (hintsStopped) return;
+    // Short invitations stay inside the navigation, never over products or CTAs.
+    const timers = [20000, 110000].flatMap((delay) => [
+      window.setTimeout(() => { if (!document.hidden) setHelpHint(true); }, delay),
+      window.setTimeout(() => setHelpHint(false), delay + 6000),
+    ]);
+    return () => timers.forEach(window.clearTimeout);
+  }, [hintsStopped]);
+
+  useEffect(() => {
+    const stop = () => { setHelpHint(false); setHintsStopped(true); setContactOpen(false); };
+    window.addEventListener("teco:open-consultant", stop);
+    return () => window.removeEventListener("teco:open-consultant", stop);
+  }, []);
+
+  const openConsultant = () => {
+    setContactOpen(false);
+    window.dispatchEvent(new Event("teco:open-consultant"));
+  };
 
   const phone = adminPhone || "37367200463";
   const WA_MSG = encodeURIComponent(
@@ -44,6 +67,7 @@ export function BottomNav() {
   useEffect(() => {
     if (!contactOpen) return;
     const handler = (e: MouseEvent | TouchEvent) => {
+      if (e.target instanceof Element && e.target.closest("[data-contact-trigger]")) return;
       if (contactRef.current && !contactRef.current.contains(e.target as Node)) {
         setContactOpen(false);
       }
@@ -69,12 +93,25 @@ export function BottomNav() {
   return (
     <>
       {contactOpen && (
-        <div className="md:hidden fixed bottom-[56px] left-0 right-0 z-50 flex justify-end px-3 pb-2 pointer-events-none">
+        <div className="md:hidden fixed bottom-[calc(56px+env(safe-area-inset-bottom,0px))] left-0 right-0 z-50 flex justify-end px-3 pb-2 pointer-events-none">
           <div
             ref={contactRef}
             className="pointer-events-auto flex flex-col items-end gap-2"
             style={{ animation: "slideUpContact 0.18s ease-out" }}
           >
+            <button
+              type="button"
+              onClick={openConsultant}
+              aria-haspopup="dialog"
+              className="flex items-center gap-2.5 bg-zinc-950 text-white text-sm font-bold pl-3 pr-4 py-2.5 rounded-2xl shadow-lg active:scale-95 transition-all"
+            >
+              <Bot className="w-5 h-5" />
+              <span>{lang === "ru" ? "AI-консультант" : "Consultant AI"}</span>
+              <span className="flex items-center gap-1 text-[11px] font-semibold text-green-400">
+                <span className="h-2 w-2 rounded-full bg-green-400" />
+                Online
+              </span>
+            </button>
             <button
               onClick={() => { setContactOpen(false); navigate("/servicii"); }}
               className="flex items-center gap-2.5 bg-[#FF4F00] text-white text-sm font-bold pl-3 pr-4 py-2.5 rounded-2xl shadow-[0_4px_20px_rgba(255,79,0,0.45)] active:scale-95 transition-all"
@@ -153,24 +190,22 @@ export function BottomNav() {
           </button>
 
           <button
-            onClick={() => setContactOpen(o => !o)}
+            onClick={() => { setHelpHint(false); setHintsStopped(true); setContactOpen(o => !o); }}
+            aria-label={lang === "ru" ? "Контакты и AI-консультант" : "Contact și consultant AI"}
+            aria-expanded={contactOpen}
+            data-contact-trigger
             className="flex flex-col items-center justify-center gap-0.5 w-14"
           >
             <div className="relative">
-              {!contactOpen && (
-                <>
-                  <span className="absolute inset-0 rounded-full bg-[#FF4F00] opacity-25 animate-ping" />
-                  <span className="absolute inset-0 rounded-full bg-[#FF4F00] opacity-15 animate-ping [animation-delay:0.5s]" />
-                </>
-              )}
               <div className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-all ${contactOpen ? "bg-zinc-700" : "bg-[#FF4F00]"}`}>
                 {contactOpen
                   ? <X className="w-4 h-4 text-white" />
                   : <WhatsAppIcon className="w-4 h-4 text-white" />
                 }
               </div>
+              {!contactOpen && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-white" />}
             </div>
-            <span className={`text-[9px] font-medium ${contactOpen ? "text-[#FF4F00]" : "text-zinc-400"}`}>{t("nav.contact")}</span>
+            <span className={`text-[9px] font-medium ${contactOpen ? "text-[#FF4F00]" : "text-zinc-400"}`}>{helpHint ? (lang === "ru" ? "Помочь?" : "Te ajut?") : t("nav.contact")}</span>
           </button>
 
         </div>

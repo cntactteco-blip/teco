@@ -296,30 +296,12 @@ export function TecoBot() {
 
   return (
     <>
-      <div className="hidden md:flex fixed bottom-6 left-6 z-40 items-center gap-2">
-        <button
-          onClick={() => setOpen((v) => !v)}
-          aria-label={lang === "ru" ? "Консультант TECO" : "Consultant TECO"}
-          className="relative flex h-11 w-11 items-center justify-center bg-gradient-to-br from-[#FF4F00] to-orange-600 text-white rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 md:h-auto md:w-auto md:gap-2 md:px-4 md:py-3"
-        >
-          <Bot className="w-5 h-5 flex-shrink-0" />
-          <span className="hidden text-sm font-bold md:inline">
-            {lang === "ru" ? "Консультант TECO" : "Consultant TECO"}
-          </span>
-          {unread > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 text-white text-[10px] font-black rounded-full flex items-center justify-center">
-              {unread}
-            </span>
-          )}
-        </button>
-      </div>
-
       {open && (
         <div
           role="dialog"
           aria-modal="true"
           aria-label={lang === "ru" ? "Консультант TECO" : "Consultant TECO"}
-          className="fixed z-50 flex items-end justify-start pointer-events-none"
+          className="fixed z-50 flex items-end justify-end pointer-events-none"
           style={{
             top: vpOffset.top,
             left: vpOffset.left,
@@ -330,7 +312,7 @@ export function TecoBot() {
           }}
         >
           <div
-            className="pointer-events-auto w-full md:w-[400px] md:ml-6 md:mb-24 bg-white rounded-t-2xl md:rounded-2xl shadow-2xl border border-[#E4E4E7] flex flex-col overflow-hidden"
+            className="pointer-events-auto w-full md:w-[400px] md:mr-6 md:mb-24 bg-white rounded-t-2xl md:rounded-2xl shadow-2xl border border-[#E4E4E7] flex flex-col overflow-hidden"
             style={{
               height:
                 window.innerWidth >= 768

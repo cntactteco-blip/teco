@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { X, Wrench } from "lucide-react";
+import { X, Wrench, Bot } from "lucide-react";
 import { Link } from "wouter";
 import { useStore } from "@/lib/store";
+import { useLang } from "@/contexts/LangContext";
 
 const WA_MSG = encodeURIComponent("Bună ziua! Sunt interesat de sistemele de supraveghere TECO.MD. Pot primi o ofertă?");
 const INSTALL_MSG = encodeURIComponent("Bună ziua! Vreau să solicit montaj/instalare sisteme supraveghere. Puteți oferi un deviz?");
@@ -24,6 +25,7 @@ function ViberIcon({ className }: { className?: string }) {
 }
 
 export function FloatingContact() {
+  const { lang } = useLang();
   const adminPhone = useStore((s) => s.settings.general?.adminPhone ?? "");
   const [open, setOpen] = useState(false);
   const [pulse, setPulse] = useState(true);
@@ -42,6 +44,16 @@ export function FloatingContact() {
     <div className="hidden md:flex fixed bottom-6 right-4 z-50 flex-col items-end gap-2">
       {open && (
         <div className="flex flex-col items-end gap-2 mb-1">
+          <button
+            type="button"
+            aria-haspopup="dialog"
+            onClick={() => { setOpen(false); window.dispatchEvent(new Event("teco:open-consultant")); }}
+            className="flex items-center gap-2.5 bg-zinc-950 text-white text-sm font-bold pl-3 pr-4 py-2.5 rounded-2xl shadow-lg hover:opacity-90 active:scale-95 transition-all"
+          >
+            <Bot className="w-5 h-5" />
+            <span>{lang === "ru" ? "AI-консультант" : "Consultant AI"}</span>
+            <span className="flex items-center gap-1 text-[11px] font-semibold text-green-400"><span className="h-2 w-2 rounded-full bg-green-400" />Online</span>
+          </button>
           {/* Solicită Montaj */}
           <Link
             href="/servicii"
@@ -96,6 +108,7 @@ export function FloatingContact() {
             <WhatsAppIcon className="w-7 h-7 text-white" />
           )}
         </button>
+        {!open && <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white" />}
       </div>
 
       <style>{`
