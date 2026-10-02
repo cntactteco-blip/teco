@@ -517,7 +517,7 @@ function ProductModal({ product, onClose, categories }: { product: StoreProduct 
               <label className="block text-[11px] font-semibold text-zinc-400 mb-1 uppercase tracking-wider">Brand</label>
               <select value={form.brand} onChange={(e) => set("brand", e.target.value)}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#FF4F00]">
-                {[...new Set([...brands, ...existingProducts.map((item) => item.brand), form.brand])].filter(Boolean).map((b) => <option key={b} value={b}>{b}</option>)}
+                {[...new Set<string>([...brands, ...existingProducts.map((item) => item.brand), form.brand])].filter(Boolean).map((b) => <option key={b} value={b}>{b}</option>)}
               </select>
               <input
                 type="text"
