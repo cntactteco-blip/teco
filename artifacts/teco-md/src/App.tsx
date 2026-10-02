@@ -120,6 +120,7 @@ function ShopRoutes() {
         <Route path="/sisteme-supraveghere-casa" component={SistemeSupraveghereCasa} />
         <Route path="/camere-supraveghere-exterior" component={CamereExterior} />
         <Route path="/camere-supraveghere-moldova" component={SearchLanding} />
+        <Route path="/camere-supraveghere-moldova-din-strainatate" component={SearchLanding} />
         <Route path="/reparatii-camere-supraveghere" component={SearchLanding} />
         <Route path="/contact" component={SearchLanding} />
         <Route path="/product/:slug" component={ProductDetail} />
