@@ -104,6 +104,7 @@
 /camere                /produse?cat=wifi   301
 /camere-supraveghere   /produse?cat=wifi   301
 /nvr                   /nvr-moldova/       301
+/nvr/                  /nvr-moldova/       301
 /kituri                /produse?cat=kituri 301
 /seturi                /produse?cat=kituri 301
 /alarme                /produse?cat=alarme 301
@@ -151,6 +152,7 @@
 /internet-utp-ftp/ /cablu-utp-ftp-moldova/ 301
 /interfoane-sisteme-de-control-i-management-al-accesului /interfoane-moldova/ 301
 /interfoane-sisteme-de-control-i-management-al-accesului/ /interfoane-moldova/ 301
+/interfoane-sisteme-de-control-i-management-al-accesului/* /interfoane-moldova/ 301
 
 # Nu adăuga fallback /* -> /index.html. Build-ul prerandează paginile publice,
 # iar URL-urile inexistente trebuie să poată răspunde 404.
