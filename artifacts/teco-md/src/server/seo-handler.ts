@@ -20,6 +20,16 @@ async function categoriesFromDb(db: D1Database): Promise<RuntimeCategory[]> {
 export async function serveHtml(request: Request, env: Environment, manifest: Manifest): Promise<Response> {
   const url = new URL(request.url);
   const path = url.pathname.replace(/\/+$/, "") || "/";
+  const runtimeRedirects: Record<string, string> = {
+    "/nvr": "/nvr-moldova/",
+    "/nvr-xvr-registratoare": "/nvr-moldova/",
+    "/router-4g-internet-rapid-fara-fir-oriunde-te-afli": "/router-4g-moldova/",
+    "/cudy": "/router-4g-moldova/",
+    "/internet-utp-ftp": "/cablu-utp-ftp-moldova/",
+    "/interfoane-sisteme-de-control-i-management-al-accesului": "/interfoane-moldova/",
+  };
+  const runtimeTarget = runtimeRedirects[path];
+  if (runtimeTarget) return new Response(null, { status: 301, headers: { Location: runtimeTarget } });
   if (!['GET', 'HEAD'].includes(request.method)) return new Response("Method not allowed", { status: 405, headers: { Allow: "GET, HEAD" } });
   if (path === "/sitemap.xml") {
     const base = await env.ASSETS.fetch(new Request(new URL("/sitemap.xml", url.origin)));
