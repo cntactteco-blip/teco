@@ -130,6 +130,13 @@
 /servicii/cahul            /servicii/cahul/          301
 /montare-camere-supraveghere /montare-camere-supraveghere/ 301
 /reparatii-camere-supraveghere /reparatii-camere-supraveghere/ 301
+/camere-supraveghere-moldova /camere-supraveghere-moldova/ 301
+/camere-supraveghere-chisinau /camere-supraveghere-chisinau/ 301
+/sisteme-supraveghere-casa /sisteme-supraveghere-casa/ 301
+/seturi-camere-supraveghere /seturi-camere-supraveghere/ 301
+/camere-supraveghere-exterior /camere-supraveghere-exterior/ 301
+/oferta /oferta/ 301
+/produse /produse/ 301
 /camere-supraveghere-moldova-din-strainatate /camere-supraveghere-moldova-din-strainatate/ 301
 
 # Nu adăuga fallback /* -> /index.html. Build-ul prerandează paginile publice,
