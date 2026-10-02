@@ -18,6 +18,7 @@ const NVR_MAP: Record<number, string> = { 2: "4ch", 4: "4ch", 6: "8ch", 8: "8ch"
 // Fallback unit prices (MDL) when no matching products exist in the store
 const DEFAULT_CAM_PRICE: Record<"wifi" | "poe", number> = { wifi: 1_200, poe: 1_650 };
 const DEFAULT_NVR_PRICE = 1_700;
+const INSTALL_PRICE_PER_CAMERA = 650;
 
 export default function BundleBuilder({ onClose }: { onClose?: () => void } = {}) {
   const { lang } = useLang();
@@ -58,7 +59,7 @@ export default function BundleBuilder({ onClose }: { onClose?: () => void } = {}
 
   const camTotal = camUnitPrice * camQty;
   const nvrTotal = withNvr ? nvrUnitPrice : 0;
-  const installTotal = withInstall ? camQty * 300 : 0;
+  const installTotal = withInstall ? camQty * INSTALL_PRICE_PER_CAMERA : 0;
   const total = camTotal + nvrTotal + installTotal;
 
   const addAll = () => {
@@ -212,7 +213,7 @@ export default function BundleBuilder({ onClose }: { onClose?: () => void } = {}
                   <input type="checkbox" checked={withInstall} onChange={(e) => setWithInstall(e.target.checked)} className="w-4 h-4 accent-[#FF4F00]" />
                   <div className="flex-1">
                     <p className="text-white text-sm font-semibold">{ro ? "Adaugă instalare profesională" : "Добавить профессиональный монтаж"}</p>
-                    <p className="text-[10px] text-zinc-400">300 MDL × {camQty} = {(300 * camQty).toLocaleString()} MDL</p>
+                    <p className="text-[10px] text-zinc-400">{INSTALL_PRICE_PER_CAMERA} MDL × {camQty} = {(INSTALL_PRICE_PER_CAMERA * camQty).toLocaleString()} MDL</p>
                   </div>
                 </label>
               </div>
