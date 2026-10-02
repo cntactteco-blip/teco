@@ -158,7 +158,7 @@ export default function ColorHunterSlider() {
                   <ShoppingCart className="w-4 h-4" /> {ru ? "Добавить в корзину" : "Adaugă în Coș"}
                 </button>
                 <p className="text-center text-[10px] text-zinc-400 mt-2">
-                  {ru ? "Доставка за 24ч · Гарантия 5 лет" : "Livrare în 24h · Garanție 5 ani"}
+                  {ru ? "Доставка по наличию · Гарантия согласно товару" : "Livrare conform disponibilității · Garanție conform produsului"}
                 </p>
               </div>
             );
