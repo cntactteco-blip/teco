@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { storeActions } from "@/lib/store";
 import { ConsentCheckbox } from "@/components/ConsentCheckbox";
+import { trackLead } from "@/lib/analytics";
 
 export function LeadForm() {
   const [submitted, setSubmitted] = useState(false);
@@ -15,6 +16,7 @@ export function LeadForm() {
     import("@/lib/notify").then(({ notifyLead }) =>
       notifyLead({ name, phone, source: "Banner — Configurare Gratuită" })
     );
+    trackLead("lead_form_banner");
     setSubmitted(true);
   };
 
@@ -22,7 +24,7 @@ export function LeadForm() {
     <section className="w-full bg-zinc-50 py-24 px-6 border-b border-zinc-200">
       <div className="max-w-3xl mx-auto text-center">
         <h2 className="text-2xl md:text-3xl font-bold text-zinc-900 mb-8 tracking-tight">
-          Nu stii ce sa alegi? Lasa un inginer TECO sa iti configureze sistemul gratuit.
+          Nu știi ce să alegi? Lasă-ne datele și îți recomandăm gratuit o configurație potrivită.
         </h2>
 
         {submitted ? (
@@ -33,7 +35,7 @@ export function LeadForm() {
               </svg>
             </div>
             <p className="font-mono text-emerald-800 font-bold">
-              Cererea ta a fost primita. Te sunam in 15 minute.
+              Cererea a fost înregistrată. Echipa TECO te va contacta pentru detalii.
             </p>
           </div>
         ) : (
@@ -49,6 +51,8 @@ export function LeadForm() {
               />
               <input
                 type="tel"
+                inputMode="tel"
+                autoComplete="tel"
                 placeholder="Telefon"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -60,7 +64,7 @@ export function LeadForm() {
                 disabled={!consent}
                 className="h-14 px-8 bg-primary hover:bg-[#E64600] text-white font-bold transition-colors whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Cere Audit Gratuit in 15 minute
+                Cere configurație gratuită
               </button>
             </form>
             <div className="mt-3 max-w-xl mx-auto text-left">
