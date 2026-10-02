@@ -702,6 +702,10 @@ function storeBlogPostToDb(p: BlogPost) {
 
 // ─── Merge settings with defaults (handles missing keys on load) ─────
 function mergeSettings(loaded: any): ModuleSettings {
+  // Old settings writes accidentally persisted a second settings object under `data`.
+  // Ignore it permanently so stale prices/copy can never override the canonical top-level settings.
+  const { data: _legacyNestedSettings, ...canonicalLoaded } = loaded && typeof loaded === "object" ? loaded : {};
+  loaded = canonicalLoaded;
   const loadedServicePrices = { ...(loaded?.servicePrices ?? {}) };
   // Migrare 2026-10: prețul de bază aprobat pentru montaj este 900 MDL/cameră.
   // Snapshot-urile/D1 mai vechi nu trebuie să readucă 300/650/750 MDL în UI sau SEO.
