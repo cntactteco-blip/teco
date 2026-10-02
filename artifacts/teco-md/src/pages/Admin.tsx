@@ -22,7 +22,7 @@ import { CatIconBadge, CatIconPicker, getCatIconDef } from "@/components/CatIcon
 import { productSeoTitle, productSeoDescription } from "@/lib/product-copy";
 
 const ADMIN_PIN_FALLBACK = "teco2025";
-const brands = ["IMOU", "DAHUA", "HIKVISION", "EZVIZ", "TIANDY", "UNIVIEW", "UNIARCH", "TP-Link Tapo", "TP-Link VIGI", "TAPO", "REOLINK", "AJAX", "Ajax Systems", "CUDY", "MERCUSYS", "Ruijie Reyee", "Ubiquiti", "MikroTik", "Hiksemi", "Western Digital", "Seagate", "ZKTeco", "Akuvox", "Hikvision HiWatch"] as const;
+const brands: string[] = ["IMOU", "DAHUA", "HIKVISION", "EZVIZ", "TIANDY", "UNIVIEW", "UNIARCH", "TP-Link Tapo", "TP-Link VIGI", "TAPO", "REOLINK", "AJAX", "Ajax Systems", "CUDY", "MERCUSYS", "Ruijie Reyee", "Ubiquiti", "MikroTik", "Hiksemi", "Western Digital", "Seagate", "ZKTeco", "Akuvox", "Hikvision HiWatch"];
 type Tab = "dashboard" | "products" | "orders" | "leads" | "blog" | "settings" | "ai" | "import";
 
 // ─── Helpers ────────────────────────────────────────────────────────
