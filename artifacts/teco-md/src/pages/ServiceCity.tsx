@@ -175,7 +175,7 @@ export default function ServiceCity() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {[
                 { n: "01", ro: "Suni sau scrii", ru: "Позвоните или напишите", d_ro: "Contactează-ne pe WhatsApp sau telefon", d_ru: "Свяжитесь с нами в WhatsApp или по телефону" },
-                { n: "02", ro: "Primești oferta", ru: "Получите предложение", d_ro: "Deviz complet în 30 minute", d_ru: "Полный расчёт за 30 минут" },
+                { n: "02", ro: "Primești oferta", ru: "Получите предложение", d_ro: "Deviz după evaluarea cererii", d_ru: "Расчёт после оценки заявки" },
                 { n: "03", ro: "Tehnicianul vine", ru: "Техник приедет", d_ro: `Stabilim programarea pentru ${city.ro}`, d_ru: `Согласуем время выезда в ${city.ru}` },
                 { n: "04", ro: "Sistem funcțional", ru: "Система работает", d_ro: "Totul configurat și testat — cheie în mână", d_ru: "Всё настроено и протестировано под ключ" },
               ].map(({ n, ro: rt, ru: rut, d_ro, d_ru }) => (
