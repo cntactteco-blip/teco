@@ -216,8 +216,8 @@ export default function Home() {
                 <span className="text-[9px] text-zinc-400 uppercase tracking-widest mt-0.5">Google · {lang === "ro" ? "4 recenzii" : "4 отзыва"}</span>
               </div>
               <div className="flex min-w-0 flex-col px-2 sm:px-5 border-r border-zinc-200">
-                <span className="text-[clamp(1.35rem,5vw,2rem)] font-black font-mono text-[#09090B] leading-none tabular-nums">847+</span>
-                <span className="text-[9px] text-zinc-400 uppercase tracking-widest mt-0.5">{lang === "ro" ? "instalări" : "установок"}</span>
+                <span className="text-[clamp(1.1rem,4vw,1.65rem)] font-black font-mono text-[#09090B] leading-none">{lang === "ro" ? "În Moldova" : "По Молдове"}</span>
+                <span className="text-[9px] text-zinc-400 uppercase tracking-widest mt-0.5">{lang === "ro" ? "montaj la cerere" : "монтаж по запросу"}</span>
               </div>
               <div className="flex min-w-0 flex-col pl-2 sm:pl-5">
                 <span className="text-[clamp(1.05rem,4.5vw,2rem)] font-black font-mono text-[#FF4F00] leading-none">{lang === "ro" ? "Livrare" : "Доставка"}</span>
