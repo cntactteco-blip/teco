@@ -57,7 +57,7 @@ export default function CamereChisinau() {
       name: "Camere Supraveghere Chișinău — Instalare Profesională",
       description: "Vânzare și instalare sisteme de supraveghere video în Chișinău. Acoperim toate sectoarele: Centru, Botanica, Buiucani, Ciocana, Rîșcani. Tehnicieni certificați, garanție 2–5 ani.",
       url: "https://teco.md/camere-supraveghere-chisinau",
-      provider: { "@type": "LocalBusiness", "@id": "https://teco.md/#business", name: "Teco.md" },
+      provider: { "@type": "Organization", "@id": "https://teco.md/#business", name: "TECO.md", url: "https://teco.md/", logo: "https://teco.md/logo.png" },
       areaServed: [
         { "@type": "City", name: "Chișinău", containedInPlace: { "@type": "Country", name: "Moldova" } },
         ...SECTORS.map(s => ({ "@type": "Place", name: `${s}, Chișinău` })),
