@@ -5,7 +5,6 @@ import { storeActions } from "@/lib/store";
 import { useLang } from "@/contexts/LangContext";
 import { SEO } from "@/components/SEO";
 import { ConsentCheckbox } from "@/components/ConsentCheckbox";
-import { trackLead } from "@/lib/analytics";
 
 type PropertyType = "casa" | "apartament" | "birou" | "depozit" | "comercial";
 type CameraCount = "2" | "4" | "8" | "12+";
@@ -83,7 +82,6 @@ export default function RequestQuote() {
       import("@/lib/notify").then(({ notifyLead }) =>
         notifyLead({ name: name.trim(), phone: phone.trim(), source, notes: leadNotes })
       );
-      trackLead(repair ? "request_quote_repair" : "request_quote_installation");
       setStep("done");
     } catch {
       setError(ro ? "Eroare. Încearcă din nou." : "Ошибка. Попробуйте снова.");
