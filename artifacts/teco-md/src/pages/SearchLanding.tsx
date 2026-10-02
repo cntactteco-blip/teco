@@ -67,6 +67,34 @@ const PAGES: Record<string, { ro: Copy; ru: Copy }> = {
       links: [{ href: "/produse?cat=wifi", label: "WiFi камеры" }, { href: "/produse?cat=poe", label: "PoE камеры" }, { href: "/produse?cat=4g", label: "4G камеры" }, { href: "/seturi-camere-supraveghere", label: "Готовые комплекты" }, { href: "/montare-camere-supraveghere", label: "Монтаж" }],
     },
   },
+  "/camere-supraveghere-moldova-din-strainatate": {
+    ro: {
+      title: "Camere în Moldova din Străinătate: Montaj & Reparații | TECO.md",
+      description: "Locuiești în Italia, Germania, Franța, UK sau altă țară și ai o proprietate în Moldova? Organizează montajul sau reparația camerelor de la distanță cu TECO.md.",
+      heading: "Montaj și reparații camere în Moldova când locuiești peste hotare",
+      intro: "Ai casă, apartament, vilă sau afacere în Moldova, dar locuiești în străinătate? TECO.md poate evalua proiectul de la distanță, coordona accesul cu persoana indicată de tine și instala, configura sau diagnostica sistemul la proprietatea din Moldova.",
+      sections: [
+        { title: "Organizezi lucrarea din Italia, Germania, Franța, UK sau altă țară", text: "Trimite pe WhatsApp localitatea din Moldova, fotografii sau video ale proprietății și spune cine poate oferi acces la obiect. Discutăm configurația, echipamentele și devizul înainte de programare. Nu trebuie să vii în Moldova doar pentru evaluarea inițială." },
+        { title: "Instalare nouă cu acces de pe telefon din străinătate", text: "Pentru un sistem nou evaluăm zonele de supravegheat, alimentarea, internetul, cablarea, NVR-ul și stocarea. La configurare putem verifica vizualizarea de pe telefon prin internet, astfel încât să poți controla sistemul de la distanță, în limitele funcțiilor oferite de echipamente și conexiune." },
+        { title: "Reparații pentru sistemul rămas acasă în Moldova", text: "Dacă sistemul existent nu mai înregistrează, una dintre camere este offline sau accesul din aplicație nu mai funcționează, trimite modelul echipamentului, simptomele și fotografii. Diagnosticarea la obiect se coordonează cu persoana care are acces la proprietate." },
+        { title: "Deviz clar înainte de lucrare", text: "Oferta poate separa echipamentele, materialele, manopera și deplasarea. Montajul standard pornește de la 900 MDL/cameră, iar costul final depinde de cablare, înălțime, acces, materiale și localitate. Condițiile se confirmă înainte de intervenție." },
+      ],
+      links: [{ href: "/montare-camere-supraveghere", label: "Preț montaj camere" }, { href: "/reparatii-camere-supraveghere", label: "Reparații și diagnosticare" }, { href: "/camere-supraveghere-moldova", label: "Camere în Moldova" }, { href: "/sisteme-supraveghere-casa", label: "Sisteme pentru casă" }, { href: "/oferta", label: "Cere deviz" }],
+    },
+    ru: {
+      title: "Камеры в Молдове из-за границы: монтаж и ремонт | TECO.md",
+      description: "Живёте за границей, а дом или бизнес находится в Молдове? Организуйте установку, настройку или ремонт видеонаблюдения дистанционно с TECO.md.",
+      heading: "Монтаж и ремонт камер в Молдове, когда вы живёте за границей",
+      intro: "Если ваш дом, квартира, дача или бизнес находится в Молдове, а вы живёте в другой стране, TECO.md может начать оценку дистанционно и согласовать доступ к объекту с указанным вами человеком.",
+      sections: [
+        { title: "Организация из Италии, Германии, Франции, Великобритании и других стран", text: "Отправьте в WhatsApp населённый пункт в Молдове, фотографии или видео объекта и сообщите, кто предоставит доступ. Конфигурация, оборудование и смета обсуждаются до назначения работ." },
+        { title: "Новая система и просмотр с телефона", text: "Для новой системы оцениваются зоны наблюдения, питание, интернет, кабельные трассы, NVR и хранение. При настройке можно проверить удалённый просмотр с телефона с учётом возможностей оборудования и интернет-соединения." },
+        { title: "Ремонт существующей системы в Молдове", text: "Если пропала запись, камера offline или приложение больше не подключается, отправьте модель оборудования, описание проблемы и фотографии. Выезд согласуется с человеком, который имеет доступ к объекту." },
+        { title: "Смета до начала работ", text: "В предложении можно отдельно указать оборудование, материалы, работу и выезд. Стандартный монтаж начинается от 900 MDL за камеру; итог зависит от кабеля, высоты, доступа, материалов и населённого пункта." },
+      ],
+      links: [{ href: "/montare-camere-supraveghere", label: "Цена монтажа" }, { href: "/reparatii-camere-supraveghere", label: "Ремонт и диагностика" }, { href: "/camere-supraveghere-moldova", label: "Камеры в Молдове" }, { href: "/sisteme-supraveghere-casa", label: "Системы для дома" }, { href: "/oferta", label: "Запросить смету" }],
+    },
+  },
   "/reparatii-camere-supraveghere": {
     ro: {
       title: "Reparații Camere Supraveghere în Moldova | TECO.md",
@@ -126,6 +154,7 @@ export default function SearchLanding() {
   const copy = PAGES[path]?.[lang] ?? PAGES["/contact"][lang];
   const phone = useStore(s => s.settings.general?.adminPhone || "37367200463").replace(/\D/g, "");
   const isRepair = path === "/reparatii-camere-supraveghere";
+  const isDiaspora = path === "/camere-supraveghere-moldova-din-strainatate";
   const isCamera = path === "/camere-supraveghere-moldova";
   const repairFaqs = REPAIR_FAQS[lang];
   const jsonLd: Record<string, unknown>[] = [
@@ -191,7 +220,8 @@ export default function SearchLanding() {
           </aside>
         </>}
         {copy.sections.map(section => <section key={section.title} className="rounded-2xl bg-white border border-zinc-200 p-6 md:p-8"><h2 className="text-xl md:text-2xl font-bold text-zinc-950">{section.title}</h2><p className="mt-4 text-zinc-600 leading-relaxed">{section.text}</p></section>)}
-        {path !== "/contact" && <RemotePropertyHelp repair={isRepair} />}
+        {path !== "/contact" && !isDiaspora && <RemotePropertyHelp repair={isRepair} />}
+        {isDiaspora && <RemotePropertyHelp repair={false} />}
         {isCamera && <section className="rounded-2xl bg-white border border-zinc-200 p-6 md:p-8"><h2 className="text-xl md:text-2xl font-bold text-zinc-950">{lang === "ro" ? "Întrebări despre camere pentru Moldova" : "Вопросы о камерах для Молдовы"}</h2><div className="mt-6 divide-y divide-zinc-200">{CAMERA_FAQS[lang].map(item => <details key={item.question} className="py-4"><summary className="cursor-pointer font-semibold text-zinc-950">{item.question}</summary><p className="mt-3 text-zinc-600 leading-relaxed">{item.answer}</p></details>)}</div></section>}
         {isRepair && <section className="rounded-2xl bg-white border border-zinc-200 p-6 md:p-8"><h2 className="text-xl md:text-2xl font-bold text-zinc-950">{lang === "ro" ? "Întrebări despre reparații" : "Вопросы о ремонте"}</h2><div className="mt-6 divide-y divide-zinc-200">{repairFaqs.map(item => <details key={item.question} className="group py-4"><summary className="cursor-pointer list-none font-semibold text-zinc-950">{item.question}<span className="float-right text-[#FF4F00] group-open:rotate-45">+</span></summary><p className="mt-3 pr-8 text-sm leading-relaxed text-zinc-600">{item.answer}</p></details>)}</div></section>}
         <nav aria-label={lang === "ro" ? "Produse și servicii relevante" : "Оборудование и услуги"} className="flex flex-wrap gap-3 pt-5">
