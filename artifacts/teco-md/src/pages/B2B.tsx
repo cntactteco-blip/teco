@@ -69,8 +69,8 @@ export default function B2B() {
   return (
     <>
       <SEO
-        title={ro ? "Sisteme Securitate Afaceri Moldova — B2B Teco.md | Retail, Depozite, Birouri" : "Системы Безопасности для Бизнеса Молдова — B2B Teco.md"}
-        description={ro ? "Soluții complete de supraveghere pentru afaceri în Moldova. Retail, depozite, birouri, parcări. Prețuri B2B, manager dedicat, garanție SLA, instalare în 24h. Teco.md." : "Комплексные решения видеонаблюдения для бизнеса в Молдове. Розница, склады, офисы, парковки. B2B цены, персональный менеджер, гарантия SLA."}
+        title={ro ? "Supraveghere pentru afaceri în Moldova | TECO.md B2B" : "Системы Безопасности для Бизнеса Молдова — B2B Teco.md"}
+        description={ro ? "Sisteme de supraveghere pentru magazine, depozite și birouri în Moldova. Cere un deviz pentru camere, stocare, montaj și întreținere." : "Комплексные решения видеонаблюдения для бизнеса в Молдове. Розница, склады, офисы, парковки. B2B цены, персональный менеджер, гарантия SLA."}
         keywords={ro ? "sisteme securitate afaceri Moldova, supraveghere retail depozit birou, camere B2B pret, teco.md business" : "системы безопасности бизнес Молдова, видеонаблюдение магазин склад офис, камеры B2B цена"}
         canonical="/b2b"
         lang={ro ? "ro" : "ru"}

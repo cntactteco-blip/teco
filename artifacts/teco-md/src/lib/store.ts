@@ -519,6 +519,8 @@ const _seedProducts: StoreProduct[] = seedProducts.map((p) => ({
   description: p.description ?? "",
 })) as StoreProduct[];
 
+const IMOU_PRODUCT_IDS = new Set<number>([25, 26, 89, 94, 95, 96, 97, 98, 100, 101, 102, 103, 104, 105, 106, 107, 111, 112, 113, 115, 117]);
+
 const _snapshotProducts: StoreProduct[] | null = (() => {
   try {
     const rows = (_snapshot as any).products;
@@ -575,7 +577,7 @@ export function useStore<T>(selector: (s: StoreState) => T): T {
   }, [state]);
 }
 
-const IMOU_PRODUCT_IDS = new Set<number>([25, 26, 89, 94, 95, 96, 97, 98, 100, 101, 102, 103, 104, 105, 106, 107, 111, 112, 113, 115, 117]);
+
 
 function catalogBrand(row: any): string {
   return IMOU_PRODUCT_IDS.has(Number(row?.id)) ? "IMOU" : String(row?.brand ?? "");

@@ -1,3 +1,4 @@
+import { CATEGORY_GUIDES, categoryIntent, categorySeo, isSurveillanceKit } from "@/lib/category-seo";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { Link, useLocation, useRoute, useSearch } from "wouter";
 import { Search, ShoppingCart, SlidersHorizontal, X, ChevronDown, Check, ArrowUpDown, Heart, BarChart2, LayoutGrid } from "lucide-react";
@@ -67,14 +68,6 @@ const PRICE_PRESETS = [
   { label: "3000+",   min: 3000, max: 99999},
 ];
 
-const CATEGORY_GUIDES: Record<string, { ro: { heading: string; copy: string }; ru: { heading: string; copy: string } }> = {
-  wifi: { ro: { heading: "Cum alegi o cameră WiFi?", copy: "Verifică semnalul la locul montării, alimentarea și stocarea pe card sau înregistrator. Pentru curte, alege un model potrivit pentru exterior; pentru zone fără WiFi, compară camerele 4G." }, ru: { heading: "Как выбрать WiFi-камеру?", copy: "Проверьте сигнал в месте установки, питание и хранение записей. Для улицы выбирайте защищённую модель; если нет WiFi, рассмотрите камеры 4G." } },
-  poe: { ro: { heading: "Când merită un sistem PoE?", copy: "Camerele PoE folosesc cablul de rețea pentru date și alimentare. Sunt potrivite când dorești mai multe camere și înregistrare centralizată pe NVR; verifică numărul de porturi și compatibilitatea înainte de comandă." }, ru: { heading: "Когда выбрать PoE?", copy: "PoE использует сетевой кабель для данных и питания. Для нескольких камер и записи на NVR проверьте число портов и совместимость оборудования." } },
-  "4g": { ro: { heading: "Supraveghere unde nu ai internet fix", copy: "Pentru terenuri, șantiere sau gospodării fără internet fix, compară acoperirea 4G, consumul de date și autonomia bateriei. Un panou solar necesită amplasare cu lumină suficientă." }, ru: { heading: "Наблюдение без проводного интернета", copy: "Для участка или стройки сравните покрытие 4G, расход мобильных данных и автономность батареи. Солнечной панели нужно достаточно света." } },
-  nvr: { ro: { heading: "Alege înregistratorul după camere", copy: "Verifică numărul de canale, rezoluția acceptată, compatibilitatea camerelor și spațiul pentru HDD. Dacă nu știi câtă memorie îți trebuie, spune-ne câte camere ai și câte zile vrei să păstrezi înregistrările." }, ru: { heading: "Выберите NVR под ваши камеры", copy: "Проверьте число каналов, разрешение, совместимость и место для HDD. Сообщите нам количество камер и срок хранения записи для расчёта накопителя." } },
-  kituri: { ro: { heading: "Ce verifici într-un set complet?", copy: "Compară numărul de camere, NVR-ul, HDD-ul, cablurile și accesoriile incluse. Montajul și traseul de cablu depind de obiect; solicită un deviz cu toate componentele înainte de comandă." }, ru: { heading: "Что входит в комплект?", copy: "Сравните камеры, NVR, HDD, кабели и аксессуары. Монтаж и прокладка кабеля зависят от объекта; запросите полную смету до заказа." } },
-  alarme: { ro: { heading: "Alarmă Ajax sau sonerie video?", copy: "Un kit Ajax poate include centrală și senzori pentru protecția locuinței. Soneriile și vizoarele video arată cine este la intrare, dar nu înlocuiesc o alarmă antiefracție. Te ajutăm să alegi echipamentul și montajul potrivit." }, ru: { heading: "Ajax или видеозвонок?", copy: "Комплект Ajax с хабом и датчиками служит для охраны. Видеозвонок показывает посетителя у входа, но не заменяет охранную сигнализацию. Поможем подобрать оборудование и монтаж." } },
-};
 
 function ProductCard({ product }: { product: StoreProduct }) {
   const { t } = useLang();
@@ -241,13 +234,16 @@ export default function Products() {
 
   const catCounts = useMemo(() => {
     const c: Record<string, number> = { all: products.length };
-    products.forEach(p => { c[p.category] = (c[p.category] || 0) + 1; });
+    products.forEach(p => {
+      if (p.category === resolveCategorySlug("kituri", storeCategories, productCategories) && !isSurveillanceKit(p.name)) return;
+      c[p.category] = (c[p.category] || 0) + 1;
+    });
     return c;
-  }, [products]);
-  const kitCount = catCounts[resolveCategorySlug("kituri", storeCategories, productCategories)] ?? 0;
+  }, [products, storeCategories, productCategories]);
 
   const filtered = useMemo(() => {
     let list = activeCategory === "all" ? products : products.filter(p => p.category === activeCategory);
+    if (activeCategory === resolveCategorySlug("kituri", storeCategories, productCategories)) list = list.filter(p => isSurveillanceKit(p.name));
     if (offersOnly) {
       list = list.filter(p => p.inStock !== false && !!p.oldPrice && p.oldPrice > p.price);
     }
@@ -269,7 +265,7 @@ export default function Products() {
     if (sortBy === "price_asc")  list = [...list].sort((a, b) => a.price - b.price);
     if (sortBy === "price_desc") list = [...list].sort((a, b) => b.price - a.price);
     return list;
-  }, [activeCategory, search, selectedBrands, priceMin, priceMax, sortBy, products, offersOnly]);
+  }, [activeCategory, search, selectedBrands, priceMin, priceMax, sortBy, products, offersOnly, storeCategories, productCategories]);
 
   const activeFilterCount = useMemo(() => {
     let n = 0;
@@ -305,88 +301,16 @@ export default function Products() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // ── SEO dinamic per categorie ─────────────────────────────────────────
-  type CatSeoEntry = { title: string; desc: string; keywords: string };
-  const CAT_SEO: Record<string, { ro: CatSeoEntry; ru: CatSeoEntry }> = {
-    wifi: {
-      ro: { title: `Camere WiFi Supraveghere — ${catCounts.wifi ?? 0} Modele | Teco.md Moldova`,
-            desc: "Camere WiFi pentru casă, curte și birou. Vizualizare live pe telefon, instalare ușoară și livrare rapidă în toată Moldova.",
-            keywords: "camere wifi supraveghere moldova, camere ip wireless, camera supraveghere fara cablu, IMOU, Reolink, TP-Link Tapo, dahua wifi, teco.md" },
-      ru: { title: `WiFi Камеры Видеонаблюдения — ${catCounts.wifi ?? 0} Моделей | Teco.md`,
-            desc: "Беспроводные WiFi камеры видеонаблюдения для дома и офиса. Без кабелей, настройка 10 минут, просмотр онлайн с телефона. Доставка 24ч по всей Молдове.",
-            keywords: "wifi камеры видеонаблюдения молдова, беспроводные камеры, IMOU, Reolink, TP-Link Tapo, teco.md" },
-    },
-    poe: {
-      ro: { title: `Camere PoE Supraveghere — ${catCounts.poe ?? 0} Modele | Teco.md Moldova`,
-            desc: "Camere IP PoE pentru sisteme profesionale, alimentate prin cablu LAN. Compară rezoluția, compatibilitatea NVR și modelele disponibile în Moldova.",
-            keywords: "camere poe supraveghere moldova, camere ip poe 4k, camere profesionale exterior, dahua poe, uniview poe, uniarch, teco.md" },
-      ru: { title: `PoE Камеры Видеонаблюдения — ${catCounts.poe ?? 0} Моделей | Teco.md`,
-            desc: "Профессиональные IP PoE камеры 4K–8MP для систем видеонаблюдения. Питание по LAN-кабелю, совместимы с NVR Dahua, Uniview, Uniarch. Доставка 24ч.",
-            keywords: "poe камеры видеонаблюдения молдова, ip камеры 4k, профессиональные камеры, dahua, uniview, teco.md" },
-    },
-    "4g": {
-      ro: { title: `Camere 4G Solar Supraveghere — ${catCounts["4g"] ?? 0} Modele | Teco.md Moldova`,
-            desc: "Camere de supraveghere 4G cu panou solar pentru locuri fără curent și internet. Funcționează autonom, transmit video direct pe telefon prin SIM card.",
-            keywords: "camere 4g solar supraveghere moldova, camera supraveghere autonoma fara curent, camera 4g sim, reolink 4g, teco.md" },
-      ru: { title: `4G Solar Камеры — ${catCounts["4g"] ?? 0} Моделей | Teco.md`,
-            desc: "Камеры видеонаблюдения 4G с солнечной батареей для мест без электричества. Работают автономно, передают видео через SIM-карту.",
-            keywords: "4g камеры видеонаблюдения молдова, камера без электричества, солнечная камера, 4g sim камера, reolink, teco.md" },
-    },
-    nvr: {
-      ro: { title: `Înregistratoare NVR — ${catCounts.nvr ?? 0} Modele | Teco.md Moldova`,
-            desc: "NVR-uri profesionale Dahua, Uniview, Uniarch pentru 4–16 camere IP. Înregistrare 24/7, stocare HDD, acces remote prin aplicație. Garanție 2–3 ani.",
-            keywords: "nvr inregistratoare supraveghere moldova, nvr dahua, nvr uniview, inregistrator ip poe, sistem supraveghere nvr, teco.md" },
-      ru: { title: `Видеорегистраторы NVR — ${catCounts.nvr ?? 0} Моделей | Teco.md`,
-            desc: "Профессиональные NVR Dahua, Uniview, Uniarch на 4–16 IP камер. Запись 24/7, хранение HDD, удалённый доступ через приложение. Гарантия 2–3 года.",
-            keywords: "nvr видеорегистраторы молдова, nvr dahua, nvr uniview, ip nvr система, teco.md" },
-    },
-    kituri: {
-      ro: { title: `Seturi Complete Supraveghere — ${kitCount} Kituri | Teco.md Moldova`,
-            desc: "Compară seturi cu camere, NVR și accesorii pentru casă sau afacere. Verifică ce include fiecare kit și cere un deviz de instalare în Moldova.",
-            keywords: "seturi complete supraveghere moldova, kit supraveghere nvr camere, sistem supraveghere complet casa, kituri instalare, teco.md, seturi camere video" },
-      ru: { title: `Комплекты Видеонаблюдения — ${kitCount} Наборов | Teco.md`,
-            desc: "Сравните комплекты с камерами, NVR и аксессуарами для дома или бизнеса. Уточните состав набора и запросите смету монтажа в Молдове.",
-            keywords: "комплекты видеонаблюдения молдова, набор камер nvr, система видеонаблюдения для дома, teco.md" },
-    },
-    alarme: {
-      ro: { title: "Alarmă Ajax și Sonerii Video | Teco.md Moldova",
-            desc: "Compară kitul de alarmă Ajax cu sonerii și vizoare video. Alege protecția potrivită casei sau biroului și cere o ofertă de montaj în Moldova.",
-            keywords: "sisteme alarma moldova, alarma ajax, sistem alarma casa, detectoare miscare, alarma profesionala, teco.md" },
-      ru: { title: "Сигнализация Ajax и Видеозвонки | Teco.md Молдова",
-            desc: "Сравните комплект Ajax с видеозвонками и дверными глазками. Подберём защиту для дома или офиса и предложим монтаж в Молдове.",
-            keywords: "системы сигнализации молдова, ajax сигнализация, охранная сигнализация дома, teco.md" },
-    },
-    all: {
-      ro: { title: "Camere Supraveghere, NVR și Alarme | Teco.md Moldova",
-            desc: "Camere WiFi, PoE și 4G, NVR, kituri complete și alarme. Stoc în Chișinău, livrare în Moldova, consultanță și montaj profesional.",
-            keywords: "camere supraveghere moldova, sisteme supraveghere chisinau, seturi complete supraveghere video, nvr dvr moldova, kituri camere, alarme, teco.md" },
-      ru: { title: "Каталог Камер, NVR, Комплектов, Сигнализаций | Teco.md Молдова",
-            desc: "Полный каталог систем видеонаблюдения: IP камеры WiFi, PoE, 4G, NVR, готовые комплекты и сигнализации. Физический склад в Кишинёве. Доставка 24ч.",
-            keywords: "камеры видеонаблюдения молдова, системы видеонаблюдения кишинев, nvr dvr молдова, комплекты камер, сигнализации, teco.md" },
-    },
-  };
-
-  // Găsește numele categoriei active din store (pentru categorii noi din admin)
   const activeCatDef = storeCategories.find((c) => c.slug === activeCategory || c.id === activeCategory);
-  const activeCatLabel = activeCatDef
-    ? (lang === "ru" ? (activeCatDef.labelRu ?? activeCatDef.label) : activeCatDef.label)
-    : "";
+  const activeCatLabel = activeCatDef ? (lang === "ru" ? (activeCatDef.labelRu ?? activeCatDef.label) : activeCatDef.label) : "";
+  const effectiveCat = isKitRoute ? "kituri" : activeCategory === "all" ? "all" : categoryIntent(activeCatDef || { slug: activeCategory });
+  const categorySeoCopy = categorySeo(effectiveCat, lang, activeCatLabel || "Produse");
 
-  // SEO: folosește intrarea hardcodată dacă există, altfel generează dinamic
-  const effectiveCat = isKitRoute ? "kituri" : (activeCategory in CAT_SEO ? activeCategory : "all");
-  const baseSeo = CAT_SEO[effectiveCat][lang];
-  const categorySeo = (activeCategory !== "all" && !(activeCategory in CAT_SEO) && activeCatLabel)
-    ? {
-        title: `${activeCatLabel} — ${catCounts[activeCategory] ?? 0} Modele | Teco.md Moldova`,
-        desc: `Compară ${catCounts[activeCategory] ?? 0} produse din categoria ${activeCatLabel}. Vezi prețuri și caracteristici și solicită livrare sau montaj în Moldova.`,
-        keywords: `${activeCatLabel.toLowerCase()} moldova, teco.md, sisteme supraveghere`,
-      }
-    : baseSeo;
   const seo = activeCatDef && activeCategory !== "all" ? {
-    ...categorySeo,
-    title: (lang === "ro" && activeCatDef.seoTitle?.trim()) || categorySeo.title,
-    desc: (lang === "ro" && activeCatDef.seoDescription?.trim()) || categorySeo.desc,
-  } : categorySeo;
+    ...categorySeoCopy,
+    title: (lang === "ro" && activeCatDef.seoTitle?.trim()) || categorySeoCopy.title,
+    desc: (lang === "ro" && activeCatDef.seoDescription?.trim()) || categorySeoCopy.desc,
+  } : categorySeoCopy;
 
   const canonicalUrl = isKitRoute || activeCategory === resolveCategorySlug("kituri", storeCategories, productCategories)
     ? "/seturi-camere-supraveghere"

@@ -1,3 +1,4 @@
+import { CATEGORY_GUIDES, categoryIntent, categorySeo, isSurveillanceKit } from "../lib/category-seo.ts";
 import { productSchema as buildProductSchema } from "../lib/product-schema.ts";
 import { productSpecRows } from "../lib/product-specs.ts";
 import { absoluteImage, canonicalPath } from "../lib/seo-url.ts";
@@ -94,39 +95,62 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
     if (noIndex) headers.set("X-Robots-Tag", "noindex, follow");
     return new Response(request.method === "HEAD" ? null : original.body, { status, headers });
   };
-  const dynamicPage = async (title: string, description: string, canonical: string, body: string, schema: unknown) => {
+  const dynamicPage = async (title: string, description: string, canonical: string, body: string, schema: unknown, noIndex = false) => {
     const shell = await readAsset("/app");
     if (!shell.ok) throw new Error("Missing application shell");
     let html = await shell.text();
     html = html.replace(/<meta[^>]*name="robots"[^>]*>/gi, "");
-    const safeTitle = escapeHtml(seoSnippet(title, 62));
+    const safeTitle = escapeHtml(seoSnippet(title, 80));
     const safeDescription = escapeHtml(seoSnippet(description, 155));
     const safeCanonical = escapeHtml(`https://teco.md${canonical}`);
     const jsonLd = JSON.stringify(schema).replace(/</g, "\\u003c");
     html = html.replace("</head>", `<title data-teco-prerender="">${safeTitle}</title><meta data-teco-prerender="" name="description" content="${safeDescription}"><link data-teco-prerender="" rel="canonical" href="${safeCanonical}"><meta property="og:type" content="website"><meta property="og:title" content="${safeTitle}"><meta property="og:description" content="${safeDescription}"><meta property="og:url" content="${safeCanonical}"><meta property="og:image" content="https://teco.md/opengraph.jpg"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${safeTitle}"><meta name="twitter:description" content="${safeDescription}"><meta name="twitter:image" content="https://teco.md/opengraph.jpg"><script type="application/ld+json">${jsonLd}</script></head>`);
+    if (noIndex) html = html.replace("</head>", '<meta name="robots" content="noindex, follow"></head>');
     html = html.replace('<div id="root"></div>', `<div id="root"><main>${body}</main></div>`);
-    return new Response(request.method === "HEAD" ? null : html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=0, must-revalidate" } });
+    return new Response(request.method === "HEAD" ? null : html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=0, must-revalidate", ...(noIndex ? { "X-Robots-Tag": "noindex, follow" } : {}) } });
   };
-  // Categories created in Admin need a crawlable page on the same day, without a build.
-  if (path === "/produse" && url.searchParams.has("cat") && env.DB) {
+  // Catalogs always read current D1 rows. A static build cannot freeze product counts or prices.
+  if ((path === "/produse" || path === "/seturi-camere-supraveghere") && env.DB) {
     try {
-      const slug = url.searchParams.get("cat") || "";
+      const requested = path === "/seturi-camere-supraveghere" ? "kituri" : url.searchParams.get("cat") || "all";
       const categories = await categoriesFromDb(env.DB);
-      const category = categories.find((item) => item.slug === slug || item.id === slug);
-      if (category && (!asset || category.seoTitle || category.seoDescription || category.seoIntro)) {
-        const products = await env.DB.prepare("SELECT slug, name, price, category FROM products WHERE (category = ? OR category = ?) AND slug IS NOT NULL AND slug != '' AND price > 0 ORDER BY name LIMIT 100").bind(category.slug, category.id || category.slug).all<{ slug: string; name: string; price: number; category: string }>();
-        if (!products.results?.length) return response("/404", 404, true);
-        const resolvedSlug = resolveCategorySlug(slug, categories, products.results.map((product) => product.category));
-        const canonical = canonicalPath(`/produse?cat=${encodeURIComponent(resolvedSlug)}`);
-        const title = category.seoTitle || `${category.label} | Produse și prețuri în Moldova | Teco.md`;
-        const description = category.seoDescription || `Compară ${category.label} la Teco.md. Vezi specificațiile și prețurile produselor și cere o recomandare sau montaj în Moldova.`;
-        const intro = category.seoIntro || `Compară specificațiile produselor din categoria ${category.label} și alege echipamentul potrivit pentru obiectul tău.`;
-        const links = products.results.map((product) => `<li><a href="/product/${encodeURIComponent(product.slug)}/">${escapeHtml(product.name)}</a> — ${escapeHtml(product.price)} MDL</li>`).join("");
-        const body = `<h1>${escapeHtml(category.label)}</h1><p>${escapeHtml(intro)}</p><ul>${links}</ul><a href="/servicii/">Servicii de instalare</a>`;
-        return dynamicPage(title, description, canonical, body, { "@context": "https://schema.org", "@type": "CollectionPage", name: category.label, description, url: `https://teco.md${canonical}` });
+      const category = requested === "all" ? undefined : categories.find((item) => item.slug === requested || item.id === requested || (requested === "kituri" && categoryIntent(item) === "kituri"));
+      if (requested !== "all" && !category) return response("/404", 404, true);
+      const query = category
+        ? env.DB.prepare("SELECT slug, name, price, category FROM products WHERE (category = ? OR category = ?) AND slug IS NOT NULL AND slug != '' AND price > 0 ORDER BY name").bind(category.slug, category.id || category.slug)
+        : env.DB.prepare("SELECT slug, name, price, category FROM products WHERE slug IS NOT NULL AND slug != '' AND price > 0 ORDER BY name");
+      const products = await query.all<{ slug: string; name: string; price: number; category: string }>();
+      if (category && !products.results?.length) return response("/404", 404, true);
+      const intent = categoryIntent(category);
+      const rows = (products.results ?? []).filter((product) => intent !== "kituri" || isSurveillanceKit(product.name));
+      const productCategories = rows.map((product) => product.category);
+      const resolvedSlug = category ? resolveCategorySlug(category.slug, categories, productCategories) : "all";
+      const canonical = intent === "kituri" ? "/seturi-camere-supraveghere/" : canonicalPath(`/produse?cat=${encodeURIComponent(resolvedSlug)}`);
+      if (url.pathname !== new URL(canonical, url).pathname || (intent === "kituri" && path !== "/seturi-camere-supraveghere") || (category && intent !== "kituri" && requested !== resolvedSlug)) {
+        const target = new URL(canonical, url.origin);
+        for (const [key, value] of url.searchParams) if (key !== "cat") target.searchParams.append(key, value);
+        return new Response(null, { status: 301, headers: { Location: target.pathname + target.search } });
       }
+      const label = intent === "kituri" ? "Seturi camere de supraveghere" : category?.label || "Camere de supraveghere, seturi, NVR și alarme";
+      const copy = categorySeo(intent, "ro", label);
+      const title = category?.seoTitle?.trim() || copy.title;
+      const description = category?.seoDescription?.trim() || copy.desc;
+      const guide = CATEGORY_GUIDES[intent]?.ro;
+      const intro = category?.seoIntro?.trim() || guide?.copy || description;
+      const crumbs = [{ name: "Acasă", url: "/" }, { name: "Produse", url: "/produse/" }, ...(category ? [{ name: label, url: canonical }] : [])];
+      const links = rows.map((product) => `<li><a href="/product/${encodeURIComponent(product.slug)}/">${escapeHtml(product.name)}</a> — ${escapeHtml(product.price)} MDL</li>`).join("");
+      const categoryLinks = !category ? `<nav aria-label="Categorii">${categories.map((c) => {
+        const slug = resolveCategorySlug(c.slug, categories, productCategories);
+        const href = categoryIntent(c) === "kituri" ? "/seturi-camere-supraveghere/" : canonicalPath(`/produse?cat=${encodeURIComponent(slug)}`);
+        return `<a href="${escapeHtml(href)}">${escapeHtml(c.label)}</a>`;
+      }).join(" · ")}</nav>` : "";
+      const body = `<nav aria-label="Navigare">${crumbs.map((c) => `<a href="${escapeHtml(c.url)}">${escapeHtml(c.name)}</a>`).join(" › ")}</nav><h1>${escapeHtml(label)}</h1><p>${escapeHtml(description)}</p>${categoryLinks}<p>${rows.length} produse disponibile în catalog. Verifică stocul pe pagina produsului.</p><ul>${links}</ul><section><h2>${escapeHtml(guide?.heading || `Cum alegi ${label}?`)}</h2><p>${escapeHtml(intro)}</p></section><a href="/servicii/">Instalare și configurare</a> · <a href="/oferta/">Cere o ofertă pentru obiectul tău</a> · <a href="/blog/">Ghiduri de alegere</a>`;
+      return dynamicPage(title, description, canonical, body, [
+        { "@context": "https://schema.org", "@type": "CollectionPage", name: label, description, url: `https://teco.md${canonical}`, mainEntity: { "@type": "ItemList", numberOfItems: rows.length, itemListElement: rows.map((p, i) => ({ "@type": "ListItem", position: i + 1, name: p.name, url: `https://teco.md/product/${encodeURIComponent(p.slug)}/` })) } },
+        { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: crumbs.map((c, i) => ({ "@type": "ListItem", position: i + 1, name: c.name, item: `https://teco.md${c.url}` })) },
+      ], url.searchParams.has("q") || url.searchParams.get("oferte") === "1");
     } catch {
-      if (!asset) return new Response("Pagina nu este disponibilă temporar.", { status: 503, headers: { "Retry-After": "60", "Cache-Control": "no-store" } });
+      return new Response("Pagina nu este disponibilă temporar.", { status: 503, headers: { "Retry-After": "60", "Cache-Control": "no-store" } });
     }
   }
   if (path === "/blog" && env.DB) {

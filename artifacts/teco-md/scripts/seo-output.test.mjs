@@ -290,3 +290,22 @@ test("article edits override prerendered content without another deployment", as
   assert.ok(html.includes('property="og:image" content="https://teco.md/product-images/ajax.webp"'));
   assert.ok(html.includes('"@type":"BlogPosting"'));
 });
+
+test("a prerendered kits page uses current camera kits and excludes a mislabeled network mesh set", async () => {
+  const db = { prepare() { return {
+    async first() { return { data: JSON.stringify({ categories: [{ id: "kituri", slug: "Seturi-Complete-Camere-Supraveghere", label: "Seturi Complete" }] }) }; },
+    bind() { return { async all() { return { results: [
+      { slug: "new-kit", name: "Set 4 camere cu NVR", price: 12500, category: "Seturi-Complete-Camere-Supraveghere" },
+      { slug: "mesh", name: "MESH WiFi System CUDY", price: 1000, category: "Seturi-Complete-Camere-Supraveghere" },
+    ] }; } }; },
+  }; } };
+  const assets = { async fetch() { return new Response('<html><head></head><body><div id="root"></div></body></html>'); } };
+  const manifest = { pages: { "/seturi-camere-supraveghere/": "/__seo/stale-kits/" }, redirects: {} };
+  const res = await serveHtml(new Request("https://teco.md/seturi-camere-supraveghere/"), { DB: db, ASSETS: assets }, manifest);
+  const html = await res.text();
+  assert.equal(res.status, 200);
+  assert.ok(html.includes('/product/new-kit/') && html.includes('12500 MDL'));
+  assert.ok(!html.includes('/product/mesh/') && html.includes('"numberOfItems":1'));
+  const facets = await serveHtml(new Request("https://teco.md/seturi-camere-supraveghere/?q=camere"), { DB: db, ASSETS: assets }, manifest);
+  assert.equal(facets.headers.get("X-Robots-Tag"), "noindex, follow");
+});

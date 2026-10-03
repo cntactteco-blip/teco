@@ -129,7 +129,7 @@ export default function ServiceCity() {
           <div className="max-w-5xl mx-auto px-4 md:px-6 py-5">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { n: city.eta_ro, n_ru: city.eta_ru, ro: "Timp de ajuns", ru: "Время приезда" },
+                { n: "Programare", n_ru: "По записи", ro: "Confirmată pentru obiect", ru: "Согласуем для объекта" },
                 { n: ro ? "Instalare" : "Монтаж", n_ru: "Монтаж", ro: "serviciu disponibil", ru: "услуга доступна" },
                 { n: ro ? "Reparații" : "Ремонт", n_ru: "Ремонт", ro: "și diagnosticare", ru: "и диагностика" },
                 { n: "12 luni", n_ru: "12 мес.", ro: "Garanție lucrare", ru: "Гарантия работ" },
@@ -187,6 +187,17 @@ export default function ServiceCity() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        <section className="max-w-5xl mx-auto px-4 md:px-6 py-10">
+          <h2 className="font-black text-2xl text-[#09090B] mb-4">{ro ? "Pregătește evaluarea și compară oferta" : "Подготовьтесь к оценке и сравнению предложений"}</h2>
+          <p className="text-sm text-zinc-600 leading-6 mb-4">{ro ? `Pentru o ofertă în ${city.ro}, trimite adresa, fotografii cu intrările și curtea, numărul de camere dorit și informații despre internet și alimentare. Pentru reparații, adaugă modelul NVR/DVR și simptomele. Devizul trebuie să separe echipamentele, materialele, manopera și deplasarea; programarea se confirmă înainte de vizită.` : `Для предложения в ${city.ru} пришлите адрес, фото входов и двора, число камер и сведения об интернете и питании. Для ремонта укажите модель NVR/DVR и симптомы. В смете отдельно согласуем оборудование, материалы, работу и выезд; время визита подтверждаем заранее.`}</p>
+          <div className="flex flex-wrap gap-4 text-sm font-semibold text-[#FF4F00]">
+            <Link href="/montare-camere-supraveghere/">{ro ? "Costul și etapele montajului" : "Стоимость и этапы монтажа"}</Link>
+            <Link href="/reparatii-camere-supraveghere/">{ro ? "Diagnosticare și reparații" : "Диагностика и ремонт"}</Link>
+            <Link href="/seturi-camere-supraveghere/">{ro ? "Compară seturile de camere" : "Сравнить комплекты камер"}</Link>
+            <Link href="/blog/">{ro ? "Ghiduri de alegere" : "Руководства по выбору"}</Link>
           </div>
         </section>
 

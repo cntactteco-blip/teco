@@ -70,3 +70,16 @@ test("recent product cache cannot suppress blog edits, new articles or withdrawa
     globalThis.fetch = oldFetch;
   }
 });
+
+test("an empty browser cache loads every catalog snapshot row rather than demonstration products", async () => {
+  const oldStorage = globalThis.localStorage;
+  globalThis.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
+  const vite = await createServer({ configFile: false, root: resolve(import.meta.dirname, ".."), resolve: { alias: { "@": resolve(import.meta.dirname, "../src") } }, optimizeDeps: { noDiscovery: true, include: [] }, server: { middlewareMode: true, hmr: false, watch: null }, appType: "custom" });
+  try {
+    const { readFileSync } = await import("node:fs");
+    const snapshot = JSON.parse(readFileSync(resolve(import.meta.dirname, "../src/lib/catalog-snapshot.json"), "utf8"));
+    const store = await vite.ssrLoadModule("/src/lib/store.ts");
+    assert.deepEqual(store.getState().products.map(p => p.id), snapshot.products.map(p => p.id));
+    assert.equal(store.getState().products.find(p => p.id === 25)?.brand, "IMOU");
+  } finally { await vite.close(); globalThis.localStorage = oldStorage; }
+});

@@ -111,7 +111,12 @@ try {
     const settingsRows = d1Query("SELECT data FROM settings WHERE id = 1");
     settings = settingsRows?.[0]?.data ? JSON.parse(settingsRows[0].data) : null;
   } catch (error) {
-    console.warn(`[snapshot] Settings D1 unavailable; retaining existing settings (${error.message}).`);
+    console.warn(`[snapshot] Settings D1 unavailable; reading public settings (${error.message}).`);
+    const response = await fetch("https://teco.md/api/settings", { headers: { "User-Agent": "Mozilla/5.0" }, signal: AbortSignal.timeout(20000) });
+    if (!response.ok) throw new Error(`Settings API returned ${response.status}`);
+    const payload = await response.json();
+    if (!payload?.data || !Array.isArray(payload.data.categories)) throw new Error("Invalid settings API response");
+    settings = payload.data;
   }
 
   let blogPosts = existingSnapshot?.blogPosts ?? [];

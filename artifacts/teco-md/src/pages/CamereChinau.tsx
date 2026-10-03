@@ -25,25 +25,25 @@ const SECTORS = [
 ];
 
 const FAQS = [
-  { q: "Instalați camere de supraveghere în Chișinău cu venire la domiciliu?", a: "Da, tehnicianul vine la adresa ta în Chișinău — orice sector (Centru, Botanica, Buiucani, Ciocana, Rîșcani etc.). Programăm vizita pentru ziua sau a doua zi. Sună la 067 200 463." },
-  { q: "Cât costă un sistem de supraveghere în Chișinău?", a: "Un sistem complet pentru casă sau apartament în Chișinău costă de la 3.500 MDL (2 camere WiFi + configurare). Un sistem profesional de 4 camere PoE + NVR + montaj pornește de la 8.000 MDL. Contactați-ne pentru ofertă personalizată gratuită." },
-  { q: "Câte zile durează până instalați în Chișinău?", a: "De obicei instalăm în 24–48h de la confirmare. Pentru urgențe, putem veni în aceeași zi dacă tehnicianul este disponibil." },
+  { q: "Instalați camere de supraveghere în Chișinău cu venire la domiciliu?", a: "Da, tehnicianul vine la adresa ta în Chișinău — orice sector (Centru, Botanica, Buiucani, Ciocana, Rîșcani etc.). Confirmăm programarea după evaluarea cererii. Sună la 067 200 463." },
+  { q: "Cât costă un sistem de supraveghere în Chișinău?", a: "Prețul depinde de numărul și modelele camerelor, NVR, stocare, cabluri și manoperă. Compară prețurile actuale din catalog și cere un deviz cu echipamentele, instalarea și materialele separate." },
+  { q: "Câte zile durează până instalați în Chișinău?", a: "Data se confirmă în funcție de disponibilitatea echipamentelor, complexitatea lucrării și programul tehnicianului. Trimite adresa și detaliile obiectului pentru programare." },
   { q: "Puteți instala camere la apartament în bloc?", a: "Da, instalăm camere WiFi și PoE la apartamente în bloc (interior și pe hol/ușă intrare). Oferim soluții fără cabluri vizibile și fără modificări la structura blocului." },
-  { q: "Ce branduri de camere instalați în Chișinău?", a: "Instalăm IMOU, Dahua, Uniview, Uniarch, Reolink, TP-Link Tapo, Ajax. Toate produsele sunt originale, cu garanție producător 2–5 ani." },
-  { q: "Oferiți garanție pentru instalarea din Chișinău?", a: "Da, garanție 2–5 ani pentru montajul nostru. Dacă apare orice problemă cu instalarea în această perioadă, revenim gratuit." },
-  { q: "Pot vedea camerele de pe telefon, de oriunde?", a: "Da, configurăm accesul remote complet — vizualizare live și înregistrări din aplicație, de oriunde în lume, pe iPhone sau Android." },
-  { q: "Instalați și sisteme de alarmă în Chișinău?", a: "Da, instalăm sisteme Ajax wireless — cele mai fiabile din Moldova. Senzori de mișcare, ușă/fereastră, sirenă, monitorizare 24/7 prin aplicație." },
+  { q: "Ce branduri de camere instalați în Chișinău?", a: "Instalăm IMOU, Dahua, Uniview, Uniarch, Reolink, TP-Link Tapo, Ajax. Compatibilitatea și garanția se verifică pentru fiecare model și se precizează în ofertă." },
+  { q: "Oferiți garanție pentru instalarea din Chișinău?", a: "Condițiile garanției pentru manoperă și echipamente se precizează în oferta acceptată. Cere durata, acoperirea și procedura de intervenție înainte de lucrare." },
+  { q: "Pot vedea camerele de pe telefon, de oriunde?", a: "Accesul de pe telefon depinde de aplicația modelului și de conexiunea la internet a sistemului. La predare verificăm vizualizarea din afara rețelei locale, folosind date mobile." },
+  { q: "Instalați și sisteme de alarmă în Chișinău?", a: "Da, instalăm sisteme Ajax wireless — cu centrală și senzori compatibili. Senzori de mișcare, ușă/fereastră, sirenă, monitorizare 24/7 prin aplicație." },
 ];
 
 export default function CamereChisinau() {
   const { lang } = useLang();
   const storeProducts = useStore(s => s.products);
   const sp = useStore(s => s.settings.servicePrices);
-  const montajPrice = sp?.montaj?.replace(/^de la /i, "") || "750 MDL/cameră";
+  const montajPrice = sp?.montaj?.replace(/^de la /i, "") || "900 MDL/cameră";
   const topProducts = storeProducts.filter(p => p.inStock !== false && p.price > 0).slice(0, 4);
 
   const title = "Camere Supraveghere Chișinău | Instalare și Montaj | Teco.md";
-  const description = "Camere de supraveghere în Chișinău — instalare profesională în toate sectoarele. WiFi, PoE, 4G Solar, NVR. Garanție 2–5 ani. Venim la tine în 24h. ☎ 067 200 463";
+  const description = "Camere de supraveghere și montaj în Chișinău. Compară WiFi, PoE, 4G și seturi cu NVR. Cere un deviz pentru echipamente, cablare și instalare.";
   const keywords = "camere supraveghere chisinau, instalare camere chisinau, montaj sistem supraveghere chisinau, camere ip chisinau, sisteme securitate chisinau, teco.md chisinau";
 
   const jsonLd = [
@@ -55,7 +55,7 @@ export default function CamereChisinau() {
       "@context": "https://schema.org",
       "@type": "Service",
       name: "Camere Supraveghere Chișinău — Instalare Profesională",
-      description: "Vânzare și instalare sisteme de supraveghere video în Chișinău. Acoperim toate sectoarele: Centru, Botanica, Buiucani, Ciocana, Rîșcani. Tehnicieni certificați, garanție 2–5 ani.",
+      description: "Vânzare, instalare și configurare camere de supraveghere în Chișinău. Oferta și programarea se confirmă pentru adresa și echipamentele alese.",
       url: "https://teco.md/camere-supraveghere-chisinau",
       provider: { "@type": "Organization", "@id": "https://teco.md/#business", name: "TECO.md", url: "https://teco.md/", logo: "https://teco.md/logo.png" },
       areaServed: [
