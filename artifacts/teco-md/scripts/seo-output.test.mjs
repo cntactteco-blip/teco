@@ -212,6 +212,15 @@ test("SEO titles retain distinct exact models instead of truncating them from lo
   assert.equal((productSeoTitle("Reolink Go Plus", "Reolink", "Reolink Go Plus").match(/Reolink/g) || []).length, 1);
 });
 
+test("bundle titles distinguish storage and camera count instead of one camera model", () => {
+  const sd = productSeoTitle("Set 4 camere Uniview 4MP cu carduri 64GB și montaj", "UNIVIEW", "IPC2314LE-ADF28KM-WP");
+  const nvr = productSeoTitle("Set 4 camere Uniview 4MP cu NVR, HDD 1TB și montaj", "UNIVIEW", "IPC2314LE-ADF28KM-WP");
+  assert.notEqual(sd, nvr);
+  assert.ok(sd.includes("64GB") && nvr.includes("HDD 1TB"));
+  assert.ok(productSeoTitle("Kit 6 camere Imou 5MP PoE, NVR 10ch și HDD 1TB", "IMOU", "Kit Teco 4 Cam PoE").includes("6 camere"));
+  assert.ok(!productSeoTitle("Kit 6 camere Imou 5MP PoE, NVR 10ch și HDD 1TB", "IMOU", "Kit Teco 4 Cam PoE").includes("4 Cam"));
+});
+
 test("initial HTML shares the browser product schema and exposes safe specs and related links", async () => {
   const row = { id: 159, slug: "camera-test", name: "Cameră WiFi exterior", brand: "IMOU", model: "IPC-S3EP-5M0WE",
     category: "wifi", price: 1699, old_price: 2000, in_stock: 0, image_url: "/product-images/159.webp",

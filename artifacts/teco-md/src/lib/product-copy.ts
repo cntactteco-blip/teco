@@ -34,6 +34,10 @@ export function productSeoTitle(name: unknown, brand?: unknown, model?: unknown)
   const label = clean(name);
   const maker = clean(brand);
   const code = clean(model);
+  // A bundle is identified by its contents, not by one component's model code.
+  if (/^(?:set|kit|sistem)\b/i.test(label) && /camere|camera|cruiser|cell/i.test(label)) {
+    return `${seoSnippet(label, 80)} | TECO.md`;
+  }
   if (!code) return `${seoSnippet(maker && !label.toLowerCase().includes(maker.toLowerCase()) ? `${label} ${maker}` : label, 53)} | TECO.md`;
   // Keep the exact model intact; a character limit must not erase product identity.
   const identity = [maker && !code.toLowerCase().includes(maker.toLowerCase()) ? maker : "", code].filter(Boolean).join(" ");
