@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 
 // The old version treated opening the contact menu as permanent dismissal.
-const KEY = "teco_consultant_invites_v2";
+const KEY = "teco_consultant_invites_v3";
 function readInvites(): { count: number; dismissed: boolean } {
   try {
     const state = JSON.parse(sessionStorage.getItem(KEY) || "{}");
@@ -26,7 +26,7 @@ export function useConsultantInvite(mobile: boolean, enabled = true) {
   useEffect(() => {
     if (stopped || !enabled) { setVisible(false); return; }
     let activeSeconds = 0;
-    let nextInvite = 5;
+    let nextInvite = 8;
     let remainingVisible = 0;
     const timer = window.setInterval(() => {
       if (document.hidden || window.matchMedia("(max-width: 767px)").matches !== mobile) {

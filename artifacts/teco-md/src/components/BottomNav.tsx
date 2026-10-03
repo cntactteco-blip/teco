@@ -5,6 +5,7 @@ import { useStore } from "@/lib/store";
 import { useState, useEffect, useRef } from "react";
 import { useLang } from "@/contexts/LangContext";
 import { useConsultantInvite } from "@/hooks/useConsultantInvite";
+import { ConsultantInvite } from "./ConsultantInvite";
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -36,7 +37,7 @@ export function BottomNav() {
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 767px)");
-    const update = () => document.documentElement.style.setProperty("--teco-help-height", helpHint && !contactOpen && media.matches ? "44px" : "0px");
+    const update = () => document.documentElement.style.setProperty("--teco-help-height", helpHint && !contactOpen && media.matches ? "88px" : "0px");
     update();
     media.addEventListener("change", update);
     return () => { media.removeEventListener("change", update); document.documentElement.style.removeProperty("--teco-help-height"); };
@@ -142,18 +143,13 @@ export function BottomNav() {
         </div>
       )}
 
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-[20px] border-t border-[#e4e4e7] pb-[env(safe-area-inset-bottom,0px)]">
+      <div className="md:hidden pointer-events-none fixed bottom-0 left-0 right-0 z-40 pb-[env(safe-area-inset-bottom,0px)]" style={{ background: "linear-gradient(to top, rgba(255,255,255,0.97) calc(56px + env(safe-area-inset-bottom, 0px)), transparent 0)" }}>
         {helpHint && !contactOpen && (
-          <div className="flex h-11 items-center gap-2 border-b border-orange-100 bg-orange-50 px-3" aria-live="polite">
-            <button onClick={() => { hideHint(); setContactOpen(true); }} className="flex-1 min-w-0 text-left text-[11px] font-semibold leading-tight text-orange-950">
-              {location.startsWith("/product/")
-                ? (lang === "ru" ? "Подходит ли вам эта модель? Консультант TECO →" : "Ți se potrivește acest model? Întreabă consultantul →")
-                : (lang === "ru" ? "Помочь выбрать систему? Нажмите здесь →" : "Te ajut să alegi sistemul potrivit. Apasă aici →")}
-            </button>
-            <button onClick={dismissHint} aria-label={lang === "ru" ? "Закрыть подсказку" : "Închide invitația"} className="flex h-9 w-9 shrink-0 items-center justify-center text-orange-700"><X className="h-4 w-4" /></button>
+          <div className="flex h-[88px] items-start justify-end px-3 pt-2">
+            <ConsultantInvite product={location.startsWith("/product/")} onOpen={openConsultant} onDismiss={dismissHint} />
           </div>
         )}
-        <div className="flex items-center justify-around px-2 h-14">
+        <div className="pointer-events-auto flex items-center justify-around px-2 h-14 bg-white/95 backdrop-blur-[20px] border-t border-[#e4e4e7]">
 
           <button
             onClick={goHome}

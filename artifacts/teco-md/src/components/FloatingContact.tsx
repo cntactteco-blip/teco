@@ -4,6 +4,7 @@ import { Link, useLocation } from "wouter";
 import { useStore } from "@/lib/store";
 import { useLang } from "@/contexts/LangContext";
 import { useConsultantInvite } from "@/hooks/useConsultantInvite";
+import { ConsultantInvite } from "./ConsultantInvite";
 
 const WA_MSG = encodeURIComponent("Bună ziua! Sunt interesat de sistemele de supraveghere TECO.MD. Pot primi o ofertă?");
 const INSTALL_MSG = encodeURIComponent("Bună ziua! Vreau să solicit montaj/instalare sisteme supraveghere. Puteți oferi un deviz?");
@@ -45,12 +46,7 @@ export function FloatingContact() {
   return (
     <div className="hidden md:flex fixed bottom-6 right-4 z-50 flex-col items-end gap-2">
       {invite && !open && location !== "/checkout" && (
-        <div className="flex max-w-[270px] items-center gap-1 rounded-2xl border border-orange-200 bg-white p-2 shadow-lg" aria-live="polite">
-          <button onClick={() => { hideInvite(); setOpen(true); }} className="px-2 py-1 text-left text-xs font-semibold leading-relaxed text-zinc-800">
-            {lang === "ru" ? "Помочь выбрать? Консультант TECO здесь →" : "Ai nevoie de ajutor? Găsești consultantul TECO aici →"}
-          </button>
-          <button onClick={dismissInvite} aria-label={lang === "ru" ? "Закрыть подсказку" : "Închide invitația"} className="flex h-8 w-8 shrink-0 items-center justify-center text-zinc-500"><X className="h-4 w-4" /></button>
-        </div>
+        <ConsultantInvite product={location.startsWith("/product/")} onOpen={() => window.dispatchEvent(new Event("teco:open-consultant"))} onDismiss={dismissInvite} />
       )}
       {open && (
         <div className="flex flex-col items-end gap-2 mb-1">
