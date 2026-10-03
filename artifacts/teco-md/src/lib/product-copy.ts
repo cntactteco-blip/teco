@@ -29,8 +29,22 @@ export function seoSnippet(value: unknown, maxLength: number): string {
   return `${boundary > maxLength * 0.65 ? prefix.slice(0, boundary) : prefix.trimEnd()}…`;
 }
 
-export function productSeoTitle(name: unknown): string {
-  return `${seoSnippet(name, 53)} | TECO.md`;
+export function productSeoTitle(name: unknown, brand?: unknown, model?: unknown): string {
+  const clean = (value: unknown) => String(value ?? "").replace(/\s+/g, " ").trim();
+  const label = clean(name);
+  const maker = clean(brand);
+  const code = clean(model);
+  if (!code) return `${seoSnippet(maker && !label.toLowerCase().includes(maker.toLowerCase()) ? `${label} ${maker}` : label, 53)} | TECO.md`;
+  // Keep the exact model intact; a character limit must not erase product identity.
+  const identity = [maker && !code.toLowerCase().includes(maker.toLowerCase()) ? maker : "", code].filter(Boolean).join(" ");
+  let descriptor = label;
+  for (const part of [code, maker].filter(Boolean)) {
+    const at = descriptor.toLowerCase().indexOf(part.toLowerCase());
+    if (at >= 0) descriptor = descriptor.slice(0, at) + descriptor.slice(at + part.length);
+  }
+  descriptor = descriptor.replace(/^[\s,|/–—-]+|[\s,|/–—-]+$/g, "").replace(/\s+/g, " ").trim();
+  const budget = 53 - identity.length - 1;
+  return `${[budget >= 8 && descriptor ? seoSnippet(descriptor, budget) : "", identity].filter(Boolean).join(" ")} | TECO.md`;
 }
 
 export function productSeoDescription(description: unknown, name: unknown, price: unknown): string {

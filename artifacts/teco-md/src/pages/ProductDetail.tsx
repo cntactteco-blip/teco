@@ -272,6 +272,7 @@ export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
   const [, navigate] = useLocation();
   const storeProducts = useStore(s => s.products);
+  const storeCategories = useStore(s => s.settings.categories);
   const adminPhone = useStore(s => s.settings.general.adminPhone);
   const isNumeric = /^\d+$/.test(slug ?? "");
   const product = isNumeric
@@ -505,6 +506,10 @@ export default function ProductDetail() {
     .concat(storeProducts.filter(p => p.id !== product.id && p.category !== product.category))
     .slice(0, 4);
 
+  const productCategory = storeCategories.find(c => c.id === product.category || c.slug === product.category);
+  const categoryLabel = productCategory ? (lang === "ru" ? productCategory.labelRu || productCategory.label : productCategory.label) : product.category;
+  const categoryPath = `/produse/?cat=${encodeURIComponent(product.category)}`;
+
   // Browser-local feedback is not a public, verified product rating.
   const jsonLd = [
     schemas.product({
@@ -512,6 +517,7 @@ export default function ProductDetail() {
       slug: product.slug,
       name: product.name,
       brand: product.brand,
+      model: product.model,
       description: product.description,
       price: product.price,
       oldPrice: product.oldPrice,
@@ -522,10 +528,11 @@ export default function ProductDetail() {
     schemas.breadcrumb([
       { name: lang === "ru" ? "Главная" : "Acasă", url: "https://teco.md/" },
       { name: lang === "ru" ? "Продукты" : "Produse", url: "https://teco.md/produse" },
+      ...(product.category ? [{ name: categoryLabel, url: `https://teco.md${categoryPath}` }] : []),
       { name: product.name, url: `https://teco.md/product/${product.slug || product.id}` },
     ]),
   ];
-  const metaTitle = productSeoTitle(product.name);
+  const metaTitle = productSeoTitle(product.name, product.brand, product.model);
   const metaDesc = productSeoDescription(product.description, product.name, product.price);
 
   return (
@@ -540,6 +547,10 @@ export default function ProductDetail() {
           <ChevronRight className="w-3 h-3" />
           <Link href="/produse" className="hover:text-zinc-700 transition-colors">{t("pd.breadcrumb_products")}</Link>
           <ChevronRight className="w-3 h-3" />
+          {product.category && <>
+            <Link href={categoryPath} className="hover:text-zinc-700 truncate max-w-[120px]">{categoryLabel}</Link>
+            <ChevronRight className="w-3 h-3 flex-shrink-0" />
+          </>}
           <span className="text-zinc-600 truncate max-w-[160px]">{product.name}</span>
         </nav>
       </div>

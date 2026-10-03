@@ -1,3 +1,4 @@
+import { productSchema as buildProductSchema } from "../lib/product-schema.ts";
 import { absoluteImage, canonicalPath } from "../lib/seo-url.ts";
 import { resolveCategorySlug } from "../lib/category-routing.ts";
 import { renderArticleHtml } from "../lib/article-html.ts";
@@ -156,7 +157,7 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
         const description = escapeHtml(readableText(rawDescription));
         const longDescription = readableText(row.long_description);
         const specs = readableText(row.specs);
-        const titleMeta = escapeHtml(dynamic[1] === "product" ? productSeoTitle(row.name) : seoSnippet(row.meta_title || `${row.title} | TECO.md`, 62));
+        const titleMeta = escapeHtml(dynamic[1] === "product" ? productSeoTitle(row.name, row.brand, row.model) : seoSnippet(row.meta_title || `${row.title} | TECO.md`, 62));
         const descriptionMeta = escapeHtml(dynamic[1] === "product"
           ? productSeoDescription(rawDescription, row.name, row.price)
           : seoSnippet(row.meta_description || rawDescription, 155));
@@ -167,17 +168,12 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
         const socialHead = `<meta property="og:type" content="${dynamic[1] === "product" ? "product" : "article"}"><meta property="og:title" content="${titleMeta}"><meta property="og:description" content="${descriptionMeta}"><meta property="og:url" content="https://teco.md${escapeHtml(canonical)}"><meta property="og:image" content="${imageUrl}"><meta property="og:image:alt" content="${title}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${titleMeta}"><meta name="twitter:description" content="${descriptionMeta}"><meta name="twitter:image" content="${imageUrl}">`;
         const price = Number(row.price);
         const productSchema = dynamic[1] === "product" && Number.isFinite(price) && price > 0
-          ? `<script type="application/ld+json">${JSON.stringify({
-              "@context": "https://schema.org", "@type": "Product",
-              name: String(row.name || row.title),
-              description: rawDescription.slice(0, 5000),
-              ...(productImage && !productImage.startsWith("data:") ? { image: [absoluteImage(productImage)] } : {}),
-              ...(row.brand ? { brand: { "@type": "Brand", name: String(row.brand) } } : {}),
-              ...(row.model ? { model: String(row.model) } : {}),
-              offers: { "@type": "Offer", url: `https://teco.md${canonical}`,
-                priceCurrency: "MDL", price, availability: row.in_stock === 1 || row.in_stock === true
-                  ? "https://schema.org/InStock" : "https://schema.org/OutOfStock" },
-            }).replace(/</g, "\\u003c")}</script>`
+          ? `<script type="application/ld+json">${JSON.stringify(buildProductSchema({
+              id: Number(row.id), slug: String(row.slug || row.id), name: String(row.name || row.title),
+              description: String(row.description || ""), brand: String(row.brand || ""), model: String(row.model || ""),
+              category: String(row.category || ""), imageUrl: productImage, price,
+              inStock: row.in_stock === 1 || row.in_stock === true,
+            })).replace(/</g, "\\u003c")}</script>`
           : "";
         const articleSchema = dynamic[1] === "blog"
           ? `<script type="application/ld+json">${JSON.stringify({
@@ -196,9 +192,45 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
         const productDetails = dynamic[1] === "product"
           ? `<img src="${imageUrl}" alt="${title}" width="600" height="600"><p>Preț: ${Number.isFinite(price) && price > 0 ? `${escapeHtml(price)} MDL` : "la cerere"}</p><p>${row.in_stock === 1 || row.in_stock === true ? "În stoc" : "Verifică disponibilitatea"}</p>`
           : "";
+        let productLinks = "";
+        let breadcrumbSchema = "";
+        if (dynamic[1] === "product") {
+          const categoryKey = String(row.category || "");
+          let categoryLabel = categoryKey;
+          let related: Array<{ slug: string; name: string }> = [];
+          if (categoryKey) {
+            // Secondary navigation must never make an otherwise valid product fail.
+            const db = env.DB;
+            const fetchRelated = async () => {
+              const result = await db.prepare("SELECT slug, name FROM products WHERE category = ? AND id != ? AND price > 0 AND slug IS NOT NULL AND slug != '' ORDER BY name LIMIT 4")
+                .bind(categoryKey, row.id).all<{ slug: string; name: string }>();
+              return result.results ?? [];
+            };
+            const [categories, alternatives] = await Promise.all([
+              categoriesFromDb(db).catch((): RuntimeCategory[] => []),
+              fetchRelated().catch((): Array<{ slug: string; name: string }> => []),
+            ]);
+            categoryLabel = categories.find((c) => c.id === categoryKey || c.slug === categoryKey)?.label || categoryKey;
+            related = alternatives;
+          }
+          const categoryPath = categoryKey ? canonicalPath(`/produse?cat=${encodeURIComponent(categoryKey)}`) : "";
+          const crumbs = [
+            { name: "Acasă", url: "/" }, { name: "Produse", url: "/produse/" },
+            ...(categoryPath ? [{ name: categoryLabel, url: categoryPath }] : []),
+            { name: String(row.name), url: canonical },
+          ];
+          productLinks = `<nav aria-label="Navigare produs">${crumbs.map((c) => `<a href="${escapeHtml(c.url)}">${escapeHtml(c.name)}</a>`).join(" › ")}</nav>`;
+          if (related.length) productLinks += `<section><h2>Produse similare</h2><ul>${related.map((p) => `<li><a href="/product/${encodeURIComponent(p.slug)}/">${escapeHtml(p.name)}</a></li>`).join("")}</ul></section>`;
+          breadcrumbSchema = `<script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: crumbs.map((c, i) => ({ "@type": "ListItem", position: i + 1, name: c.name, item: `https://teco.md${c.url}` })) }).replace(/</g, "\\u003c")}</script>`;
+        }
+        const technicalRows = String(row.tech_specs || "").split("\n").map((line) => {
+          const colon = line.indexOf(":");
+          return colon > 0 ? `<tr><th scope="row">${escapeHtml(line.slice(0, colon).trim())}</th><td>${escapeHtml(line.slice(colon + 1).trim())}</td></tr>` : "";
+        }).join("");
         const extraCopy = dynamic[1] === "product"
-          ? `${longDescription && longDescription !== readableText(rawDescription) ? `<section><h2>Descriere detaliată</h2><p>${escapeHtml(longDescription)}</p></section>` : ""}${specs ? `<section><h2>Caracteristici</h2><p>${escapeHtml(specs)}</p></section>` : ""}`
+          ? `${longDescription && longDescription !== readableText(rawDescription) ? `<section><h2>Descriere detaliată</h2><p>${escapeHtml(longDescription)}</p></section>` : ""}${specs ? `<section><h2>Caracteristici</h2><p>${escapeHtml(specs)}</p></section>` : ""}${technicalRows ? `<section><h2>Specificații tehnice</h2><table><tbody>${technicalRows}</tbody></table></section>` : ""}${productLinks}`
           : "";
+        html = html.replace("</head>", `${breadcrumbSchema}</head>`);
         const articleCopy = dynamic[1] === "blog" ? renderArticleHtml(row.content) : "";
         html = html.replace('<div id="root"></div>', `<div id="root"><main><h1>${title}</h1>${productDetails}<p>${description}</p>${extraCopy}${articleCopy}<a href="${dynamic[1] === "blog" ? "/blog/" : "/produse/"}">${dynamic[1] === "blog" ? "Articole TECO.md" : "Catalog TECO.md"}</a></main></div>`);
         return new Response(request.method === "HEAD" ? null : html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache" } });

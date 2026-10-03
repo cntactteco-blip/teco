@@ -5,6 +5,7 @@ import { canonicalPath } from "../src/lib/seo-url.ts";
 import { serveHtml } from "../src/server/seo-handler.ts";
 import { currentProductDescription, productSeoTitle, productSeoDescription } from "../src/lib/product-copy.ts";
 import { renderArticleHtml } from "../src/lib/article-html.ts";
+import { productSchema } from "../src/lib/product-schema.ts";
 
 test("article links, lists and tables render safely without executable imported HTML", () => {
   const html = renderArticleHtml('## Alegere\n- **Verifică** [produsele](/produse/)\n- [link](javascript:alert)\n<script>alert(1)</script>\n| Tip | Preț |\n| --- | --- |\n| Kit | la cerere |');
@@ -200,6 +201,51 @@ test("long catalog names and descriptions produce concise, current product snipp
   const snippet = productSeoDescription(description, name, 26992);
   assert.ok(snippet.length <= 155);
   assert.ok(snippet.includes("26.992 MDL"));
+});
+
+test("SEO titles retain distinct exact models instead of truncating them from long names", () => {
+  const name = "Cameră de supraveghere exterior cu vedere nocturnă și detecție inteligentă";
+  const a = productSeoTitle(name, "IMOU", "IPC-S3EP-5M0WE");
+  const b = productSeoTitle(name, "IMOU", "IPC-S3EP-3M0WE");
+  assert.ok(a.includes("IMOU IPC-S3EP-5M0WE") && a.length <= 63);
+  assert.notEqual(a, b);
+  assert.equal((productSeoTitle("Reolink Go Plus", "Reolink", "Reolink Go Plus").match(/Reolink/g) || []).length, 1);
+});
+
+test("initial HTML shares the browser product schema and exposes safe specs and related links", async () => {
+  const row = { id: 159, slug: "camera-test", name: "Cameră WiFi exterior", brand: "IMOU", model: "IPC-S3EP-5M0WE",
+    category: "wifi", price: 1699, old_price: 2000, in_stock: 0, image_url: "/product-images/159.webp",
+    description: "Cameră la prețul de 2000 MDL.", tech_specs: "Rezoluție: 5MP\nAlimentare: DC 12V: adaptor separat\nTest: <script>alert(1)</script>" };
+  const db = { prepare(sql) { return {
+    async first() { return { data: JSON.stringify({ categories: [{ slug: "wifi", label: "Camere WiFi" }] }) }; },
+    bind(...args) { return {
+      async first() { return row; },
+      async all() { assert.ok(sql.includes("id != ?") && sql.includes("price > 0")); assert.deepEqual(args, ["wifi", 159]); return { results: [{ slug: "alternativa", name: "Cameră alternativă <img>" }] }; },
+    }; },
+  }; } };
+  const assets = { async fetch() { return new Response('<html><head></head><body><div id="root"></div></body></html>'); } };
+  const result = await serveHtml(new Request("https://teco.md/product/camera-test/"), { ASSETS: assets, DB: db }, { pages: {}, redirects: {} });
+  const html = await result.text();
+  assert.equal(result.status, 200);
+  const schemas = [...html.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/g)].map(m => JSON.parse(m[1]));
+  assert.deepEqual(schemas.find(s => s["@type"] === "Product"), productSchema({ id: 159, slug: row.slug, name: row.name, brand: row.brand, model: row.model,
+    category: row.category, price: row.price, description: row.description, imageUrl: row.image_url, inStock: false }));
+  assert.ok(html.includes('href="/produse/?cat=wifi"') && html.includes('href="/product/alternativa/"'));
+  assert.ok(html.includes("DC 12V: adaptor separat") && html.includes("&lt;script&gt;"));
+  assert.ok(!html.includes("<script>alert") && !html.includes("highPrice"));
+  assert.equal(schemas.find(s => s["@type"] === "BreadcrumbList").itemListElement[2].name, "Camere WiFi");
+});
+
+test("secondary product navigation failures do not turn a valid product into a 503", async () => {
+  const row = { id: 1, slug: "valid", name: "Cameră", category: "wifi", price: 100, in_stock: 1 };
+  const db = { prepare(sql) { return {
+    async first() { throw new Error("Settings unavailable"); },
+    bind() { return { async first() { return row; }, async all() { throw new Error("Related unavailable"); } }; },
+  }; } };
+  const result = await serveHtml(new Request("https://teco.md/product/valid/"), { DB: db,
+    ASSETS: { async fetch() { return new Response('<html><head></head><body><div id="root"></div></body></html>'); } } }, { pages: {}, redirects: {} });
+  assert.equal(result.status, 200);
+  assert.ok((await result.text()).includes('href="/produse/?cat=wifi"'));
 });
 
 test("live product HTML includes unique product information and bounded metadata", async () => {

@@ -590,7 +590,7 @@ function ProductModal({ product, onClose, categories }: { product: StoreProduct 
 
           <div className="rounded-xl border border-zinc-700 bg-zinc-800/60 p-4 text-xs text-zinc-300 space-y-1.5">
             <p className="font-bold text-white">Previzualizare SEO produs</p>
-            <p className="text-[#FF7A3D] font-semibold">{productSeoTitle(form.name || "Numele produsului")}</p>
+            <p className="text-[#FF7A3D] font-semibold">{productSeoTitle(form.name || "Numele produsului", form.brand, form.model)}</p>
             <p>{productSeoDescription(form.description, form.name || "Produs", Number(form.price) || 0)}</p>
             <p className="text-zinc-400">URL: /product/{product?.slug || slugify(form.name) || "nume-produs"}/ · Adaugă o imagine proprie, specificații corecte și o descriere utilă înainte de publicare.</p>
             {!form.imageUrl && <p className="text-amber-400">Lipsește imaginea principală: linkul distribuit poate afișa sigla în locul produsului.</p>}

@@ -1,3 +1,4 @@
+import { productSchema } from "@/lib/product-schema";
 import { Helmet } from "react-helmet-async";
 import { absoluteImage, canonicalUrl } from "@/lib/seo-url";
 
@@ -202,6 +203,7 @@ export const schemas = {
     slug?: string;
     name: string;
     brand: string;
+    model?: string;
     description: string;
     price: number;
     oldPrice?: number | null;
@@ -212,31 +214,7 @@ export const schemas = {
     reviews?: Array<{ name: string; rating: number; text: string; date: string }>;
   }) {
     return {
-      "@context": "https://schema.org",
-      "@type": "Product",
-      name: p.name,
-      brand: { "@type": "Brand", name: p.brand },
-      description: p.description,
-      image: absoluteImage(p.imageUrl),
-      sku: `TECO-${p.id}`,
-      category: p.category,
-      offers: {
-        "@type": "Offer",
-        url: canonicalUrl(`/product/${p.slug || p.id}`),
-        price: p.price,
-        priceCurrency: "MDL",
-        availability: p.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-        itemCondition: "https://schema.org/NewCondition",
-        seller: { "@type": "Organization", "@id": "https://teco.md/#business", name: "TECO.md", logo: "https://teco.md/logo.png" },
-        ...(p.oldPrice ? { priceSpecification: {
-          "@type": "PriceSpecification",
-          priceType: "https://schema.org/SalePrice",
-          price: p.price,
-          priceCurrency: "MDL",
-        },
-        highPrice: p.oldPrice,
-        } : {}),
-      },
+      ...productSchema(p),
       ...(p.rating ? {
         aggregateRating: {
           "@type": "AggregateRating",
