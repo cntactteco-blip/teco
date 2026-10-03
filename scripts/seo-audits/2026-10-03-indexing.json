@@ -1,0 +1,620 @@
+{
+  "checkedAt": "2026-10-03",
+  "property": "sc-domain:teco.md",
+  "urls": 101,
+  "coverage": {
+    "URL is unknown to Google": 24,
+    "Submitted and indexed": 61,
+    "Discovered - currently not indexed": 13,
+    "Duplicate, Google chose different canonical than user": 1,
+    "Duplicate without user-selected canonical": 2
+  },
+  "inspections": [
+    {
+      "url": "https://teco.md/product/camera-de-supraveghere-imou-bullet-3-5mp/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/product/camera-dahua-sdt6e432-8p-mb-a-pv1-32x-zoom-dual-ptz-dome-ip-8m-4m-wdr-dual-light/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/product/camera-cu-panou-solar-tiandy-tc-h363u-v4-1-3mp-3mp-wled-20m-mic-speaker-microsd/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-02T14:32:23+00:00"
+    },
+    {
+      "url": "https://teco.md/product/camera-5mp-ai-pro-poe-starlight/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T08:19:00+00:00"
+    },
+    {
+      "url": "https://teco.md/product/camera-4mp-easystar-0-003lux-poe/",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/product/camera-4g-lte-4mp-acumulator-solar/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T06:11:16+00:00"
+    },
+    {
+      "url": "https://teco.md/product/camera-4g-dual-view-urmarire-automata/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T07:27:19+00:00"
+    },
+    {
+      "url": "https://teco.md/oferta/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/nvr-moldova/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T01:54:01+00:00"
+    },
+    {
+      "url": "https://teco.md/livrare/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/interfoane-moldova/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T02:01:55+00:00"
+    },
+    {
+      "url": "https://teco.md/garantii/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T06:28:40+00:00"
+    },
+    {
+      "url": "https://teco.md/contact/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T16:16:18+00:00"
+    },
+    {
+      "url": "https://teco.md/camere-supraveghere-moldova/",
+      "verdict": "NEUTRAL",
+      "coverageState": "Duplicate, Google chose different canonical than user",
+      "lastCrawlTime": "2026-10-01T12:22:50+00:00"
+    },
+    {
+      "url": "https://teco.md/camere-supraveghere-moldova-din-strainatate/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T02:06:12+00:00"
+    },
+    {
+      "url": "https://teco.md/camere-supraveghere-exterior/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T13:37:59+00:00"
+    },
+    {
+      "url": "https://teco.md/camere-4g-moldova/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T02:08:39+00:00"
+    },
+    {
+      "url": "https://teco.md/cablu-utp-ftp-moldova/",
+      "verdict": "NEUTRAL",
+      "coverageState": "Duplicate without user-selected canonical",
+      "lastCrawlTime": "2026-10-03T02:00:23+00:00"
+    },
+    {
+      "url": "https://teco.md/blog/top-lucruri-la-procurarea-sistemului-de-supraveghere/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T13:27:45+00:00"
+    },
+    {
+      "url": "https://teco.md/blog/montare-camere-supraveghere-moldova-2026/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T13:12:30+00:00"
+    },
+    {
+      "url": "https://teco.md/blog/montaj-camere-chisinau-2026/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T12:46:57+00:00"
+    },
+    {
+      "url": "https://teco.md/blog/camere-supraveghere-casa-moldova-din-strainatate/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T08:55:01+00:00"
+    },
+    {
+      "url": "https://teco.md/blog/camere-de-supraveghere-2026/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T15:02:56+00:00"
+    },
+    {
+      "url": "https://teco.md/blog/camera-solara-4g/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T14:01:13+00:00"
+    },
+    {
+      "url": "https://teco.md/b2b/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/blog/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T03:01:10+00:00"
+    },
+    {
+      "url": "https://teco.md/camere-supraveghere-chisinau/",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/montare-camere-supraveghere/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T05:58:57+00:00"
+    },
+    {
+      "url": "https://teco.md/servicii/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T09:55:13+00:00"
+    },
+    {
+      "url": "https://teco.md/produse/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T15:11:37+00:00"
+    },
+    {
+      "url": "https://teco.md/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T05:40:16+00:00"
+    },
+    {
+      "url": "https://teco.md/seturi-camere-supraveghere/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T02:22:48+00:00"
+    },
+    {
+      "url": "https://teco.md/produse/?cat=alarme",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T05:53:49+00:00"
+    },
+    {
+      "url": "https://teco.md/produse/?cat=nvr",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T03:16:25+00:00"
+    },
+    {
+      "url": "https://teco.md/produse/?cat=4g",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/produse/?cat=poe",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T06:27:35+00:00"
+    },
+    {
+      "url": "https://teco.md/produse/?cat=wifi",
+      "verdict": "NEUTRAL",
+      "coverageState": "Duplicate without user-selected canonical",
+      "lastCrawlTime": "2026-09-08T02:47:38+00:00"
+    },
+    {
+      "url": "https://teco.md/product/set-complet-tiandy-tri-light-4-camere-2mp-ir50m-color-night-nvr-5-canale-hdd-1tb/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-09-30T18:16:51+00:00"
+    },
+    {
+      "url": "https://teco.md/product/set-supraveghere-video-4-camere-ip-poe-5mp-fullcolor-smart-ai/",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/product/set-complet-supraveghere-4-camere-uniview-4mp-colornoaptea-nvr-4k-hdd-1tb-switch/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T08:32:01+00:00"
+    },
+    {
+      "url": "https://teco.md/product/set-supraveghere-4-camere-uniview-4mp-colornoaptea-card-64gb-switch-poe-si-insta/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/product/sistem-supraveghere-ip-dahua-cu-functii-inteligente-2-camere-rotative-5mp-switch/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/product/imou-cruiser-dual-10mp-5mp-5mp-ip-camera-set-of-2-with-32gb-memory-cards/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T03:25:46+00:00"
+    },
+    {
+      "url": "https://teco.md/product/set-camere-de-supraveghere-8buc-4mp-1-nvr-6-bullet-camera-2-dome-camera/",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/product/kit-complet-pro-solar-4g-4-camere-imou-cell-3c/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T04:35:03+00:00"
+    },
+    {
+      "url": "https://teco.md/product/kit-complet-6-camere-imou-poe-nvr-10ch-hdd-1-tb-switch-8-port-cablu-instalare/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T04:37:41+00:00"
+    },
+    {
+      "url": "https://teco.md/product/camera-exterior-5mp-wifi-dual-light/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T03:39:32+00:00"
+    },
+    {
+      "url": "https://teco.md/product/ip-kamera-uniview-ipc2314le-adf28km-wp-4mp-2-8mm-wl30m-mic-msd-poe-ip67/",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/router-4g-moldova/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T01:56:09+00:00"
+    },
+    {
+      "url": "https://teco.md/servicii/straseni/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/servicii/ialoveni/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/servicii/orhei/",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/servicii/cahul/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T07:41:11+00:00"
+    },
+    {
+      "url": "https://teco.md/servicii/balti/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-09-30T22:22:49+00:00"
+    },
+    {
+      "url": "https://teco.md/sisteme-supraveghere-casa/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T15:56:32+00:00"
+    },
+    {
+      "url": "https://teco.md/reparatii-camere-supraveghere/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T13:07:23+00:00"
+    },
+    {
+      "url": "https://teco.md/servicii/chisinau/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T06:51:44+00:00"
+    },
+    {
+      "url": "https://teco.md/product/camera-de-supraveghere-smart-inteligenta-imou-bullet-3-ipc-s3ep-5m0we-5mp-wi-fi/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-09-29T06:04:44+00:00"
+    },
+    {
+      "url": "https://teco.md/product/camera-ip-speed-dome-tiandy-8mp-44xzoom-tc-h388m/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/product/camera-de-supraveghere-indoor-imou-ranger-2c-pro-3k/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T11:58:44Z"
+    },
+    {
+      "url": "https://teco.md/product/camera-de-supraveghere-indoor-imou-ranger-dual-3k/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T04:25:25Z"
+    },
+    {
+      "url": "https://teco.md/product/camera-de-supraveghere-outdoor-imou-cruiser-dual-2-pro-aurora-8-mp/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/product/camera-de-supraveghere-outdoor-imou-cruiser-dual-3k-5-5mp/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/product/camera-de-supraveghere-outdoor-imou-cruiser-se-2k-5mp/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/product/camera-de-supraveghere-outdoor-imou-cruiser-z-3k-5mp/",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/product/camera-de-supraveghere-outdoor-imou-titan-pro-aurora-6mp/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/product/camera-de-supraveghere-outdoor-inteligenta-imou-ps7fp-de-5mp/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T11:10:29Z"
+    },
+    {
+      "url": "https://teco.md/product/camera-de-supraveghere-outdoor-smart-imou-de-4k-8mp/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T15:34:05Z"
+    },
+    {
+      "url": "https://teco.md/product/camera-de-supraveghere-panou-solar-4g-dahua-3-mpx-dh-ipc-bp3ew-4g/",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/product/camera-de-supraveghere-pentru-exterior-imou-cell-3c-senzor-cmos-3mp-cu-panou-sol/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T11:10:15Z"
+    },
+    {
+      "url": "https://teco.md/product/camera-dome-4mp-full-color-poe/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T06:27:39Z"
+    },
+    {
+      "url": "https://teco.md/product/camera-ip-de-supraveghere-pentru-exterior-imou-aov-dual-5mp-5mp-conectivitate-wi/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T05:12:00Z"
+    },
+    {
+      "url": "https://teco.md/product/camera-ip-de-supraveghere-pentru-exterior-imou-aov-pt-5mp-conectivitate-wifi-2-4/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T15:38:34Z"
+    },
+    {
+      "url": "https://teco.md/product/camera-ip-speed-dome-tiandy-tc-h356q-v3-0-5mp-4-7-141mm-30-x-optical-zoom-ptz-ir/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/product/camera-supraveghere-ip-ptz-dahua-wizsense-dh-sd5a445gb-hnr-4mp-zoom-optic-45x-ir/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-09-30T10:13:13Z"
+    },
+    {
+      "url": "https://teco.md/product/camera-supraveghere-solara-4g-jovision-jvs-n47-aor-ptz-360-fara-fir-fara-interne/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-02T03:47:15Z"
+    },
+    {
+      "url": "https://teco.md/product/dahua-dh-ipc-hfw2449s-s-il/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/product/dahua-dh-ipc-pts2649c-3e3z-4gb20-3-3mp-6xhybrid-zoom-pt-4g-panou-solar/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T11:52:49Z"
+    },
+    {
+      "url": "https://teco.md/product/gigabit-mesh-2-4ghz-5ghz-ac1200-mesh-wi-fi-system-m1300-2-pcs-cudy/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T05:58:58Z"
+    },
+    {
+      "url": "https://teco.md/product/imou-outdoor-pt-security-camera-cruiser-sc-wi-fi-4g-3k-5mp/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/product/imou-outdoor-pt-security-camera-cruiser-triple-3k-3-3-5mp/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/product/inregistrator-ip-imou-nvr-n110-8a0e-p-10-canale-uhd-4k/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T01:54:01Z"
+    },
+    {
+      "url": "https://teco.md/product/ip-kamera-reolink-go-series-g340-8mp-ir10m-mic-speaker-msd-4g-lte-battery-ip65/",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/product/nvr-4-canale-ultra-265-1-hdd/",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/product/nvr-8-canale-ultra-265-1-hdd/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T06:49:28Z"
+    },
+    {
+      "url": "https://teco.md/product/nvr-imou-n110w-10-canale-wi-fi-6-microfon-si-difuzor-incorporate-hdmi-vga-negru/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/product/nvr-uniview-nvr301-16s3-16ch-8mp-ultra-265-1xhdd/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/product/nvr-uniview-nvr302-16b-iq-16ch-12mp-ultra-265-2xhdd/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T06:34:57Z"
+    },
+    {
+      "url": "https://teco.md/product/set-sonerie-video-smart-imou-ds3-camera-panoramica-4mp-wi-fi-gri-negru/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T07:13:58Z"
+    },
+    {
+      "url": "https://teco.md/product/sistem-alarma-wireless-ajax-starter/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-03T06:12:56Z"
+    },
+    {
+      "url": "https://teco.md/product/ultra-camera-ptz-dahua-dh-sd6e445mb-hnr-a-pv1-wizsense-zoom-45h/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T12:10:47Z"
+    },
+    {
+      "url": "https://teco.md/product/vizor-de-usa-cu-camera-5mp-si-cu-ecran-interior-4-3inch-detectare-persoane-wi-fi/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-09-30T10:47:11Z"
+    },
+    {
+      "url": "https://teco.md/servicii/bender/",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/servicii/drochia/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/servicii/edinet/",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/servicii/floresti/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/servicii/hincesti/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T07:28:12Z"
+    },
+    {
+      "url": "https://teco.md/servicii/rezina/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-09-13T04:35:06Z"
+    },
+    {
+      "url": "https://teco.md/servicii/soroca/",
+      "verdict": "NEUTRAL",
+      "coverageState": "URL is unknown to Google",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/servicii/ungheni/",
+      "verdict": "NEUTRAL",
+      "coverageState": "Discovered - currently not indexed",
+      "lastCrawlTime": null
+    },
+    {
+      "url": "https://teco.md/termeni/",
+      "verdict": "PASS",
+      "coverageState": "Submitted and indexed",
+      "lastCrawlTime": "2026-10-01T02:05:56Z"
+    }
+  ]
+}
