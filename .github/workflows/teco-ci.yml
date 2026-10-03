@@ -40,6 +40,6 @@ jobs:
         run: pnpm --filter @workspace/teco-md run typecheck
       - name: SEO and store tests
         working-directory: artifacts/teco-md
-        run: node --test --test-isolation=none scripts/seo-output.test.mjs scripts/store-blog.test.mjs src/server/ai-provider.test.ts src/lib/chat-response.test.ts src/lib/category-routing.test.ts
+        run: node --test --test-isolation=none scripts/seo-output.test.mjs scripts/store-blog.test.mjs src/server/ai-provider.test.ts src/lib/chat-response.test.ts src/lib/category-routing.test.ts src/lib/seasonal-offer.test.ts
       - name: Offline SEO build
         run: pnpm --filter @workspace/teco-md run seo-build
