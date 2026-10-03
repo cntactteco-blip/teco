@@ -37,7 +37,7 @@ export function BottomNav() {
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 767px)");
-    const update = () => document.documentElement.style.setProperty("--teco-help-height", helpHint && !contactOpen && media.matches ? "88px" : "0px");
+    const update = () => document.documentElement.style.setProperty("--teco-help-height", helpHint && !contactOpen && media.matches ? "132px" : "0px");
     update();
     media.addEventListener("change", update);
     return () => { media.removeEventListener("change", update); document.documentElement.style.removeProperty("--teco-help-height"); };
@@ -145,7 +145,7 @@ export function BottomNav() {
 
       <div className="md:hidden pointer-events-none fixed bottom-0 left-0 right-0 z-40 pb-[env(safe-area-inset-bottom,0px)]" style={{ background: "linear-gradient(to top, rgba(255,255,255,0.97) calc(56px + env(safe-area-inset-bottom, 0px)), transparent 0)" }}>
         {helpHint && !contactOpen && (
-          <div className="flex h-[88px] items-start justify-end px-3 pt-2">
+          <div className="flex h-[132px] items-start justify-end px-3 pt-2">
             <ConsultantInvite product={location.startsWith("/product/")} onOpen={openConsultant} onDismiss={dismissHint} />
           </div>
         )}
