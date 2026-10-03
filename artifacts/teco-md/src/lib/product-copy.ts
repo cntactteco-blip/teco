@@ -42,7 +42,7 @@ export function productSeoTitle(name: unknown, brand?: unknown, model?: unknown)
     const at = descriptor.toLowerCase().indexOf(part.toLowerCase());
     if (at >= 0) descriptor = descriptor.slice(0, at) + descriptor.slice(at + part.length);
   }
-  descriptor = descriptor.replace(/^[\s,|/–—-]+|[\s,|/–—-]+$/g, "").replace(/\s+/g, " ").trim();
+  descriptor = descriptor.replace(/^[\s,|/–—-]+|[\s,|/–—-]+$/g, "").replace(/\s+/g, " ").replace(/\s+([,;])/g, "$1").trim();
   const budget = 53 - identity.length - 1;
   return `${[budget >= 8 && descriptor ? seoSnippet(descriptor, budget) : "", identity].filter(Boolean).join(" ")} | TECO.md`;
 }

@@ -1,4 +1,5 @@
 import { productSchema as buildProductSchema } from "../lib/product-schema.ts";
+import { productSpecRows } from "../lib/product-specs.ts";
 import { absoluteImage, canonicalPath } from "../lib/seo-url.ts";
 import { resolveCategorySlug } from "../lib/category-routing.ts";
 import { renderArticleHtml } from "../lib/article-html.ts";
@@ -223,10 +224,8 @@ export async function serveHtml(request: Request, env: Environment, manifest: Ma
           if (related.length) productLinks += `<section><h2>Produse similare</h2><ul>${related.map((p) => `<li><a href="/product/${encodeURIComponent(p.slug)}/">${escapeHtml(p.name)}</a></li>`).join("")}</ul></section>`;
           breadcrumbSchema = `<script type="application/ld+json">${JSON.stringify({ "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: crumbs.map((c, i) => ({ "@type": "ListItem", position: i + 1, name: c.name, item: `https://teco.md${c.url}` })) }).replace(/</g, "\\u003c")}</script>`;
         }
-        const technicalRows = String(row.tech_specs || "").split("\n").map((line) => {
-          const colon = line.indexOf(":");
-          return colon > 0 ? `<tr><th scope="row">${escapeHtml(line.slice(0, colon).trim())}</th><td>${escapeHtml(line.slice(colon + 1).trim())}</td></tr>` : "";
-        }).join("");
+        const technicalRows = productSpecRows(row.tech_specs).map(([label, value]) =>
+          `<tr><th scope="row">${escapeHtml(label)}</th><td>${escapeHtml(value)}</td></tr>`).join("");
         const extraCopy = dynamic[1] === "product"
           ? `${longDescription && longDescription !== readableText(rawDescription) ? `<section><h2>Descriere detaliată</h2><p>${escapeHtml(longDescription)}</p></section>` : ""}${specs ? `<section><h2>Caracteristici</h2><p>${escapeHtml(specs)}</p></section>` : ""}${technicalRows ? `<section><h2>Specificații tehnice</h2><table><tbody>${technicalRows}</tbody></table></section>` : ""}${productLinks}`
           : "";

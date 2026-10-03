@@ -8,6 +8,7 @@ import { useLang } from "@/contexts/LangContext";
 import { SEO, schemas } from "@/components/SEO";
 import { trackViewProduct } from "@/lib/analytics";
 import { productSeoTitle, productSeoDescription } from "@/lib/product-copy";
+import { productSpecRows } from "@/lib/product-specs";
 
 // ── Pagina "Produs negăsit" cu auto-redirect ─────────────────────────
 function ProductNotFound() {
@@ -492,9 +493,7 @@ export default function ProductDetail() {
   const reviewCount = userReviews.length;
   const rating = reviewCount ? Number((userReviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount).toFixed(1)) : 0;
 
-  const techSpecRows = product.techSpecs
-    ? product.techSpecs.split("\n").map(l => l.split(": ")).filter(p => p.length === 2)
-    : [];
+  const techSpecRows = productSpecRows(product.techSpecs);
 
   const longDescParagraphs = product.longDescription
     ? product.longDescription.split("\n").filter(Boolean)

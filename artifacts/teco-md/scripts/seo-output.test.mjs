@@ -215,7 +215,7 @@ test("SEO titles retain distinct exact models instead of truncating them from lo
 test("initial HTML shares the browser product schema and exposes safe specs and related links", async () => {
   const row = { id: 159, slug: "camera-test", name: "Cameră WiFi exterior", brand: "IMOU", model: "IPC-S3EP-5M0WE",
     category: "wifi", price: 1699, old_price: 2000, in_stock: 0, image_url: "/product-images/159.webp",
-    description: "Cameră la prețul de 2000 MDL.", tech_specs: "Rezoluție: 5MP\nAlimentare: DC 12V: adaptor separat\nTest: <script>alert(1)</script>" };
+    description: "Cameră la prețul de 2000 MDL.", tech_specs: "Rezoluție: 5MP\nAlimentare: DC 12V: adaptor separat\nTest: <script>alert(1)</script>\nFormat\tBullet\n5MP, indoor, PTZ" };
   const db = { prepare(sql) { return {
     async first() { return { data: JSON.stringify({ categories: [{ slug: "wifi", label: "Camere WiFi" }] }) }; },
     bind(...args) { return {
@@ -232,6 +232,7 @@ test("initial HTML shares the browser product schema and exposes safe specs and 
     category: row.category, price: row.price, description: row.description, imageUrl: row.image_url, inStock: false }));
   assert.ok(html.includes('href="/produse/?cat=wifi"') && html.includes('href="/product/alternativa/"'));
   assert.ok(html.includes("DC 12V: adaptor separat") && html.includes("&lt;script&gt;"));
+  assert.ok(html.includes('<th scope="row">Format</th><td>Bullet</td>') && html.includes("5MP, indoor, PTZ"));
   assert.ok(!html.includes("<script>alert") && !html.includes("highPrice"));
   assert.equal(schemas.find(s => s["@type"] === "BreadcrumbList").itemListElement[2].name, "Camere WiFi");
 });
