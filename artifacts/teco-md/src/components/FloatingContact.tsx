@@ -28,9 +28,9 @@ function ViberIcon({ className }: { className?: string }) {
 export function FloatingContact() {
   const { lang } = useLang();
   const [location] = useLocation();
-  const { visible: invite, dismiss: dismissInvite } = useConsultantInvite(false, location !== "/checkout");
   const adminPhone = useStore((s) => s.settings.general?.adminPhone ?? "");
   const [open, setOpen] = useState(false);
+  const { visible: invite, dismiss: dismissInvite, hide: hideInvite } = useConsultantInvite(false, location !== "/checkout" && !open);
   useEffect(() => {
     const close = () => setOpen(false);
     window.addEventListener("teco:open-consultant", close);
@@ -46,7 +46,7 @@ export function FloatingContact() {
     <div className="hidden md:flex fixed bottom-6 right-4 z-50 flex-col items-end gap-2">
       {invite && !open && location !== "/checkout" && (
         <div className="flex max-w-[270px] items-center gap-1 rounded-2xl border border-orange-200 bg-white p-2 shadow-lg" aria-live="polite">
-          <button onClick={() => { dismissInvite(); setOpen(true); }} className="px-2 py-1 text-left text-xs font-semibold leading-relaxed text-zinc-800">
+          <button onClick={() => { hideInvite(); setOpen(true); }} className="px-2 py-1 text-left text-xs font-semibold leading-relaxed text-zinc-800">
             {lang === "ru" ? "Помочь выбрать? Консультант TECO здесь →" : "Ai nevoie de ajutor? Găsești consultantul TECO aici →"}
           </button>
           <button onClick={dismissInvite} aria-label={lang === "ru" ? "Закрыть подсказку" : "Închide invitația"} className="flex h-8 w-8 shrink-0 items-center justify-center text-zinc-500"><X className="h-4 w-4" /></button>
@@ -105,7 +105,7 @@ export function FloatingContact() {
       {/* Main FAB */}
       <div className="relative">
         <button
-          onClick={() => { dismissInvite(); setOpen((o) => !o); }}
+          onClick={() => { hideInvite(); setOpen((o) => !o); }}
           aria-label={open ? "Închide" : "Contactează-ne acum"}
           className={`relative w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-all duration-200 active:scale-95 select-none ${
             open ? "bg-[#FF4F00]" : "bg-[#FF4F00] teco-contact-attention"

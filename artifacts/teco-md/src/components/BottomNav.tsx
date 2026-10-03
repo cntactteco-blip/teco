@@ -31,7 +31,7 @@ export function BottomNav() {
   const openCart = useCart((state) => state.openCart);
   const adminPhone = useStore((s) => s.settings.general?.adminPhone ?? "");
   const [contactOpen, setContactOpen] = useState(false);
-  const { visible: helpHint, dismiss: dismissHint } = useConsultantInvite(true, location !== "/checkout");
+  const { visible: helpHint, dismiss: dismissHint, hide: hideHint } = useConsultantInvite(true, location !== "/checkout" && !contactOpen);
   const contactRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -145,7 +145,7 @@ export function BottomNav() {
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-[20px] border-t border-[#e4e4e7] pb-[env(safe-area-inset-bottom,0px)]">
         {helpHint && !contactOpen && (
           <div className="flex h-11 items-center gap-2 border-b border-orange-100 bg-orange-50 px-3" aria-live="polite">
-            <button onClick={() => { dismissHint(); setContactOpen(true); }} className="flex-1 min-w-0 text-left text-[11px] font-semibold leading-tight text-orange-950">
+            <button onClick={() => { hideHint(); setContactOpen(true); }} className="flex-1 min-w-0 text-left text-[11px] font-semibold leading-tight text-orange-950">
               {location.startsWith("/product/")
                 ? (lang === "ru" ? "Подходит ли вам эта модель? Консультант TECO →" : "Ți se potrivește acest model? Întreabă consultantul →")
                 : (lang === "ru" ? "Помочь выбрать систему? Нажмите здесь →" : "Te ajut să alegi sistemul potrivit. Apasă aici →")}
@@ -200,7 +200,7 @@ export function BottomNav() {
           </button>
 
           <button
-            onClick={() => { dismissHint(); setContactOpen(o => !o); }}
+            onClick={() => { hideHint(); setContactOpen(o => !o); }}
             aria-label={lang === "ru" ? "Контакты и консультант TECO" : "Contact și consultant TECO"}
             aria-expanded={contactOpen}
             data-contact-trigger
