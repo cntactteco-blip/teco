@@ -531,7 +531,7 @@ export default function ProductDetail() {
   return (
     <>
       <SEO title={metaTitle} description={metaDesc} keywords={`${product.brand}, ${product.category}, ${product.model}, ${product.name}, Moldova, Teco.md`} ogType="product" ogImage={product.imageUrl || undefined} canonical={`/product/${product.slug || product.id}`} lang={lang} jsonLd={jsonLd} />
-      <main className="flex-1 w-full bg-[#FAFAFA] pb-[80px] md:pb-0" role="main" aria-label={product.name}>
+      <main className="flex-1 w-full bg-[#FAFAFA] pb-[calc(160px+env(safe-area-inset-bottom,0px)+var(--teco-help-height,0px))] md:pb-0" role="main" aria-label={product.name}>
 
       {/* BREADCRUMB */}
       <div className="bg-white border-b border-[#E4E4E7] px-4 py-2.5">
@@ -1134,7 +1134,7 @@ const pct = reviewCount ? (userReviews.filter(review => review.rating === s).len
       )}
 
       {/* STICKY BOTTOM BAR (mobile) */}
-      <div className="md:hidden fixed bottom-[56px] left-0 right-0 bg-white/95 backdrop-blur-md border-t border-[#E4E4E7] px-4 py-2.5 z-40 flex items-center gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+      <div className="md:hidden fixed bottom-[calc(56px+env(safe-area-inset-bottom,0px)+var(--teco-help-height,0px))] left-0 right-0 bg-white/95 backdrop-blur-md border-t border-[#E4E4E7] px-4 py-2.5 z-40 flex items-center gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
         <div className="flex-1 min-w-0">
           <p className="text-[10px] text-zinc-500 truncate">{product.name}</p>
           <p className="font-mono font-black text-base text-[#FF4F00]">{product.price.toLocaleString()} MDL</p>

@@ -4,6 +4,7 @@ import { useCart } from "@/hooks/useCart";
 import { useStore } from "@/lib/store";
 import { useState, useEffect, useRef } from "react";
 import { useLang } from "@/contexts/LangContext";
+import { useConsultantInvite } from "@/hooks/useConsultantInvite";
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -30,22 +31,19 @@ export function BottomNav() {
   const openCart = useCart((state) => state.openCart);
   const adminPhone = useStore((s) => s.settings.general?.adminPhone ?? "");
   const [contactOpen, setContactOpen] = useState(false);
-  const [helpHint, setHelpHint] = useState(false);
-  const [hintsStopped, setHintsStopped] = useState(false);
+  const { visible: helpHint, dismiss: dismissHint } = useConsultantInvite(true, location !== "/checkout");
   const contactRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (hintsStopped) return;
-    // Short invitations stay inside the navigation, never over products or CTAs.
-    const timers = [20000, 110000].flatMap((delay) => [
-      window.setTimeout(() => { if (!document.hidden) setHelpHint(true); }, delay),
-      window.setTimeout(() => setHelpHint(false), delay + 6000),
-    ]);
-    return () => timers.forEach(window.clearTimeout);
-  }, [hintsStopped]);
+    const media = window.matchMedia("(max-width: 767px)");
+    const update = () => document.documentElement.style.setProperty("--teco-help-height", helpHint && !contactOpen && media.matches ? "44px" : "0px");
+    update();
+    media.addEventListener("change", update);
+    return () => { media.removeEventListener("change", update); document.documentElement.style.removeProperty("--teco-help-height"); };
+  }, [helpHint, contactOpen]);
 
   useEffect(() => {
-    const stop = () => { setHelpHint(false); setHintsStopped(true); setContactOpen(false); };
+    const stop = () => setContactOpen(false);
     window.addEventListener("teco:open-consultant", stop);
     return () => window.removeEventListener("teco:open-consultant", stop);
   }, []);
@@ -145,6 +143,16 @@ export function BottomNav() {
       )}
 
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-[20px] border-t border-[#e4e4e7] pb-[env(safe-area-inset-bottom,0px)]">
+        {helpHint && !contactOpen && (
+          <div className="flex h-11 items-center gap-2 border-b border-orange-100 bg-orange-50 px-3" aria-live="polite">
+            <button onClick={() => { dismissHint(); setContactOpen(true); }} className="flex-1 min-w-0 text-left text-[11px] font-semibold leading-tight text-orange-950">
+              {location.startsWith("/product/")
+                ? (lang === "ru" ? "Подходит ли вам эта модель? Консультант TECO →" : "Ți se potrivește acest model? Întreabă consultantul →")
+                : (lang === "ru" ? "Помочь выбрать систему? Нажмите здесь →" : "Te ajut să alegi sistemul potrivit. Apasă aici →")}
+            </button>
+            <button onClick={dismissHint} aria-label={lang === "ru" ? "Закрыть подсказку" : "Închide invitația"} className="flex h-9 w-9 shrink-0 items-center justify-center text-orange-700"><X className="h-4 w-4" /></button>
+          </div>
+        )}
         <div className="flex items-center justify-around px-2 h-14">
 
           <button
@@ -192,14 +200,14 @@ export function BottomNav() {
           </button>
 
           <button
-            onClick={() => { setHelpHint(false); setHintsStopped(true); setContactOpen(o => !o); }}
+            onClick={() => { dismissHint(); setContactOpen(o => !o); }}
             aria-label={lang === "ru" ? "Контакты и консультант TECO" : "Contact și consultant TECO"}
             aria-expanded={contactOpen}
             data-contact-trigger
             className="flex flex-col items-center justify-center gap-0.5 w-14"
           >
             <div className="relative">
-              <div className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-all ${contactOpen ? "bg-zinc-700" : "bg-[#FF4F00]"}`}>
+              <div className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-all ${contactOpen ? "bg-[#FF4F00]" : "bg-[#FF4F00] shadow-[0_0_0_4px_rgba(255,79,0,0.1)] teco-contact-attention"}`}>
                 {contactOpen
                   ? <X className="w-4 h-4 text-white" />
                   : <WhatsAppIcon className="w-4 h-4 text-white" />
@@ -218,6 +226,13 @@ export function BottomNav() {
           from { opacity: 0; transform: translateY(10px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        @keyframes tecoContactAttention {
+          0%, 14%, 100% { transform: rotate(0) scale(1); }
+          3%, 9% { transform: rotate(-9deg) scale(1.06); }
+          6%, 12% { transform: rotate(9deg) scale(1.06); }
+        }
+        .teco-contact-attention { animation: tecoContactAttention 12s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) { .teco-contact-attention { animation: none; } }
       `}</style>
     </>
   );

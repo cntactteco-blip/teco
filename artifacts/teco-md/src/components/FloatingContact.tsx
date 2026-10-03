@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { X, Wrench, MessageCircle } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useStore } from "@/lib/store";
 import { useLang } from "@/contexts/LangContext";
+import { useConsultantInvite } from "@/hooks/useConsultantInvite";
 
 const WA_MSG = encodeURIComponent("Bună ziua! Sunt interesat de sistemele de supraveghere TECO.MD. Pot primi o ofertă?");
 const INSTALL_MSG = encodeURIComponent("Bună ziua! Vreau să solicit montaj/instalare sisteme supraveghere. Puteți oferi un deviz?");
@@ -26,13 +27,14 @@ function ViberIcon({ className }: { className?: string }) {
 
 export function FloatingContact() {
   const { lang } = useLang();
+  const [location] = useLocation();
+  const { visible: invite, dismiss: dismissInvite } = useConsultantInvite(false, location !== "/checkout");
   const adminPhone = useStore((s) => s.settings.general?.adminPhone ?? "");
   const [open, setOpen] = useState(false);
-  const [pulse, setPulse] = useState(true);
-
   useEffect(() => {
-    const t = setTimeout(() => setPulse(false), 8000);
-    return () => clearTimeout(t);
+    const close = () => setOpen(false);
+    window.addEventListener("teco:open-consultant", close);
+    return () => window.removeEventListener("teco:open-consultant", close);
   }, []);
 
   const phone = (adminPhone || "37367200463").replace(/\D/g, "");
@@ -42,6 +44,14 @@ export function FloatingContact() {
 
   return (
     <div className="hidden md:flex fixed bottom-6 right-4 z-50 flex-col items-end gap-2">
+      {invite && !open && location !== "/checkout" && (
+        <div className="flex max-w-[270px] items-center gap-1 rounded-2xl border border-orange-200 bg-white p-2 shadow-lg" aria-live="polite">
+          <button onClick={() => { dismissInvite(); setOpen(true); }} className="px-2 py-1 text-left text-xs font-semibold leading-relaxed text-zinc-800">
+            {lang === "ru" ? "Помочь выбрать? Консультант TECO здесь →" : "Ai nevoie de ajutor? Găsești consultantul TECO aici →"}
+          </button>
+          <button onClick={dismissInvite} aria-label={lang === "ru" ? "Закрыть подсказку" : "Închide invitația"} className="flex h-8 w-8 shrink-0 items-center justify-center text-zinc-500"><X className="h-4 w-4" /></button>
+        </div>
+      )}
       {open && (
         <div className="flex flex-col items-end gap-2 mb-1">
           <button
@@ -94,17 +104,11 @@ export function FloatingContact() {
 
       {/* Main FAB */}
       <div className="relative">
-        {pulse && !open && (
-          <>
-            <span className="absolute inset-0 rounded-full bg-[#FF4F00] opacity-30 animate-ping" />
-            <span className="absolute inset-0 rounded-full bg-[#FF4F00] opacity-20 animate-ping [animation-delay:0.4s]" />
-          </>
-        )}
         <button
-          onClick={() => { setOpen((o) => !o); setPulse(false); }}
+          onClick={() => { dismissInvite(); setOpen((o) => !o); }}
           aria-label={open ? "Închide" : "Contactează-ne acum"}
           className={`relative w-14 h-14 rounded-full shadow-xl flex items-center justify-center transition-all duration-200 active:scale-95 select-none ${
-            open ? "bg-zinc-800 rotate-0" : "bg-[#FF4F00]"
+            open ? "bg-[#FF4F00]" : "bg-[#FF4F00] teco-contact-attention"
           }`}
         >
           {open ? (

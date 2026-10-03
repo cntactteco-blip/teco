@@ -168,8 +168,8 @@ export function TecoBot() {
     [leadCaptured],
   );
 
-  const send = useCallback(async () => {
-    const text = input.trim();
+  const send = useCallback(async (suggestedText?: string) => {
+    const text = (suggestedText ?? input).trim();
     if (!text || streaming) return;
     setInput("");
 
@@ -557,6 +557,17 @@ export function TecoBot() {
                     )}
                 </div>
               ))}
+              {messages.length === 1 && !streaming && (
+                <div className="flex flex-wrap gap-2 pl-9">
+                  {[
+                    { label: lang === "ru" ? "Подобрать систему" : "Alege-mi un sistem", text: lang === "ru" ? "Хочу подобрать полную систему видеонаблюдения. С чего начать?" : "Vreau să aleg un sistem complet de supraveghere. De unde începem?" },
+                    { label: lang === "ru" ? "Монтаж и смета" : "Montaj și ofertă", text: lang === "ru" ? "Нужен монтаж и предложение с оборудованием. Какие данные нужны?" : "Am nevoie de montaj și o ofertă cu echipamente. Ce informații îți trebuie?" },
+                    ...(currentProduct ? [{ label: lang === "ru" ? "Подходит ли мне?" : "Mi se potrivește?", text: lang === "ru" ? `Помоги проверить, подходит ли мне ${currentProduct.model || currentProduct.name} и какие аксессуары нужны.` : `Ajută-mă să verific dacă ${currentProduct.model || currentProduct.name} mi se potrivește și ce accesorii îmi trebuie.` }] : []),
+                  ].map((choice) => (
+                    <button key={choice.label} onClick={() => void send(choice.text)} className="rounded-xl border border-orange-200 bg-white px-3 py-2 text-xs font-semibold text-[#FF4F00] hover:bg-orange-50 active:scale-95 transition-all">{choice.label}</button>
+                  ))}
+                </div>
+              )}
               {leadCaptured && (
                 <div className="flex justify-center">
                   <div className="bg-green-50 border border-green-200 rounded-xl px-3 py-2 text-xs text-green-700 font-medium flex items-center gap-1.5">
@@ -620,7 +631,7 @@ export function TecoBot() {
                   className="flex-1 min-w-0 bg-[#F4F4F5] rounded-xl px-3.5 py-2.5 text-[#09090B] placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#FF4F00]/20 focus:bg-white transition-all disabled:opacity-50"
                 />
                 <button
-                  onClick={send}
+                  onClick={() => void send()}
                   disabled={!input.trim() || streaming}
                   className="w-10 h-10 rounded-xl bg-[#FF4F00] text-white flex items-center justify-center hover:opacity-90 active:scale-95 transition-all disabled:opacity-40 flex-shrink-0"
                 >
